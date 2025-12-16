@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -34,7 +35,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
-        'departament_id',
+        'department_id',
         'password',
         'two_factor_secret',
         'two_factor_recovery_codes',
@@ -42,18 +43,15 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be cast.
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'two_factor_confirmed_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'two_factor_confirmed_at' => 'datetime',
+    ];
 
     protected static function booted()
     {
@@ -69,10 +67,21 @@ class User extends Authenticatable
     }
 
     /**
-     * Departments assigned to the user (many-to-many).
+     * Department assigned to the user (single).
      */
-    public function departments(): BelongsToMany
+    public function department(): BelongsTo
     {
-        return $this->belongsToMany(Department::class, 'department_user', 'user_id', 'department_id');
+        return $this->belongsTo(Department::class, 'department_id');
     }
+
+    /**
+     * Departments this user belongs to (many-to-many via `department_user` pivot).
+     */
+    // If a user can belong to one department, use the `department()` relation below.
+
+    public function machines(): HasMany
+    {
+        return $this->hasMany(Machines::class, 'user_id');
+    }
+
 }

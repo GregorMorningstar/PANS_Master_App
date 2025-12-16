@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('barcode', 13)->unique()->nullable();
             // keep department_id on users (nullable) — pivot will be created separately
             $table->unsignedBigInteger('department_id')->nullable()->index();
+            $table->unsignedBigInteger('machine_id')->nullable()->index();
 
             $table->string('name');
             $table->string('email')->unique();
@@ -46,15 +47,9 @@ return new class extends Migration
             $table->integer('last_activity')->index();
         });
 
-        // create pivot WITHOUT foreign key constraints (departments table may be created in a later migration)
-        Schema::create('department_user', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('department_id')->index();
-            $table->unsignedBigInteger('user_id')->index();
-            $table->timestamps();
-
-            $table->unique(['department_id', 'user_id']);
-        });
+        // previously a pivot `department_user` was created here for many-to-many
+        // relationship. Current app design uses one-department-per-user (1:N),
+        // so we keep `department_id` column on `users` and do not create a pivot.
     }
 
     /**

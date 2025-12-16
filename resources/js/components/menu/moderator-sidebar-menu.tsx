@@ -207,8 +207,8 @@ export default function ModeratorSidebarMenu(): React.ReactElement {
                 <FontAwesomeIcon icon={faList} className="mr-2" /> Lista maszyn
               </Link>
               <Link
-                href="/moderator/machines/create"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/machines/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href="/moderator/machines/add-new"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/machines/add-new') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faPlus} className="mr-2" /> Dodaj maszynę
               </Link>

@@ -9,7 +9,7 @@ use App\Http\Controllers\ModeratorController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DepartamentsController;
-
+use App\Http\Controllers\MachinesController;
 // Broadcasting authentication routes
 Broadcast::routes(['middleware' => ['web', 'auth']]);
 
@@ -28,7 +28,9 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
 
         // machines: /moderator/machines
         Route::prefix('machines')->group(function () {
-            Route::get('/', [ModeratorController::class, 'index'])->name('machines.index');
+            Route::get('/', [MachinesController::class, 'moderatorIndex'])->name('machines.index');
+            Route::get('/add-new', [MachinesController::class, 'create'])->name('machines.create');
+            Route::post('/add-new', [MachinesController::class, 'store'])->name('machines.store');
         });
 
         // users: /moderator/users

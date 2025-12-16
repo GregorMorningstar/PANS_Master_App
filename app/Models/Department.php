@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Department extends Model
 {
@@ -68,10 +68,18 @@ class Department extends Model
     }
 
     /**
-     * Users that belong to the department (many-to-many).
+     * Users that belong to the department (one-to-many).
      */
-    public function users(): BelongsToMany
+    public function users(): HasMany
     {
-        return $this->belongsToMany(User::class, 'department_user', 'department_id', 'user_id');
+        return $this->hasMany(User::class, 'department_id');
+    }
+
+    /**
+     * Machines assigned to the department (one-to-many).
+     */
+    public function machines(): HasMany
+    {
+        return $this->hasMany(Machines::class, 'department_id');
     }
 }

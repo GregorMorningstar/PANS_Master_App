@@ -16,12 +16,12 @@ class UserService implements UserServiceInterface
         return $this->userRepository->findById($id);
     }
 
-    public function getAll(int $perPage = 15): LengthAwarePaginator
+    public function getAll(int $perPage = 10): LengthAwarePaginator
     {
         return $this->userRepository->findAll($perPage);
     }
 
-    public function getAllByRole(int $perPage = 15, ?string $role = null, array $filters = []): LengthAwarePaginator
+    public function getAllByRole(int $perPage = 10, ?string $role = null, array $filters = []): LengthAwarePaginator
     {
         return $this->userRepository->findAllByRole($perPage, $role, $filters);
     }
