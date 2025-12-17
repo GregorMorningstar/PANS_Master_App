@@ -16,6 +16,7 @@ import {
   faList,
   faExclamationTriangle,
   faSitemap,
+  faWrench,
 } from '@fortawesome/free-solid-svg-icons';
 
 export default function ModeratorSidebarMenu(): React.ReactElement {
@@ -211,6 +212,12 @@ export default function ModeratorSidebarMenu(): React.ReactElement {
                 className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/machines/add-new') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faPlus} className="mr-2" /> Dodaj maszynę
+              </Link>
+              <Link
+                href="/moderator/machines/operations"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/machines/operations') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+              >
+                <FontAwesomeIcon icon={faWrench} className="mr-2" /> Operacje
               </Link>
             </div>
           </div>

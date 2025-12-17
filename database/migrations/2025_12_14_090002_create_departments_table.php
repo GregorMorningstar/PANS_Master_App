@@ -14,15 +14,13 @@ return new class extends Migration
         Schema::create('departments', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
-            $table->string('barcode')->unique()->nullable();
+            $table->string('barcode', 13)->unique()->nullable();
             $table->string('location')->nullable();
             $table->integer('count_of_machine')->default(0);
             $table->integer('count_of_employee')->default(0);
             $table->integer('count_of_failure_machine')->default(0);
             $table->float('oee_coefficient')->default(0);
             $table->text('description')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('SET NULL');
-
             $table->timestamps();
         });
     }

@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Models\Machines;
 
 class User extends Authenticatable
 {
@@ -79,9 +81,15 @@ class User extends Authenticatable
      */
     // If a user can belong to one department, use the `department()` relation below.
 
-    public function machines(): HasMany
+    // user może być właścicielem wielu maszyn (pole user_id w machines)
+    public function ownedMachines(): HasMany
     {
         return $this->hasMany(Machines::class, 'user_id');
     }
 
+    // user może być przypisany do wielu maszyn przez pivot machine_user
+    public function machines(): BelongsToMany
+    {
+        return $this->belongsToMany(Machines::class, 'machine_user', 'user_id', 'machine_id')->withTimestamps();
+    }
 }

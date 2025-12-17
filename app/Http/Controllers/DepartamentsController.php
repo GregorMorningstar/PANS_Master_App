@@ -98,4 +98,17 @@ class DepartamentsController extends Controller
         return redirect()->route('moderator.departments.index')->with('success', 'Dział został pomyślnie dodany.')->with('department_id', $dept->id);
     }
 
+
+    public function show(int $id)
+    {
+        $department = $this->departmentsService->getByIdWithUsersAndMachines($id);
+        dd($department);
+        if (!$department) {
+            abort(404, 'Dział nie istnieje.');
+        }
+
+        return Inertia::render('moderator/departments/show', [
+            'department' => $department,
+        ]);
+    }
 }

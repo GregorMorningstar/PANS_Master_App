@@ -1,4 +1,5 @@
 import AddMachineCard from "@/components/card/add-machine-card";
+import ModeratorMachineNavMenu from "@/components/menu/moderator-machine-nav-menu";
 import ModeratorLayout from "@/layouts/ModeratorLayout";
 export default function createModeratorMachine() {
     const breadcrumbs = [
@@ -8,6 +9,7 @@ export default function createModeratorMachine() {
     ];
     return (
         <ModeratorLayout breadcrumbs={breadcrumbs} title="Dodaj nową maszynę">
+            <ModeratorMachineNavMenu />
             <AddMachineCard />
         </ModeratorLayout>
     )

@@ -7,6 +7,7 @@ use App\Repositories\Contracts\MachinesRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use App\Models\Machines;
 use InvalidArgumentException;
+use Illuminate\Support\Facades\Schema;
 
 class MachineService implements MachinesServiceInterface
 {
@@ -19,7 +20,30 @@ class MachineService implements MachinesServiceInterface
 
     public function getAllMachines(int $perPage): LengthAwarePaginator
     {
-        return $this->machinesRepository->findAll($perPage);
+        $machines = $this->machinesRepository->findAll($perPage);
+
+        if ($machines instanceof LengthAwarePaginator) {
+            $collection = $machines->getCollection();
+
+            $relations = [];
+            if (Schema::hasTable('departments')) {
+                $relations[] = 'department';
+            }
+            if (Schema::hasTable('users')) {
+                $relations[] = 'owner';
+            }
+            if (Schema::hasTable('machine_user') && Schema::hasTable('users')) {
+                $relations[] = 'users';
+            }
+
+            if (!empty($relations)) {
+                $collection = $collection->load(array_unique($relations));
+            }
+
+            $machines->setCollection($collection);
+        }
+
+        return $machines;
     }
 
     public function getMachineById(int $id): Machines

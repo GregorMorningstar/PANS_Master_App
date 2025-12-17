@@ -42,4 +42,9 @@ class DepartmentsService implements DepartmentServiceInterface
          {
               return $this->departmentsRepository->delete($id);
          }
+
+            public function getByIdWithUsersAndMachines(int $id): ?Department
+            {
+                return $this->departmentsRepository->findByIdWithUsersAndMachines($id);
+            }
 }

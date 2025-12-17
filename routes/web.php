@@ -10,6 +10,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DepartamentsController;
 use App\Http\Controllers\MachinesController;
+use App\Http\Controllers\MachineOperationController;
 // Broadcasting authentication routes
 Broadcast::routes(['middleware' => ['web', 'auth']]);
 
@@ -31,6 +32,15 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
             Route::get('/', [MachinesController::class, 'moderatorIndex'])->name('machines.index');
             Route::get('/add-new', [MachinesController::class, 'create'])->name('machines.create');
             Route::post('/add-new', [MachinesController::class, 'store'])->name('machines.store');
+            Route::get('/{id}/edit', [MachinesController::class, 'edit'])->name('machines.edit');
+            Route::put('/{id}', [MachinesController::class, 'update'])->name('machines.update');
+            Route::delete('/{id}', [MachinesController::class, 'destroy'])->name('machines.destroy');
+
+            Route::prefix('operations')->group(function () {
+                Route::get('/', [MachineOperationController::class, 'index'])->name('machines.operations.index');
+                Route::get('/{machine_id}/add', [MachineOperationController::class, 'createOperation'])->name('machines.operations.create');
+                Route::post('/{machine_id}/add', [MachineOperationController::class, 'storeOperation'])->name('machines.operations.store');
+            });
         });
 
         // users: /moderator/users
@@ -47,6 +57,7 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
             Route::get('/{id}/edit', [DepartamentsController::class, 'edit'])->name('departments.edit');
             Route::put('/{id}', [DepartamentsController::class, 'update'])->name('departments.update');
             Route::delete('/{id}', [DepartamentsController::class, 'destroy'])->name('departments.destroy');
+            Route::get('/{id}', [DepartamentsController::class, 'show'])->name('departments.show');
         });
     });
 

@@ -9,3 +9,4 @@ kody en13
 
 
 3000 - maszyny
+3100 - operacje maszyn

@@ -5,19 +5,23 @@ type Department = { id: number; name: string };
 type User = { id: number; name: string };
 
 export default function AddMachineCard() {
-    // pobierz domyślne dane z Inertia page props (ustawia kontroler)
     const page = usePage() as any;
     const departments: Department[] = page.props.departments ?? [];
     const users: User[] = page.props.users ?? [];
-    const statuses: string[] = page.props.machine_statuses ?? [
-        "active",
-        "inactive",
-        "maintenance",
-        "decommissioned",
-        "working",
-        "forced_downtime",
-        "breakdown",
-    ];
+    const STATUS_LABELS: Record<string, string> = {
+        active: "Aktywna",
+        inactive: "Nieaktywna",
+        maintenance: "Konserwacja",
+        decommissioned: "Wycofana",
+        working: "W pracy",
+        forced_downtime: "Wymuszony przestój",
+        breakdown: "Awaria",
+    };
+
+    const statuses: { value: string; label: string }[] = (page.props.machine_statuses ?? Object.keys(STATUS_LABELS)).map((s: any) => {
+        const value = typeof s === "string" ? s : s.value ?? String(s);
+        return { value, label: STATUS_LABELS[value] ?? (typeof s === "string" ? value : s.label ?? value) };
+    });
 
     const form = useForm({
         barcode: "",
@@ -31,7 +35,7 @@ export default function AddMachineCard() {
         serial_number: "",
         description: "",
         department_id: "",
-        status: statuses[0] ?? "inactive",
+        status: statuses[0]?.value ?? "inactive",
     });
 
     const [clientErrors, setClientErrors] = useState<Record<string, string>>({});
@@ -167,7 +171,7 @@ export default function AddMachineCard() {
                                     className="mt-1 w-full rounded-lg border px-3 py-2 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
                                 >
                                     {statuses.map((s) => (
-                                        <option key={s} value={s}>{s}</option>
+                                        <option key={s.value} value={s.value}>{s.label}</option>
                                     ))}
                                 </select>
                             </div>

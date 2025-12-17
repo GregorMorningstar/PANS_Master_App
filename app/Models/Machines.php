@@ -5,44 +5,62 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Operationmachine;
 
 class Machines extends Model
 {
     use HasFactory;
+
     protected $fillable = [
-        'barcode',
-        'user_id',
-        'last_failure_date',
-        'image_path',
-        'year_of_production',
         'name',
         'model',
         'serial_number',
+        'barcode',
+        'year_of_production',
         'description',
-        'department_id',
         'status',
+        'image_path',
+        'last_failure_date',
+        'user_id',       // owner
+        'department_id',
     ];
 
-    protected static function booted()
+
+protected static function booted()
     {
-        static::created(function ($machine) {
+        static::created(function ($user) {
             $prefix = '3000';
-            $id = $machine->id;
+            $id = $user->id;
             $barcode = $prefix . str_pad($id, 13 - strlen($prefix), '0', STR_PAD_LEFT);
-            if ($machine->barcode !== $barcode) {
-                $machine->barcode = $barcode;
-                $machine->save();
+            if ($user->barcode !== $barcode) {
+                $user->barcode = $barcode;
+                $user->save();
             }
         });
     }
 
-    public function department()
+    // maszyna należy do jednego departamentu (1:N)
+    public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'department_id');
     }
 
-    public function user(): BelongsTo
+    public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    // many-to-many: wiele użytkowników może być przypisanych do maszyny (pivot machine_user)
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'machine_user', 'machine_id', 'user_id')->withTimestamps();
+    }
+
+    // many-to-many: wiele operacji może być przypisanych do maszyny (pivot machine_operation)
+    public function operations(): HasMany
+    {
+        return $this->hasMany(Operationmachine::class, 'machine_id');
     }
 }

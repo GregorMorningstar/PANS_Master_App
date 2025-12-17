@@ -3,9 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Machines;
+use App\Models\User;
 
 class Department extends Model
 {
@@ -14,12 +15,13 @@ class Department extends Model
     protected $fillable = [
         'name',
         'barcode',
-        'description',
         'location',
+        'description',
         'count_of_machine',
         'count_of_employee',
         'count_of_failure_machine',
         'oee_coefficient',
+        'created_by',
     ];
 
     /**
@@ -56,30 +58,26 @@ class Department extends Model
 
     protected static function booted()
     {
-        static::created(function ($user) {
+        static::created(function ($department) {
             $prefix = '2000';
-            $id = $user->id;
+            $id = $department->id;
             $barcode = $prefix . str_pad($id, 13 - strlen($prefix), '0', STR_PAD_LEFT);
-            if ($user->barcode !== $barcode) {
-                $user->barcode = $barcode;
-                $user->save();
+            if ($department->barcode !== $barcode) {
+                $department->barcode = $barcode;
+                $department->save();
             }
         });
     }
 
-    /**
-     * Users that belong to the department (one-to-many).
-     */
-    public function users(): HasMany
-    {
-        return $this->hasMany(User::class, 'department_id');
-    }
-
-    /**
-     * Machines assigned to the department (one-to-many).
-     */
+    // jeden departament ma wiele maszyn (1:N)
     public function machines(): HasMany
     {
         return $this->hasMany(Machines::class, 'department_id');
+    }
+
+    // jeden departament ma wielu użytkowników (1:N)
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class, 'department_id');
     }
 }

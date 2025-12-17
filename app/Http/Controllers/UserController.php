@@ -29,6 +29,7 @@ class UserController extends Controller
     public function show(int $id)
     {
         $user = $this->users->getById($id);
+        dd($user);
         return inertia('moderator/user/show', ['user' => $user]);
     }
 }

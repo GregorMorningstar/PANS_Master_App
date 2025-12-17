@@ -3,44 +3,55 @@
 namespace App\Repositories\Eloquent;
 
 use App\Repositories\Contracts\DepartmentsRepositoryInterface;
-use Illuminate\Support\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use App\Models\Department;
 
 class EloquentDepartmentsRepository implements DepartmentsRepositoryInterface
 {
-       public function getAllWithUsersPaginated(int $perPage): LengthAwarePaginator
-       {
-           return Department::with('users')->paginate($perPage);
-       }
-         public function create(array $data): Department
-         {
+    protected Department $model;
 
-              return Department::create($data);
-         }
+    public function __construct(Department $model)
+    {
+        $this->model = $model;
+    }
 
-        public function existsByName(string $name): bool
-        {
-          return Department::where('name', $name)->exists();
-        }
+    public function getAllWithUsersPaginated(int $perPage): LengthAwarePaginator
+    {
+        return $this->model->with('users')->paginate($perPage);
+    }
 
-        public function findById(int $id): ?Department
-        {
-          return Department::find($id);
-        }
+    public function create(array $data): Department
+    {
+        return $this->model->create($data);
+    }
 
-        public function update(int $id, array $data): Department
-        {
-          $department = Department::findOrFail($id);
-          $department->fill($data);
-          $department->save();
-          return $department;
-        }
+    public function existsByName(string $name): bool
+    {
+        return $this->model->where('name', $name)->exists();
+    }
 
-        public function delete(int $id): bool
-        {
-          $department = Department::find($id);
-          if (!$department) return false;
-          return (bool) $department->delete();
-        }
+    public function findById(int $id): ?Department
+    {
+        return $this->model->find($id);
+    }
+
+    public function update(int $id, array $data): Department
+    {
+        $department = $this->model->findOrFail($id);
+        $department->fill($data);
+        $department->save();
+        return $department;
+    }
+
+    public function delete(int $id): bool
+    {
+        $department = $this->model->find($id);
+        if (!$department) return false;
+        return (bool) $department->delete();
+    }
+
+    public function findByIdWithUsersAndMachines(int $id): ?Department
+    {
+        return $this->model->with(['users', 'machines'])->find($id);
+    }
 }

@@ -2,29 +2,37 @@
 
 namespace App\Repositories\Eloquent;
 
-
 use App\Models\Machines;
 use App\Repositories\Contracts\MachinesRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-
 class EloquentMachinesRepository implements MachinesRepositoryInterface
 {
+    protected Machines $model;
+
+    public function __construct(Machines $model)
+    {
+        $this->model = $model;
+    }
+
     public function findById(int $id): ?Machines
     {
-        return Machines::find($id);
+        return $this->model->find($id);
     }
+
     public function findAll(int $perPage = 15): LengthAwarePaginator
     {
-        return Machines::paginate($perPage);
+        return $this->model->paginate($perPage);
     }
+
     public function create(array $data): Machines
     {
-        return Machines::create($data);
+        return $this->model->create($data);
     }
+
     public function update(int $id, array $data): ?Machines
     {
-        $machine = Machines::find($id);
+        $machine = $this->model->find($id);
         if (!$machine) {
             return null;
         }
@@ -32,9 +40,10 @@ class EloquentMachinesRepository implements MachinesRepositoryInterface
         $machine->save();
         return $machine;
     }
+
     public function delete(int $id): bool
     {
-        $machine = Machines::find($id);
+        $machine = $this->model->find($id);
         if (!$machine) {
             return false;
         }
@@ -43,6 +52,6 @@ class EloquentMachinesRepository implements MachinesRepositoryInterface
 
     public function hasUserAssignedMachines(int $userId): bool
     {
-        return Machines::where('user_id', $userId)->exists();
+        return $this->model->where('user_id', $userId)->exists();
     }
 }
