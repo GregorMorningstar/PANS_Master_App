@@ -14,4 +14,5 @@ interface MachinesRepositoryInterface
     public function update(int $id, array $data): ?Machines;
     public function delete(int $id): bool;
     public function hasUserAssignedMachines(int $userId): bool;
+    public function getAllmachinesWithOperators(): LengthAwarePaginator;
 }

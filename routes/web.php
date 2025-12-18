@@ -28,7 +28,7 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
         Route::get('/dashboard', [ModeratorController::class, 'dashboard'])->name('dashboard');
 
         // machines: /moderator/machines
-        Route::prefix('machines')->group(function () {
+        Route::prefix('machines')->name('machines.')->group(function () {
             Route::get('/', [MachinesController::class, 'moderatorIndex'])->name('machines.index');
             Route::get('/add-new', [MachinesController::class, 'create'])->name('machines.create');
             Route::post('/add-new', [MachinesController::class, 'store'])->name('machines.store');
@@ -36,10 +36,15 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
             Route::put('/{id}', [MachinesController::class, 'update'])->name('machines.update');
             Route::delete('/{id}', [MachinesController::class, 'destroy'])->name('machines.destroy');
 
-            Route::prefix('operations')->group(function () {
-                Route::get('/', [MachineOperationController::class, 'index'])->name('machines.operations.index');
-                Route::get('/{machine_id}/add', [MachineOperationController::class, 'createOperation'])->name('machines.operations.create');
-                Route::post('/{machine_id}/add', [MachineOperationController::class, 'storeOperation'])->name('machines.operations.store');
+            // Machine Operations routes z prefiksem
+           Route::prefix('operations')->name('operations.')->group(function () {
+                Route::get('/', [MachineOperationController::class, 'getAllOperations'])->name('index');
+                Route::get('/{machine_id}/add', [MachineOperationController::class, 'createOperation'])->name('create');
+                Route::post('/{machine_id}', [MachineOperationController::class, 'storeOperation'])->name('store');
+                Route::get('/{operation_id}/show', [MachineOperationController::class, 'showOperation'])->name('show');
+                Route::get('/{operation_id}/edit', [MachineOperationController::class, 'editOperation'])->name('edit');
+                Route::put('/{operation_id}', [MachineOperationController::class, 'updateOperation'])->name('update');
+                Route::delete('/{operation_id}', [MachineOperationController::class, 'destroyOperation'])->name('destroy');
             });
         });
 

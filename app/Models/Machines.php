@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Operationmachine;
+use App\Models\User;
 
 class Machines extends Model
 {
@@ -50,6 +51,14 @@ protected static function booted()
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * The user that operates the machine.
+     */
+    public function operator()
+    {
+        return $this->belongsTo(User::class, 'operator_id');
     }
 
     // many-to-many: wiele użytkowników może być przypisanych do maszyny (pivot machine_user)

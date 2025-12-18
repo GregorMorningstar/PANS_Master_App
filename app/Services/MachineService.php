@@ -55,6 +55,11 @@ class MachineService implements MachinesServiceInterface
         return $machine;
     }
 
+    public function findById(int $id): ?Machines
+    {
+        return $this->machinesRepository->findById($id);
+    }
+
     public function createMachine(array $data): Machines
     {
         return $this->machinesRepository->create($data);
@@ -78,5 +83,10 @@ class MachineService implements MachinesServiceInterface
         }
 
         return $this->machinesRepository->delete($id);
+    }
+
+    public function getAllmachinesWithOperators(): LengthAwarePaginator
+    {
+        return $this->machinesRepository->getAllmachinesWithOperators();
     }
 }

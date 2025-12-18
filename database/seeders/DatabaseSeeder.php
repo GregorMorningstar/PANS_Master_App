@@ -42,9 +42,13 @@ class DatabaseSeeder extends Seeder
             'department_id' => Department::inRandomOrder()->value('id'),
         ]);
 
-        // Tworzymy 50 losowych użytkowników z rolą employee
-        User::factory(50)->create([
+        // Tworzymy 10 losowych użytkowników z rolą employee
+        User::factory(10)->create([
             'role' => 'employee'
+        ]);
+
+        $this->call([
+            MachineSeeder::class,
         ]);
     }
 }

@@ -6,5 +6,8 @@ namespace App\Services\Contracts;
 
 interface OperationMachineServiceInterface
 {
-    // Define method signatures for the service here
+public function createOperation(int $machineId, int $operationId, array $data);
+
+
+
 }

@@ -18,6 +18,7 @@ export default function ModeratorMachineNavMenu({ onSearch, onPageChange, links,
         { href: '/moderator/machines', label: 'Wszystkie' },
         { href: '/moderator/machines/add-new', label: 'Dodaj' },
         { href: '/moderator/machines/operations', label: 'Operacje' },
+        
     ];
 
     const submitSearch = (e: FormEvent) => {

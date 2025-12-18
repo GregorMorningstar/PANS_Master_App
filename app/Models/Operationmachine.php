@@ -14,22 +14,21 @@ class Operationmachine extends Model
 
     protected $fillable = [
         'barcode',
-        'user_id',
+        'machine_id',
         'operation_name',
         'description',
         'duration_minutes',
+        'changeover_time',
     ];
 
     protected static function booted()
     {
         static::created(function ($operationMachine) {
-            $prefix = '3100';
-            $idStr = (string) $operationMachine->id;
-            $barcode = $prefix . str_pad($idStr, 13 - strlen($prefix), '0', STR_PAD_LEFT);
-
-            if ($operationMachine->barcode !== $barcode) {
-                $operationMachine->barcode = $barcode;
-                $operationMachine->save();
+            if (!$operationMachine->barcode) {
+                $prefix = '3100';
+                $idStr = (string) $operationMachine->id;
+                $barcode = $prefix . str_pad($idStr, 13 - strlen($prefix), '0', STR_PAD_LEFT);
+                $operationMachine->updateQuietly(['barcode' => $barcode]);
             }
         });
     }
@@ -38,6 +37,4 @@ class Operationmachine extends Model
     {
         return $this->belongsTo(Machines::class, 'machine_id');
     }
-
-  
 }

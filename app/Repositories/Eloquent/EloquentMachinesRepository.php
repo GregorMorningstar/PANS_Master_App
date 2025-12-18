@@ -54,4 +54,9 @@ class EloquentMachinesRepository implements MachinesRepositoryInterface
     {
         return $this->model->where('user_id', $userId)->exists();
     }
+
+    public function getAllmachinesWithOperators(): LengthAwarePaginator
+    {
+        return $this->model->with('operator')->paginate(15);
+    }
 }
