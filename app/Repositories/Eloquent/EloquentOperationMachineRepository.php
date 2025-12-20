@@ -21,7 +21,10 @@ class EloquentOperationMachineRepository implements OperationMachineRepositoryIn
     {
         return $this->operationmachine->where('machine_id', $machineId)->with(['machine'])->get();
     }
-
+    public function getAll(): Collection
+    {
+        return $this->operationmachine->with(['machine'])->get();
+    }
     public function findById(int $id)
     {
         return $this->operationmachine->find($id);

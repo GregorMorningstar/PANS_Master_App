@@ -1,7 +1,7 @@
-import MachineList from "@/components/list/machine-list";
-import MachineCardSimple from "@/components/card/machineCardSimple";
+
 import ModeratorLayout from "@/layouts/ModeratorLayout"
 import { usePage } from "@inertiajs/react";
+import MachineOperationsList from "@/components/list/machine-operations-list";
 
 type PageProps = {
     allOperations?: any[] | null;
@@ -23,8 +23,8 @@ export default function MachineOperationModerator() {
 
     return (
         <ModeratorLayout breadcrumbs={breadcrumbs} title="Machine Operations">
-            <MachineList allOperations={allOperations} />
-            
+            <MachineOperationsList allOperations={allOperations} currentUserRole={props.auth?.user?.role ?? 'user'}/>
+
 
         </ModeratorLayout>
     );

@@ -22,8 +22,8 @@ class MachineOperationController extends Controller
 
     public function getAllOperations(Request $request)
     {
-        $allOperations = $this->machineService->getAllmachinesWithOperators();
-
+        $allOperations = $this->operationMachineService->getAllOperationsWithMachines();
+//dd($allOperations);
         if ($allOperations instanceof LengthAwarePaginator) {
             $items = $allOperations->items();
             $meta = [

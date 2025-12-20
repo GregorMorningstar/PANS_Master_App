@@ -40,4 +40,9 @@ class OperationMachineService implements OperationMachineServiceInterface
             throw new \Exception("Nie udało się zapisać operacji: " . $e->getMessage());
         }
     }
+
+    public function getAllOperationsWithMachines()
+    {
+        return $this->operationMachineRepository->getAll();
+    }
 }
