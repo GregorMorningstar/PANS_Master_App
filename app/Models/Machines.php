@@ -72,4 +72,10 @@ protected static function booted()
     {
         return $this->hasMany(Operationmachine::class, 'machine_id');
     }
+
+    //relacja z MachineFailure (1:N)
+    public function machineFailures(): HasMany
+    {
+        return $this->hasMany(MachineFailure::class, 'machine_id');
+    }
 }

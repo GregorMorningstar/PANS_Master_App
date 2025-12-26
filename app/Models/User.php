@@ -92,4 +92,10 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Machines::class, 'machine_user', 'user_id', 'machine_id')->withTimestamps();
     }
+
+    //relacja z MachineFailure (1:N)
+    public function machineFailures(): HasMany
+    {
+        return $this->hasMany(MachineFailure::class, 'user_id');
+    }
 }

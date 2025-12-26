@@ -89,4 +89,9 @@ class MachineService implements MachinesServiceInterface
     {
         return $this->machinesRepository->getAllmachinesWithOperators();
     }
+
+    public function setLastFailureDate(int $machineId): bool
+    {
+        return $this->machinesRepository->setLastFailureDate($machineId);
+    }
 }

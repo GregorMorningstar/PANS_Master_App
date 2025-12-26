@@ -246,7 +246,7 @@ export default function ModeratorSidebarMenu(): React.ReactElement {
           >
             <div className="flex flex-col space-y-1 pl-6">
               <Link
-                href="/moderator/incidents"
+                href="/machines/report-failure"
                 className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/incidents') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faList} className="mr-2" /> Lista awarii

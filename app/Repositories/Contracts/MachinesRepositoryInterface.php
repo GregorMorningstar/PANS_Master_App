@@ -15,4 +15,5 @@ interface MachinesRepositoryInterface
     public function delete(int $id): bool;
     public function hasUserAssignedMachines(int $userId): bool;
     public function getAllmachinesWithOperators(): LengthAwarePaginator;
+    public function setLastFailureDate(int $machineId): bool;
 }

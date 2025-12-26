@@ -5,6 +5,7 @@ namespace App\Repositories\Eloquent;
 use App\Models\Machines;
 use App\Repositories\Contracts\MachinesRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use App\Enums\MachineStatus;
 
 class EloquentMachinesRepository implements MachinesRepositoryInterface
 {
@@ -58,5 +59,17 @@ class EloquentMachinesRepository implements MachinesRepositoryInterface
     public function getAllmachinesWithOperators(): LengthAwarePaginator
     {
         return $this->model->with('operator')->paginate(15);
+    }
+
+    public function setLastFailureDate(int $machineId): bool
+    {
+        $machine = $this->model->find($machineId);
+        if (!$machine) {
+            return false;
+        }
+
+        $machine->last_failure_date = now();
+        $machine->status = MachineStatus::BREAKDOWN;
+        return $machine->save();
     }
 }

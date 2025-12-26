@@ -1,7 +1,7 @@
 import React from "react";
 import { usePage, Link, router } from "@inertiajs/react";
 import Barcode from "react-barcode";
-import { Wrench, WrenchIcon, Trash2, Eye, File, Users } from "lucide-react";
+import { Wrench, WrenchIcon, Trash2, Eye, File, Users, TriangleAlertIcon,  } from "lucide-react";
 
 type Machine = {
   id: number;
@@ -66,7 +66,7 @@ export default function MachineCardSimple({ machine, onEdit, onDelete, onView, o
   function handleView(e: React.MouseEvent) {
     e.preventDefault();
     if (typeof onView === "function") return onView(machine);
-    window.location.href = `/moderator/machines/${machine.id}`;
+    window.location.href = `/machines/failures/add-new/${machine.id}`;
   }
 
   function handleDelete(e: React.MouseEvent) {
@@ -88,7 +88,6 @@ export default function MachineCardSimple({ machine, onEdit, onDelete, onView, o
   const barcodeValue = String(machine.barcode ?? machine.serial_number ?? machine.id ?? "BRK");
   const imgSrc = machine.image_path ? `/storage/${machine.image_path}` : "https://via.placeholder.com/320x240?text=Maszyna";
 
-  // przypisany użytkownik: owner -> pierwsze z pivot users -> user -> fallback
   const assignedUserName =
     machine.owner?.name ||
     (machine.users && machine.users.length ? machine.users[0]?.name : null) ||
@@ -176,10 +175,12 @@ export default function MachineCardSimple({ machine, onEdit, onDelete, onView, o
       </div>
 
       <div className="flex items-center justify-center gap-2">
-        <Link href={`/moderator/machines/${machine.id}`} onClick={(e) => handleView(e)} className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-white border shadow-sm hover:bg-slate-50">
-          <Eye className="text-slate-600" />
+        <Link href={`/machines/failures/add-new/${machine.id}`} onClick={(e) => handleView(e)} className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-white border shadow-sm hover:bg-slate-50">
+          <TriangleAlertIcon className="text-slate-600 " style={{ color: '#ff0f0f' }} />
         </Link>
-
+        <Link href={`/moderator/machines/${machine.id}/operations`} className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-white border shadow-sm hover:bg-slate-50">
+            <WrenchIcon className="text-yellow-500" />
+        </Link>
         {canManage && (
           <>
             <button onClick={handleNewOperation} className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-white border shadow-sm hover:bg-slate-50">

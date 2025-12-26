@@ -11,6 +11,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DepartamentsController;
 use App\Http\Controllers\MachinesController;
 use App\Http\Controllers\MachineOperationController;
+use App\Http\Controllers\MachineFailuresController;
 // Broadcasting authentication routes
 Broadcast::routes(['middleware' => ['web', 'auth']]);
 
@@ -69,6 +70,14 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
 Route::middleware('auth')->group(function () {
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
+
+    // Machine Failures Reporting
+    Route::prefix('machines')->name('machines.')->group(function () {
+    Route::get('/report-failure', [MachineFailuresController::class, 'index'])->name('machines.report-failure');
+    Route::get('/failures-history', [MachineFailuresController::class, 'history'])->name('machines.failures-history');
+    Route::get('/failures/add-new/{machine_id}', [MachineFailuresController::class, 'create'])->name('machines.failures.create');
+    Route::post('/failures', [MachineFailuresController::class, 'store'])->name('machines.failures.store');
+    });
 });
 
 

@@ -80,4 +80,6 @@ class Department extends Model
     {
         return $this->hasMany(User::class, 'department_id');
     }
+
+  
 }
