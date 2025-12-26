@@ -1,0 +1,57 @@
+<?php
+
+namespace App\Repositories\Eloquent;
+
+use App\Repositories\Contracts\DepartmentsRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use App\Models\Department;
+
+class EloquentDepartmentsRepository implements DepartmentsRepositoryInterface
+{
+    protected Department $model;
+
+    public function __construct(Department $model)
+    {
+        $this->model = $model;
+    }
+
+    public function getAllWithUsersPaginated(int $perPage): LengthAwarePaginator
+    {
+        return $this->model->with('users')->paginate($perPage);
+    }
+
+    public function create(array $data): Department
+    {
+        return $this->model->create($data);
+    }
+
+    public function existsByName(string $name): bool
+    {
+        return $this->model->where('name', $name)->exists();
+    }
+
+    public function findById(int $id): ?Department
+    {
+        return $this->model->find($id);
+    }
+
+    public function update(int $id, array $data): Department
+    {
+        $department = $this->model->findOrFail($id);
+        $department->fill($data);
+        $department->save();
+        return $department;
+    }
+
+    public function delete(int $id): bool
+    {
+        $department = $this->model->find($id);
+        if (!$department) return false;
+        return (bool) $department->delete();
+    }
+
+    public function findByIdWithUsersAndMachines(int $id): ?Department
+    {
+        return $this->model->with(['users', 'machines'])->find($id);
+    }
+}

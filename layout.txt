@@ -1,0 +1,12 @@
+kody en13
+
+
+1000 - user
+
+
+
+2000- departament
+
+
+3000 - maszyny
+3100 - operacje maszyn
