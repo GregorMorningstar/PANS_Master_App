@@ -1,11 +1,17 @@
 import { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 
-export default function CreateNewFailure({ machineId }: { machineId: number | null }) {
-    const { data, setData, post, processing, errors } = useForm({
+type FailureForm = {
+    machine_id: number | string;
+    failure_rank: number;
+    failure_description: string;
+};
+
+export default function EditFailureCard({ machineId, editFailure }: { machineId: number | null, editFailure: any }) {
+    const { data, setData, put, processing, errors } = useForm<FailureForm>({
         machine_id: machineId ?? '',
-        failure_rank: 1,
-        failure_description: '',
+        failure_rank: editFailure?.failure_rank ?? 1,
+        failure_description: editFailure?.failure_description ?? '',
     });
 
     const [hover, setHover] = useState<number | null>(null);
@@ -21,9 +27,19 @@ export default function CreateNewFailure({ machineId }: { machineId: number | nu
         return `rgb(${r}, ${g}, ${b})`;
     }
 
+    const renderError = (key: string) => {
+        const err = (errors as any)[key];
+        if (!err) return null;
+        return (
+            <div className="text-red-600">
+                {Array.isArray(err) ? err.join(' ') : String(err)}
+            </div>
+        );
+    };
+
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        post('/machines/failures');
+        put(`/machines/failures/edit/${editFailure.id}`);
     }
 
     return (
@@ -55,7 +71,7 @@ export default function CreateNewFailure({ machineId }: { machineId: number | nu
                         );
                     })}
                 </div>
-                {errors.failure_rank && <div className="text-red-600">{errors.failure_rank}</div>}
+                {renderError('failure_rank')}
             </div>
 
             <div className="mb-3">
@@ -67,14 +83,14 @@ export default function CreateNewFailure({ machineId }: { machineId: number | nu
                     className="w-full border rounded p-2"
                     placeholder="Opisz usterkę (co się dzieje, kiedy występuje, jak ją odtworzyć)"
                 />
-                {errors.failure_description && <div className="text-red-600">{errors.failure_description}</div>}
+                {renderError('failure_description')}
             </div>
 
             <input type="hidden" value={data.machine_id} />
 
             <div>
                 <button type="submit" disabled={processing} className="px-4 py-2 bg-blue-600 text-white rounded">
-                    Zgłoś awarię
+                    Edytuj awarię
                 </button>
             </div>
         </form>

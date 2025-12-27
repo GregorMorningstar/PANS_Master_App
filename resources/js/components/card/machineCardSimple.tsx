@@ -1,7 +1,7 @@
 import React from "react";
 import { usePage, Link, router } from "@inertiajs/react";
 import Barcode from "react-barcode";
-import { Wrench, WrenchIcon, Trash2, Eye, File, Users, TriangleAlertIcon,  } from "lucide-react";
+import { Wrench, WrenchIcon, Trash2, Eye, File, Users, TriangleAlertIcon, Edit3 } from "lucide-react";
 
 type Machine = {
   id: number;
@@ -59,7 +59,6 @@ export default function MachineCardSimple({ machine, onEdit, onDelete, onView, o
   function handleNewOperation(e: React.MouseEvent) {
     e.preventDefault();
     if (typeof onAddOperation === "function") return onAddOperation(machine);
-    // jeśli Twoja trasa to Route::get('/{machine_id}/add', ... ) w grupie moderator/machines/operations
     router.visit(`/moderator/machines/operations/${machine.id}/add`);
   }
 
@@ -74,15 +73,20 @@ export default function MachineCardSimple({ machine, onEdit, onDelete, onView, o
     const ok = window.confirm(`Czy na pewno usunąć maszynę "${machine.name ?? ""}"?`);
     if (!ok) return;
     if (typeof onDelete === "function") return onDelete(machine);
-    fetch(`/moderator/machines/${machine.id}`, {
-      method: "DELETE",
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        "X-CSRF-TOKEN": (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? ""
+    router.delete(`/moderator/machines/${machine.id}`, {
+      onSuccess: () => {
+        window.location.reload();
+      },
+      onError: () => {
+        alert("Błąd przy usuwaniu maszyny");
       }
-    })
-      .then(() => window.location.reload())
-      .catch(() => alert("Błąd przy usuwaniu"));
+    });
+  }
+
+  function handleEdit(e: React.MouseEvent) {
+    e.preventDefault();
+    if (typeof onEdit === "function") return onEdit(machine);
+    router.visit(`/moderator/machines/${machine.id}/edit`);
   }
 
   const barcodeValue = String(machine.barcode ?? machine.serial_number ?? machine.id ?? "BRK");
@@ -178,13 +182,15 @@ export default function MachineCardSimple({ machine, onEdit, onDelete, onView, o
         <Link href={`/machines/failures/add-new/${machine.id}`} onClick={(e) => handleView(e)} className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-white border shadow-sm hover:bg-slate-50">
           <TriangleAlertIcon className="text-slate-600 " style={{ color: '#ff0f0f' }} />
         </Link>
-        <Link href={`/moderator/machines/${machine.id}/operations`} className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-white border shadow-sm hover:bg-slate-50">
-            <WrenchIcon className="text-yellow-500" />
-        </Link>
+
         {canManage && (
           <>
             <button onClick={handleNewOperation} className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-white border shadow-sm hover:bg-slate-50">
               <WrenchIcon className="text-blue-500" />
+            </button>
+
+            <button onClick={handleEdit} className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-white border shadow-sm hover:bg-slate-50">
+              <Edit3 className="text-green-500" />
             </button>
 
             <button onClick={handleDelete} className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-white border shadow-sm hover:bg-slate-50">
@@ -193,9 +199,7 @@ export default function MachineCardSimple({ machine, onEdit, onDelete, onView, o
           </>
         )}
 
-        <Link href={`/moderator/machines/${machine.id}/files`} className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-white border shadow-sm hover:bg-slate-50">
-          <File className="text-green-500" />
-        </Link>
+        
       </div>
     </div>
   );

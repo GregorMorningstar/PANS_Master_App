@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Machines;
 
 class MachineFailure extends Model
 {
@@ -34,9 +36,9 @@ protected static function booted()
         });
     }
 
-    public function machine()
+    public function machine(): BelongsTo
     {
-        return $this->belongsTo(Machine::class);
+        return $this->belongsTo(Machines::class);
     }
-  
+
 }

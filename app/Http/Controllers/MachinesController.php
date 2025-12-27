@@ -59,7 +59,7 @@ class MachinesController extends Controller
 
         $this->machineService->createMachine($data);
 
-        return redirect()->route('moderator.machines.index')->with('success', 'Maszyna dodana.');
+        return redirect()->route('moderator.machines.machines.index')->with('success', 'Maszyna dodana.');
     }
 
     public function edit(int $id)
@@ -101,14 +101,14 @@ class MachinesController extends Controller
 
         $this->machineService->updateMachine($id, $data);
 
-        return redirect()->route('moderator.machines.index')->with('success', 'Maszyna zaktualizowana.');
+        return redirect()->route('moderator.machines.machines.index')->with('success', 'Maszyna zaktualizowana.');
     }
 
     public function destroy(int $id)
     {
         try {
             $this->machineService->deleteMachine($id);
-            return redirect()->route('moderator.machines.index')->with('success', 'Maszyna usunięta.');
+            return redirect()->route('moderator.machines.machines.index')->with('success', 'Maszyna usunięta.');
         } catch (InvalidArgumentException $e) {
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         } catch (Exception $e) {

@@ -22,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
             $this->app->bind(\App\Repositories\Contracts\MachinesRepositoryInterface::class, \App\Repositories\Eloquent\EloquentMachinesRepository::class);
             $this->app->bind(\App\Services\Contracts\OperationMachineServiceInterface::class, \App\Services\OperationMachineService::class);
             $this->app->bind(\App\Repositories\Contracts\OperationMachineRepositoryInterface::class, \App\Repositories\Eloquent\EloquentOperationMachineRepository::class);
+            $this->app->bind(\App\Services\Contracts\MachineFailureServiceInterface::class, \App\Services\MachineFailureService::class);
+            $this->app->bind(\App\Repositories\Contracts\MachineFailureRepositoryInterface::class, \App\Repositories\Eloquent\EloquentMachineFailureRepository::class);
 
 
 

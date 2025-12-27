@@ -5,26 +5,29 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Services\Contracts\MachinesServiceInterface;
+use App\Services\Contracts\MachineFailureServiceInterface;
+use Illuminate\Support\Facades\Auth;
 class MachineFailuresController extends Controller
 {
-
-
-    public function __construct(private readonly MachinesServiceInterface $machineService)
+    public function __construct(private readonly MachinesServiceInterface $machineService,
+                                private readonly MachineFailureServiceInterface $machineFailureService)
+    {}
+    public function index()
     {
-    }
+        $allmachineFailures = $this->machineFailureService->getAllFailuresWithMachines();
+      //  dd($allmachineFailures);
 
-public function index()
-    {
-
-        return Inertia::render('machines/failures/index');
+        return Inertia::render('machines/failures/index',['allmachineFailures' => $allmachineFailures]);
      }
 
-public function history()
+    public function history()
     {
+
+       // dd('test');
         return Inertia::render('machines/failures/history');
      }
 
-public function create($machine_id)
+    public function create($machine_id)
     {
         return Inertia::render('machines/failures/create', ['machine_id' => $machine_id]);
      }
@@ -33,7 +36,6 @@ public function create($machine_id)
     {
         // Logic to show a specific machine failure
     }
-
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -42,21 +44,39 @@ public function create($machine_id)
             'failure_description' => 'required|string|max:2000',
         ]);
         $data['user_id'] = $request->user()->id;
-
-        $this->machineService->setLastFailureDate((int) $data['machine_id']);
-dd($this->machineService);
-        return redirect()->route('machines.failures-history');
+        $this->machineFailureService->createMachineFailure($data, (int) $data['machine_id']);
+        return redirect()->route('machines.failures.history.index')->with('success', 'Zgłoszono awarie.');
     }
+    public function edit($id)
+    {
 
+        $editFailure = $this->machineFailureService->findFailureById($id);
+      //  dd($editFailure);
+        return Inertia::render('machines/failures/edit', ['id' => $id, 'editFailure' => $editFailure]);
+    }
     public function update(Request $request, $id)
     {
-        // Logic to update an existing machine failure record
-    }
+        $data = $request->validate([
+            'failure_description' => 'required|string|max:2000',
+            'failure_rank' => 'nullable|integer|min:1|max:10',
+        ]);
 
+        $updated = $this->machineFailureService->updateMachineFailure($id, $data);
+
+        if ($updated) {
+            return redirect()->route('machines.report-failure')->with('success', 'Zaktualizowano zgłoszenie awarii.');
+              } else {
+            return redirect()->back()->with('error', 'Nie udało się zaktualizować zgłoszenia awarii.');
+        }
+    }
     public function destroy($id)
     {
-        // Logic to delete a machine failure record
+        $deleted = $this->machineFailureService->deleteMachineFailure($id);
+
+        if ($deleted) {
+            return redirect()->route('machines.report-failure')->with('success', 'Usunięto zgłoszenie awarii.');
+        }
+
+        return redirect()->back()->with('error', 'Nie udało się usunąć zgłoszenia awarii.');
     }
-
-
 }

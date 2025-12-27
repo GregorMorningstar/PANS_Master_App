@@ -78,4 +78,6 @@ protected static function booted()
     {
         return $this->hasMany(MachineFailure::class, 'machine_id');
     }
+
+   
 }

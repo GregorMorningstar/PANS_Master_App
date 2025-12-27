@@ -73,12 +73,23 @@ Route::middleware('auth')->group(function () {
 
     // Machine Failures Reporting
     Route::prefix('machines')->name('machines.')->group(function () {
-    Route::get('/report-failure', [MachineFailuresController::class, 'index'])->name('machines.report-failure');
-    Route::get('/failures-history', [MachineFailuresController::class, 'history'])->name('machines.failures-history');
-    Route::get('/failures/add-new/{machine_id}', [MachineFailuresController::class, 'create'])->name('machines.failures.create');
-    Route::post('/failures', [MachineFailuresController::class, 'store'])->name('machines.failures.store');
+        Route::get('/report-failure', [MachineFailuresController::class, 'index'])->name('report-failure');
+        Route::prefix('failures')->name('failures.')->group(function () {
+            Route::get('/add-new/{machine_id}', [MachineFailuresController::class, 'create'])->name('create');
+            Route::post('/', [MachineFailuresController::class, 'store'])->name('store');
+                Route::prefix('history')->name('history.')->group(function () {
+                    Route::get('/', [MachineFailuresController::class, 'history'])->name('index');
+            });
+            Route::prefix('edit')->name('edit.')->group(function () {
+                Route::get('/{id}', [MachineFailuresController::class, 'edit'])->name('index');
+                Route::put('/{id}', [MachineFailuresController::class, 'update'])->name('update');
+        });
+            // DELETE ('/machines/failures/{id}')`
+            Route::delete('/{id}', [MachineFailuresController::class, 'destroy'])->name('destroy');
+        });
     });
-});
+    });
+
 
 
 Route::middleware(['auth', 'verified'])->group(function () {

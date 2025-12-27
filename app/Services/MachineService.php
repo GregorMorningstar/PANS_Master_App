@@ -9,6 +9,7 @@ use App\Models\Machines;
 use InvalidArgumentException;
 use Illuminate\Support\Facades\Schema;
 
+use App\Enums\MachineStatus;
 class MachineService implements MachinesServiceInterface
 {
     protected MachinesRepositoryInterface $machinesRepository;
@@ -93,5 +94,9 @@ class MachineService implements MachinesServiceInterface
     public function setLastFailureDate(int $machineId): bool
     {
         return $this->machinesRepository->setLastFailureDate($machineId);
+    }
+    public function updateStatus(int $machineId, string $status): bool
+    {
+        return $this->machinesRepository->updateStatus($machineId, $status);
     }
 }

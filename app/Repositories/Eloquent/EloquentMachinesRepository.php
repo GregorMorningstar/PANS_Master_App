@@ -31,15 +31,21 @@ class EloquentMachinesRepository implements MachinesRepositoryInterface
         return $this->model->create($data);
     }
 
-    public function update(int $id, array $data): ?Machines
+    public function update(int $id, array $data): Machines
     {
-        $machine = $this->model->find($id);
-        if (!$machine) {
-            return null;
-        }
-        $machine->fill($data);
-        $machine->save();
+        $machine = $this->model->findOrFail($id);
+        $machine->update($data);
         return $machine;
+    }
+
+    public function updateStatus(int $machineId, string $status): bool
+    {
+        $machine = $this->model->find($machineId);
+        if (!$machine) {
+            return false;
+        }
+        $machine->status = $status;
+        return (bool) $machine->save();
     }
 
     public function delete(int $id): bool

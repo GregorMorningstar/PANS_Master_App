@@ -1,8 +1,9 @@
-﻿import MachineFailuresList from '@/components/list/machine-failures-list';
+import EditFailureCard from '@/components/card/edit-failure-card';
+import MachineFailuresList from '@/components/list/machine-failures-list';
 import ModeratorLayout from '@/layouts/ModeratorLayout';
 import { usePage } from '@inertiajs/react';
 
-export default function ReportFailurePageIndex() {
+export default function EditFailurePage() {
     const page = usePage();
     const props = page.props as any;
     const { allmachineFailures } = props;
@@ -12,13 +13,14 @@ export default function ReportFailurePageIndex() {
 
     const breadcrumbsModerator = [
         { label: 'Moderator', href: '/moderator'},
-        { label: 'Maszyny', href: '/moderator/machines' },
-        { label: 'Lista Awarii', href: '/moderator/machines/report-failure' }
+        { label: 'Maszyny', href: '/machines' },
+        { label: 'Lista Awarii', href: '/machines/report-failure' },
+        { label: 'Edytuj Awarię', href: '' }
     ];
 
     if (userRole === 'moderator') return (
         <ModeratorLayout breadcrumbs={breadcrumbsModerator} title="Lista Awarii">
-            <MachineFailuresList {...props} />
+                <EditFailureCard {...props} />
         </ModeratorLayout>
     );
     if (userRole === 'employee') return (

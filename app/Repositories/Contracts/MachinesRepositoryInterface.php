@@ -16,4 +16,5 @@ interface MachinesRepositoryInterface
     public function hasUserAssignedMachines(int $userId): bool;
     public function getAllmachinesWithOperators(): LengthAwarePaginator;
     public function setLastFailureDate(int $machineId): bool;
+    public function updateStatus(int $machineId, string $status): bool;
 }
