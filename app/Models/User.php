@@ -88,9 +88,11 @@ class User extends Authenticatable
     }
 
     // user może być przypisany do wielu maszyn przez pivot machine_user
-    public function machines(): BelongsToMany
+    public function machines()
     {
-        return $this->belongsToMany(Machines::class, 'machine_user', 'user_id', 'machine_id')->withTimestamps();
+        return $this->hasMany(Machines::class, 'user_id');
+
+
     }
 
     //relacja z MachineFailure (1:N)

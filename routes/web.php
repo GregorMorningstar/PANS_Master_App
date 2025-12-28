@@ -12,6 +12,7 @@ use App\Http\Controllers\DepartamentsController;
 use App\Http\Controllers\MachinesController;
 use App\Http\Controllers\MachineOperationController;
 use App\Http\Controllers\MachineFailuresController;
+use App\Http\Controllers\EmployeeController;
 // Broadcasting authentication routes
 Broadcast::routes(['middleware' => ['web', 'auth']]);
 
@@ -88,9 +89,12 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{id}', [MachineFailuresController::class, 'destroy'])->name('destroy');
         });
     });
+
+    Route::prefix('employee')->name('employee.')->group(function () {
+               Route::get('/employee-details/{employeeId}', [EmployeeController::class, 'showDetails'])->name('details');
     });
 
-
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
