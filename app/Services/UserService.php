@@ -25,4 +25,8 @@ class UserService implements UserServiceInterface
     {
         return $this->userRepository->findAllByRole($perPage, $role, $filters);
     }
+    public function getEmployeeDetailsWithRelations(int $employeeId): ?User
+    {
+        return $this->userRepository->getEmployeeDetailsWithRelations($employeeId);
+    }
 }

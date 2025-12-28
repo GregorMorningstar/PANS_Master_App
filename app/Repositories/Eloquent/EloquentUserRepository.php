@@ -47,4 +47,11 @@ class EloquentUserRepository implements UserRepositoryInterface
 
         return $query->paginate($perPage);
     }
+
+    public function getEmployeeDetailsWithRelations(int $employeeId): ?User
+    {
+        return $this->userModel
+            ->with(['machines', 'department'])
+            ->find($employeeId);
+    }
 }

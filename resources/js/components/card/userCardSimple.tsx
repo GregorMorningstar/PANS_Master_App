@@ -121,7 +121,7 @@ export default function UserCardSimple({ user, className = '' }: UserCardProps) 
         <div className="flex justify-center gap-3">
           {/* Szczegóły */}
           <a
-            href={`/moderator/users/${user.id}`}
+            href={`/employee/employee-details/${user.id}`}
             className="inline-flex items-center justify-center w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors"
             title="Szczegóły"
           >
