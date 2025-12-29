@@ -36,6 +36,15 @@ class ChatController extends Controller
            'chats_count' => count($chats)
        ]);
 
+       // Return JSON if request wants JSON (AJAX requests)
+       if ($request->wantsJson() || $request->ajax()) {
+           return response()->json([
+               'chats' => $chats,
+               'other_user_id' => $other_user_id,
+               'user_id' => $user_id,
+           ]);
+       }
+
        return Inertia::render('chat/index', [
            'chats' => $chats,
            'other_user_id' => $other_user_id,

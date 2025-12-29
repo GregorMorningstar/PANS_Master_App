@@ -13,6 +13,7 @@ use App\Http\Controllers\MachinesController;
 use App\Http\Controllers\MachineOperationController;
 use App\Http\Controllers\MachineFailuresController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\CalendarController;
 // Broadcasting authentication routes
 Broadcast::routes(['middleware' => ['web', 'auth']]);
 
@@ -91,7 +92,18 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::prefix('employee')->name('employee.')->group(function () {
+
+        Route::prefix('dashboard')->name('dashboard.')->group(function () {
+            Route::get('/', [EmployeeController::class, 'index'])->name('index');
+        });
+        Route::prefix('calendar')->name('calendar.')->group(function () {
+            Route::get('/',[CalendarController::class, 'index'])->name('index');
+            Route::post('/store',[CalendarController::class, 'store'])->name('store');
+            Route::get('/show/{id}',[CalendarController::class, 'show'])->name('show');
+            Route::get('/history',[CalendarController::class, 'history'])->name('history');
+        });
                Route::get('/employee-details/{employeeId}', [EmployeeController::class, 'showDetails'])->name('details');
+
     });
 
 });
@@ -109,7 +121,7 @@ Route::fallback(function () {
         ? match ($user->role) {
             'admin'     => 'admin.dashboard',
             'moderator' => 'moderator.dashboard',
-            'employee'  => 'employee.dashboard',
+            'employee'  => 'employee.dashboard.index',
             default     => 'dashboard',
         }
         : 'home';
