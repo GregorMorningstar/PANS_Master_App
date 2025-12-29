@@ -100,4 +100,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(MachineFailure::class, 'user_id');
     }
+
+    //relacja z Leaves (1:N)
+    public function leaves(): HasMany
+    {
+        return $this->hasMany(Leaves::class, 'user_id');
+    }
 }

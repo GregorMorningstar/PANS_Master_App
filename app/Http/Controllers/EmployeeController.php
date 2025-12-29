@@ -13,6 +13,10 @@ class EmployeeController extends Controller
     public function __construct(private readonly UserServiceInterface $userService)
     {}
 
+    public function index()
+    {
+        return Inertia::render('employee/dashboard/index');
+    }
 
     public function showDetails(int $employeeId)
     {

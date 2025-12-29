@@ -14,41 +14,51 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Najpierw tworzymy departamenty
-        Department::factory(5)->create();
+        // Sprawdź czy departamenty już istnieją, jeśli nie - utwórz
+        if (Department::count() === 0) {
+            Department::factory(5)->create();
+        }
 
-        // Tworzymy 3 stałych użytkowników (barcode generowany automatycznie w modelu)
-        User::create([
-            'name' => 'Administrator',
-            'email' => 'admin@test.com',
-            'password' => bcrypt('qwer1234'),
-            'role' => 'admin',
-            'department_id' => Department::inRandomOrder()->value('id'),
-        ]);
+        // Sprawdź czy użytkownicy testowi już istnieją
+        if (!User::where('email', 'admin@test.com')->exists()) {
+            User::create([
+                'name' => 'Administrator',
+                'email' => 'admin@test.com',
+                'password' => bcrypt('qwer1234'),
+                'role' => 'admin',
+                'department_id' => Department::inRandomOrder()->value('id'),
+            ]);
+        }
 
-        User::create([
-            'name' => 'Moderator',
-            'email' => 'moderator@test.com',
-            'password' => bcrypt('qwer1234'),
-            'role' => 'moderator',
-            'department_id' => Department::inRandomOrder()->value('id'),
-        ]);
+        if (!User::where('email', 'moderator@test.com')->exists()) {
+            User::create([
+                'name' => 'Moderator',
+                'email' => 'moderator@test.com',
+                'password' => bcrypt('qwer1234'),
+                'role' => 'moderator',
+                'department_id' => Department::inRandomOrder()->value('id'),
+            ]);
+        }
 
-        User::create([
-            'name' => 'Employee',
-            'email' => 'employee@test.com',
-            'password' => bcrypt('qwer1234'),
-            'role' => 'employee',
-            'department_id' => Department::inRandomOrder()->value('id'),
-        ]);
+        if (!User::where('email', 'employee@test.com')->exists()) {
+            User::create([
+                'name' => 'Employee',
+                'email' => 'employee@test.com',
+                'password' => bcrypt('qwer1234'),
+                'department_id' => Department::inRandomOrder()->value('id'),
+            ]);
+        }
 
-        // Tworzymy 10 losowych użytkowników z rolą employee
-        User::factory(10)->create([
-            'role' => 'employee'
-        ]);
+        // Utwórz dodatkowych użytkowników tylko jeśli ich jeszcze nie ma dużo
+        $employeeCount = User::where('role', 'employee')->count();
+        if ($employeeCount < 10) {
+            User::factory(10 - $employeeCount)->create([
+                'role' => 'employee'
+            ]);
+        }
 
         $this->call([
-            MachineSeeder::class,
+            LeavesSeeder::class,
         ]);
     }
 }
