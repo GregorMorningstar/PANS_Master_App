@@ -112,4 +112,122 @@ class CalendarController extends Controller
             'moderatorId' => $moderator?->id,
         ]);
     }
+
+    public function edit($id)
+    {
+        $leave = $this->leavesService->getLeavesById($id);
+
+        // Sprawdź czy użytkownik może edytować ten urlop
+        if ($leave->user_id !== auth()->id()) {
+            abort(403, 'Nie masz uprawnień do edycji tego urlopu.');
+        }
+
+        // Sprawdź czy urlop można edytować (tylko oczekujące)
+        if ($leave->status !== LeavesStatus::PENDING->value) {
+            return redirect("/employee/calendar/show/{$id}")
+                           ->with('error', 'Można edytować tylko urlopy oczekujące na zatwierdzenie.');
+        }
+
+        return inertia('employee/calendar/edit', [
+            'leave' => $leave,
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $leave = $this->leavesService->getLeavesById($id);
+
+        // Sprawdź czy użytkownik może edytować ten urlop
+        if ($leave->user_id !== auth()->id()) {
+            abort(403, 'Nie masz uprawnień do edycji tego urlopu.');
+        }
+
+        // Sprawdź czy urlop można edytować (tylko oczekujące)
+        if ($leave->status !== LeavesStatus::PENDING->value) {
+            return redirect("/employee/calendar/show/{$id}")
+                           ->with('error', 'Można edytować tylko urlopy oczekujące na zatwierdzenie.');
+        }
+
+        // Walidacja danych
+        $validTypes = array_map(fn($e) => $e->value, LeavesType::cases());
+
+        $data = $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'type' => 'required|string|in:' . implode(',', $validTypes),
+            'description' => 'nullable|string|max:1000',
+            'working_days_count' => 'nullable|integer|min:1',
+        ]);
+
+        // Sprawdź regułę 3 dni dla urlopów innych niż chorobowe i okolicznościowe
+        if (!in_array($data['type'], ['sick', 'compassionate'])) {
+            $startDate = Carbon::parse($data['start_date']);
+            $today = Carbon::now();
+            $threeDaysFromNow = $today->copy()->addDays(3);
+
+            if ($startDate->lt($threeDaysFromNow)) {
+                return back()->withErrors([
+                    'start_date' => 'Data rozpoczęcia musi być co najmniej 3 dni od dzisiaj (nie dotyczy urlopów chorobowych i okolicznościowych).'
+                ])->withInput();
+            }
+        }
+
+        $existingLeaves = $this->leavesService->getAllLeavesByUserId(auth()->id());
+        $startDate = Carbon::parse($data['start_date']);
+        $endDate = Carbon::parse($data['end_date']);
+
+        foreach ($existingLeaves as $existingLeave) {
+            if ($existingLeave->id == $id) {
+                continue;
+            }
+
+            $existingStart = Carbon::parse($existingLeave->start_date);
+            $existingEnd = Carbon::parse($existingLeave->end_date);
+
+            if (($startDate <= $existingEnd) && ($endDate >= $existingStart)) {
+                return back()->withErrors([
+                    'start_date' => 'Urlop nakłada się z istniejącym urlopem od ' .
+                                   $existingStart->format('Y-m-d') . ' do ' . $existingEnd->format('Y-m-d')
+                ])->withInput();
+            }
+        }
+
+        $mappedData = [
+            'start_date' => $data['start_date'],
+            'end_date' => $data['end_date'],
+            'type' => $data['type'],
+            'description' => $data['description'] ?? null,
+            'days' => $data['working_days_count'] ?? $this->calculateWorkingDays(
+                Carbon::parse($data['start_date']),
+                Carbon::parse($data['end_date'])
+            ),
+        ];
+
+        $this->leavesService->updateLeave($id, $mappedData);
+
+        return redirect('/employee/calendar')
+                        ->with('success', 'Urlop został zaktualizowany pomyślnie.');
+    }
+
+    public function destroy($id)
+    {
+        $leave = $this->leavesService->getLeavesById($id);
+
+        // Sprawdź czy użytkownik może usunąć ten urlop
+        if ($leave->user_id !== auth()->id()) {
+            abort(403, 'Nie masz uprawnień do usunięcia tego urlopu.');
+        }
+
+        // Sprawdź czy urlop można usunąć (tylko oczekujące)
+        if ($leave->status !== LeavesStatus::PENDING->value) {
+            return redirect("/employee/calendar/show/{$id}")
+                           ->with('error', 'Można usuwać tylko urlopy oczekujące na zatwierdzenie.');
+        }
+
+        // Usuń urlop
+        $this->leavesService->deleteLeave($id);
+
+        return redirect('/employee/calendar')
+                        ->with('success', 'Wniosek urlopu został usunięty pomyślnie.');
+    }
 }

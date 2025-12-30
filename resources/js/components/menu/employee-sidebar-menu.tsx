@@ -15,6 +15,7 @@ import {
   faCogs,
   faList,
   faWrench,
+  faUser,
 } from '@fortawesome/free-solid-svg-icons';
 
 export default function EmployeeSidebarMenu(): React.ReactElement {
@@ -38,8 +39,8 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
     },
   ];
 
-  const [openKey, setOpenKey] = useState<'education' | 'career' | 'calendar' | 'machines' | null>(null);
-  const toggle = (key: 'education' | 'career' | 'calendar' | 'machines') =>
+  const [openKey, setOpenKey] = useState<'education' | 'career' | 'calendar' | 'machines' | 'profile' | null>(null);
+  const toggle = (key: 'education' | 'career' | 'calendar' | 'machines' | 'profile') =>
     setOpenKey(prev => (prev === key ? null : key));
 
   const currentUrl =
@@ -132,6 +133,46 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
             </div>
           </div>
         </div>
+
+        {/* Mój Profil */}
+        <div className="w-full mt-3">
+          <button
+            type="button"
+            onClick={() => toggle('profile')}
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition
+              ${openKey === 'profile' ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+            aria-expanded={openKey === 'profile'}
+          >
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <FontAwesomeIcon icon={faUser} className="h-4 w-4" />
+              <span>Mój Profil</span>
+            </div>
+            <ChevronDown
+              className={`h-4 w-4 transition-transform duration-200 ${openKey === 'profile' ? 'rotate-180' : 'rotate-0'}`}
+            />
+          </button>
+
+          <div
+            className={`overflow-hidden transition-all duration-300 ${openKey === 'profile' ? 'max-h-64 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}
+            aria-hidden={openKey !== 'profile'}
+          >
+            <div className="flex flex-col space-y-1 pl-6">
+              <Link
+                href="/employee/profile"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/profile') && !isActive('/employee/address') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+              >
+                <FontAwesomeIcon icon={faUser} className="mr-2" /> Mój profil
+              </Link>
+              <Link
+                href="/employee/address"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/address') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+              >
+                <FontAwesomeIcon icon={faList} className="mr-2" /> Mój adres
+              </Link>
+            </div>
+          </div>
+        </div>
+
         {/* Edukacja */}
         <div className="w-full">
           <button

@@ -3,6 +3,7 @@
 namespace App\Services\Contracts;
 
 use App\Models\User;
+use App\Models\UserProfile;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface UserServiceInterface
@@ -12,4 +13,10 @@ interface UserServiceInterface
     public function getAllByRole(int $perPage = 15, ?string $role = null, array $filters = []): LengthAwarePaginator;
     public function getEmployeeDetailsWithRelations(int $employeeId): ?User;
 
+    // Profile methods
+    public function createUserProfile(User $user, array $data): UserProfile;
+    public function updateUserProfile(User $user, array $data): UserProfile;
+    public function getUserProfile(User $user): ?UserProfile;
+    public function deleteUserProfile(User $user): bool;
+    public function deleteProfilePhoto(User $user): bool;
 }

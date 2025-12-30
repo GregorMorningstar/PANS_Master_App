@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
-
 ];
 
 export default function Dashboard() {

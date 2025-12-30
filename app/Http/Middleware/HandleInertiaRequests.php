@@ -38,14 +38,53 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
-        return [
+        $shared = [
             ...parent::share($request),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? [
+                    ...$request->user()->toArray(),
+                    'role' => $request->user()->role->value, // Konwertuj enum na string
+                ] : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+
+        $user = $request->user();
+        if ($user && $user->role === \App\Enums\UserRole::EMPLOYEE) {
+            $completed = 0;
+            $total = 3;
+
+            $educationCompleted = (bool) ($user->is_complited_education ?? false);
+            $workTimeCompleted = (bool) ($user->is_complited_work_time ?? false);
+            $addressCompleted = (bool) ($user->is_complited_address ?? false);
+
+            if ($educationCompleted) $completed++;
+            if ($workTimeCompleted) $completed++;
+            if ($addressCompleted) $completed++;
+
+            $overallCompletion = round(($completed / $total) * 100, 2);
+            $profileComplete = $completed === $total;
+
+            $shared['profileComplete'] = $profileComplete;
+            $shared['profileStatus'] = [
+                'education_completed' => $educationCompleted,
+                'work_time_completed' => $workTimeCompleted,
+                'address_completed' => $addressCompleted,
+                'overall_completion' => $overallCompletion,
+            ];
+        } else {
+            // Debug log dla innych ról
+            \Log::info('Non-employee user', [
+                'user_id' => $user?->id ?? 'no user',
+                'role' => $user?->role?->value ?? 'no role'
+            ]);
+
+            $shared['profileComplete'] = true;
+            $shared['profileStatus'] = null;
+        }
+
+        return $shared;
     }
 }

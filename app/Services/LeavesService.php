@@ -23,4 +23,14 @@ class LeavesService implements LeavesServiceInterface
     {
         return $this->leavesRepository->getLeavesById($id);
     }
+
+    public function updateLeave(int $id, array $data)
+    {
+        return $this->leavesRepository->updateLeave($id, $data);
+    }
+
+    public function deleteLeave(int $id): bool
+    {
+        return $this->leavesRepository->deleteLeave($id);
+    }
 }

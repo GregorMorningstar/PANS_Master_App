@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
+use App\Models\LeaveBalance;
 
 
 class Leaves extends Model
@@ -14,6 +15,7 @@ class Leaves extends Model
 
     protected $fillable = [
         'user_id',
+        'leave_balance_id',
         'barcode',
         'start_date',
         'end_date',
@@ -34,10 +36,16 @@ protected static function booted()
                 $leaves->save();
             }
         });
+
     }
 
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function leaveBalance()
+    {
+        return $this->belongsTo(LeaveBalance::class, 'leave_balance_id');
     }
 }

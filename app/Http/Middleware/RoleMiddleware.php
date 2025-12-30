@@ -21,7 +21,7 @@ class RoleMiddleware
             return $next($request);
         }
 
-        $role = $user->role ?? null;
+        $role = $user->role?->value ?? null; // Pobierz wartość z enum
         $authorized = $role && in_array($role, $roles, true);
 
         if (! $authorized) {

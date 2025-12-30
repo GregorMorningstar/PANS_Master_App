@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('barcode')->unique()->nullable(); // unikalny kod kreskowy dla wniosku
             $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // id użytkownika składającego wniosek, kasuj wnioski przy usunięciu użytkownika
+            $table->foreignId('leave_balance_id')->nullable()->constrained('leave_balances')->nullOnDelete(); // id salda urlopowego, ustaw na null gdy usunięte
             $table->date('start_date'); // data rozpoczęcia urlopu
             $table->date('end_date'); // data zakończenia urlopu
             $table->integer('days')->default(0);// liczba dni urlopu

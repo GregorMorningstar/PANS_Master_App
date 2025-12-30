@@ -164,8 +164,12 @@ export default function LeavesDetailsCard({
   };
 
   const handleEdit = () => {
-    // TODO: Implement edit functionality
-    console.log('Edit leave:', leave.id);
+    if (leave?.status === 'pending') {
+      // Przekieruj na stronę edycji dla urlopów oczekujących
+      window.location.href = `/employee/calendar/edit/${leave.id}`;
+    } else {
+      console.log('Edit leave:', leave?.id);
+    }
   };
 
   const handleWithdraw = () => {

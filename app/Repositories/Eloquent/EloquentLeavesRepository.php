@@ -24,6 +24,24 @@ class EloquentLeavesRepository implements LeavesRepositoryInterface
     {
         return $this->leaves->with('user')->find($id);
     }
+
+    public function updateLeave(int $id, array $data): bool
+    {
+        $leave = $this->leaves->find($id);
+        if (!$leave) {
+            return false;
+        }
+        return $leave->update($data);
+    }
+
+    public function deleteLeave(int $id): bool
+    {
+        $leave = $this->leaves->find($id);
+        if (!$leave) {
+            return false;
+        }
+        return $leave->delete();
+    }
 }
 
 

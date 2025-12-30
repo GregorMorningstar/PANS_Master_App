@@ -9,8 +9,13 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\Machines;
+use App\Models\LeaveBalance;
+use App\Models\MachineFailure;
+use App\Models\UserProfile;
+use Carbon\Carbon;
 
 class User extends Authenticatable
 {
@@ -53,6 +58,10 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'two_factor_confirmed_at' => 'datetime',
+        'role' => \App\Enums\UserRole::class,
+        'is_complited_education' => 'boolean',
+        'is_complited_work_time' => 'boolean',
+        'is_complited_address' => 'boolean',
     ];
 
     protected static function booted()
@@ -65,6 +74,32 @@ class User extends Authenticatable
                 $user->barcode = $barcode;
                 $user->save();
             }
+        });
+
+        static::created(function ($user) {
+            $seniorityThreshold = 5; // próg lat stażu dla 24 dni
+
+            // pobierz datę zatrudnienia jeśli istnieje lub użyj daty utworzenia użytkownika
+            $employmentStart = $user->employment_start_date ?? $user->created_at->toDateString();
+            $seniorityYears = Carbon::parse($employmentStart)->diffInYears(Carbon::now());
+
+            // oblicz przysługujące dni urlopu
+            $entitlement = $seniorityYears >= $seniorityThreshold ? 24 : 20;
+
+            LeaveBalance::create([
+                'user_id' => $user->id,
+                'year' => Carbon::now()->year,
+                'leave_type' => 'vacation',
+                'entitlement_days' => $entitlement,
+                'used_days' => 0,
+                'remaining_days' => $entitlement,
+                'request_days' => 2,
+                'request_used' => 0,
+                'seniority_years' => $seniorityYears,
+                'work_time' => 0,
+                'education_time' => 0,
+                'employment_start_date' => $employmentStart,
+            ]);
         });
     }
 
@@ -105,5 +140,11 @@ class User extends Authenticatable
     public function leaves(): HasMany
     {
         return $this->hasMany(Leaves::class, 'user_id');
+    }
+
+    //relacja z UserProfile (1:1)
+    public function profile(): HasOne
+    {
+        return $this->hasOne(UserProfile::class);
     }
 }
