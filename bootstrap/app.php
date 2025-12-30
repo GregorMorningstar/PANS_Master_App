@@ -7,6 +7,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\CheckProfileCompletion;
+
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -20,6 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
          $middleware->alias([
             'role'  => RoleMiddleware::class,
+            'profile.check' => CheckProfileCompletion::class,
+
         ]);
 
         $middleware->web(append: [
@@ -27,6 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+
+        // Usunięto CheckProfileCompletion - logika przeniesiona do HandleInertiaRequests
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

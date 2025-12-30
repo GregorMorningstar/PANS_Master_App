@@ -32,16 +32,46 @@ export default function EmployeeCalendar() {
         on_demand: 'Urlop na żądanie',
     };
 
+    // Mapa kolorów borderów dla statusów urlopów
+    const STATUS_BORDER_COLORS: Record<string, string> = {
+        approved: '#10b981',      // zielony
+        rejected: '#ef4444',      // czerwony
+        cancelled: '#eab308',     // żółty
+        pending: '#6b7280',       // szary
+    };
+
+    // Mapa polskich nazw statusów
+    const STATUS_LABELS: Record<string, string> = {
+        approved: 'ZATWIERDZONY',
+        rejected: 'ODRZUCONY',
+        cancelled: 'ANULOWANY',
+        pending: 'OCZEKUJĄCY',
+    };
+
+    // Mapa kolorów tła dla statusów
+    const STATUS_BG_COLORS: Record<string, string> = {
+        approved: '#059669',      // ciemniejszy zielony
+        rejected: '#dc2626',      // ciemniejszy czerwony
+        cancelled: '#d97706',     // ciemniejszy żółty/pomarańczowy
+        pending: '#4b5563',       // ciemniejszy szary
+    };
+
     const mapLeavesToEvents = (leaves: any[]) => leaves.map(l => {
         const leaveType = l.type || l.leave_type || l.type_label || 'annual';
         const typeLabel = LEAVE_TYPE_LABELS[leaveType] || 'Urlop';
         const description = l.description || l.reason || '';
+        const status = l.status || 'pending';
+        const statusLabel = STATUS_LABELS[status] || 'NIEZNANY';
+        const statusBgColor = STATUS_BG_COLORS[status] || '#4b5563';
 
-        // Tworzenie tytułu z typem urlopu i opisem
-        let title = typeLabel;
+        // Tworzenie tytułu ze statusem z HTML dla kolorowania
+        let title = `<span class="status-badge" style="background-color: ${statusBgColor}; padding: 1px 4px; border-radius: 3px; margin-right: 4px; font-size: 0.65rem; font-weight: bold;">${statusLabel}</span>${typeLabel}`;
         if (description && description.trim()) {
             title += `: ${description}`;
         }
+
+        // Sprawdzenie czy urlop ma status, żeby dodać odpowiednie klasy CSS
+        const statusBorderClass = status ? `status-border-${status}` : '';
 
         return {
             id: String(l.id),
@@ -52,14 +82,18 @@ export default function EmployeeCalendar() {
             backgroundColor: LEAVE_TYPE_COLORS[leaveType] || '#8b5cf6',
             borderColor: LEAVE_TYPE_COLORS[leaveType] || '#8b5cf6',
             textColor: '#ffffff',
+            // Tylko niezatwierdzone urlopy mogą być przenoszone (z wyjątkami)
+            editable: status !== 'approved' && status !== 'rejected',
             extendedProps: {
                 description: description,
                 type_label: leaveType,
                 typeLabel: typeLabel,
                 user_id: l.user_id ?? l.user?.id,
                 workingDays: l.working_days_count ?? l.workingDays,
+                status: status,
+                statusLabel: statusLabel,
             },
-            classNames: ['leave-event']
+            classNames: ['leave-event', statusBorderClass, 'has-html-title', (status !== 'approved' && status !== 'rejected') ? 'editable-event' : 'non-editable-event'].filter(Boolean)
         };
     });
 
@@ -167,6 +201,32 @@ export default function EmployeeCalendar() {
         return true;
     };
 
+    // Funkcja kontrolująca czy event można przenieść
+    const eventAllow = (dropInfo: any, draggedEvent: any) => {
+        const status = draggedEvent.extendedProps?.status;
+        const leaveType = draggedEvent.extendedProps?.type_label;
+
+        // Zatwierdzone i odrzucone nie można przenosić
+        if (status === 'approved' || status === 'rejected') {
+            return false;
+        }
+
+        // Chorobowe i okolicznościowe można zawsze przenosić (jeśli nie zatwierdzone)
+        if (leaveType === 'sick' || leaveType === 'compassionate') {
+            return true;
+        }
+
+        // Sprawdź regułę 3 dni przed dzisiejszą datą
+        const today = new Date();
+        const threeDaysFromNow = new Date(today);
+        threeDaysFromNow.setDate(today.getDate() + 3);
+
+        const dropDate = new Date(dropInfo.startStr);
+
+        // Można przenieść tylko na datę która jest co najmniej 3 dni od dzisiaj
+        return dropDate >= threeDaysFromNow;
+    };
+
     // Obsługa zaznaczenia kilku dni
     const handleDateSelect = (selectInfo: any) => {
         const workingDays = getWorkingDaysInRange(selectInfo.startStr, selectInfo.endStr);
@@ -220,7 +280,9 @@ export default function EmployeeCalendar() {
 
     const handleEventClick = (clickInfo: any) => {
         const id = clickInfo.event.id;
-        window.location.href = `/employee/calendar/show/${id}`;
+        const status = clickInfo.event.extendedProps?.status;
+            window.location.href = `/employee/calendar/show/${id}`;
+
     };
 
     return (
@@ -251,10 +313,11 @@ export default function EmployeeCalendar() {
                             day: 'Dzień',
                         }}
                         events={events}
-                        editable={true}
+                        editable={false}
                         selectable={true}
                         selectMirror={true}
                         selectAllow={selectAllow}
+                        eventAllow={eventAllow}
                         select={handleDateSelect}
                         dayMaxEvents={true}
                         weekends={true}
@@ -271,6 +334,10 @@ export default function EmployeeCalendar() {
                             hour: '2-digit',
                             minute: '2-digit',
                             meridiem: false,
+                        }}
+                        // Włącz HTML w tytułach eventów
+                        eventContent={(eventInfo) => {
+                            return { html: eventInfo.event.title };
                         }}
                         // Wyróżnij weekendy i święta
                         dayCellClassNames={(arg) => {
@@ -324,12 +391,57 @@ export default function EmployeeCalendar() {
                 .fc-button-active {
                     background-color: #1e40af !important;
                 }
+                /* Kolorowe bordery z prawej strony dla statusów urlopów */
+                .status-border-approved {
+                    border-right: 4px solid #10b981 !important; /* zielony */
+                }
+
+                .status-border-rejected {
+                    border-right: 4px solid #ef4444 !important; /* czerwony */
+                }
+
+                .status-border-cancelled {
+                    border-right: 4px solid #eab308 !important; /* żółty */
+                }
+
+                .status-border-pending {
+                    border-right: 4px solid #6b7280 !important; /* szary */
+                }
+
                 .fc-event {
                     cursor: pointer;
                     border-radius: 4px !important;
                     font-size: 0.75rem !important;
                     font-weight: 500 !important;
                     padding: 2px 4px !important;
+                    position: relative;
+                }
+
+                /* Dodatkowe stylowanie dla lepszej czytelności statusu */
+                .leave-event .fc-event-title {
+                    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+                }
+
+                /* Oznaczenie eventów które można edytować */
+                .editable-event {
+                    cursor: move !important;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+
+                .editable-event:hover {
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                    transform: translateY(-1px);
+                    transition: all 0.2s ease;
+                }
+
+                /* Oznaczenie eventów które nie można edytować */
+                .non-editable-event {
+                    cursor: default !important;
+                    opacity: 0.9;
+                }
+
+                .non-editable-event:hover {
+                    opacity: 1;
                 }
 
                 /* Animacja przewijania dla długich tytułów */
@@ -339,25 +451,41 @@ export default function EmployeeCalendar() {
                     position: relative;
                     max-width: 100%;
                     display: block;
+                    font-weight: 600;
+                }
+
+                /* Pozwól na HTML w tytułach eventów */
+                .has-html-title .fc-event-title {
+                    display: flex;
+                    align-items: center;
+                }
+
+                /* Stylowanie badge'y statusu */
+                .status-badge {
+                    display: inline-block;
+                    white-space: nowrap;
+                    color: #ffffff !important;
+                    text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+                    flex-shrink: 0;
                 }
 
                 /* Animacja tylko dla tekstów które się nie mieszczą */
                 .leave-event .fc-event-title.text-overflow {
-                    animation: scrollTextLoop 8s ease-in-out infinite;
+                    animation: scrollTextLoop 10s ease-in-out infinite;
                 }
 
                 @keyframes scrollTextLoop {
                     0% {
                         transform: translateX(0%);
                     }
-                    20% {
+                    15% {
                         transform: translateX(0%);
                     }
-                    50% {
-                        transform: translateX(calc(-100% + 80px));
+                    45% {
+                        transform: translateX(calc(-100% + 90px));
                     }
-                    80% {
-                        transform: translateX(calc(-100% + 80px));
+                    70% {
+                        transform: translateX(calc(-100% + 90px));
                     }
                     100% {
                         transform: translateX(0%);
@@ -366,14 +494,21 @@ export default function EmployeeCalendar() {
 
                 /* Płynniejsza animacja na hover */
                 .leave-event:hover .fc-event-title.text-overflow {
-                    animation: scrollTextFast 4s ease-in-out infinite;
+                    animation: scrollTextFast 6s ease-in-out infinite;
                 }
 
                 @keyframes scrollTextFast {
                     0% { transform: translateX(0%); }
-                    25% { transform: translateX(calc(-100% + 70px)); }
-                    75% { transform: translateX(calc(-100% + 70px)); }
+                    20% { transform: translateX(calc(-100% + 80px)); }
+                    80% { transform: translateX(calc(-100% + 80px)); }
                     100% { transform: translateX(0%); }
+                }
+
+                .weekend-day {
+                    background-color: #f3f4f6 !important;
+                    color: #6b7280 !important;
+                }
+
                 .holiday-day {
                     background-color: #fef3c7 !important;
                     color: #92400e !important;

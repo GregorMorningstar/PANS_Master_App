@@ -20,10 +20,11 @@ return new class extends Migration
 
             // EAN-13 barcode (string length 13)
             $table->string('barcode', 13)->unique()->nullable();
-            // keep department_id on users (nullable) — pivot will be created separately
             $table->unsignedBigInteger('department_id')->nullable()->index();
             $table->unsignedBigInteger('machine_id')->nullable()->index();
-
+            $table->boolean('is_complited_education')->default(false);
+            $table->boolean('is_complited_work_time')->default(false);
+            $table->boolean('is_complited_address')->default(false);
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();

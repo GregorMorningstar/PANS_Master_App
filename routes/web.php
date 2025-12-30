@@ -14,6 +14,8 @@ use App\Http\Controllers\MachineOperationController;
 use App\Http\Controllers\MachineFailuresController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\EmployeeDetailsController;
+use App\Http\Controller\UserProfileController;
 // Broadcasting authentication routes
 Broadcast::routes(['middleware' => ['web', 'auth']]);
 
@@ -100,8 +102,21 @@ Route::middleware('auth')->group(function () {
             Route::get('/',[CalendarController::class, 'index'])->name('index');
             Route::post('/store',[CalendarController::class, 'store'])->name('store');
             Route::get('/show/{id}',[CalendarController::class, 'show'])->name('show');
+            Route::get('/edit/{id}',[CalendarController::class, 'edit'])->name('edit');
+            Route::put('/update/{id}',[CalendarController::class, 'update'])->name('update');
             Route::get('/history',[CalendarController::class, 'history'])->name('history');
         });
+
+        Route::prefix('profile')->name('profile.')->group(function () {
+            Route::get('/', [EmployeeController::class, 'showEmployeeProfile'])->name('show');
+
+        });
+        Route::prefix('adress')->name('address.')->group(function () {
+            Route::get('/', [EmployeeController::class, 'showAddress'])->name('show');
+            Route::get('/edit', [EmployeeController::class, 'editAddress'])->name('edit');
+            Route::put('/update', [EmployeeController::class, 'updateAddress'])->name('update');
+        });
+
                Route::get('/employee-details/{employeeId}', [EmployeeController::class, 'showDetails'])->name('details');
 
     });

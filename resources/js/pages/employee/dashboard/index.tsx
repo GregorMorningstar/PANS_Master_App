@@ -1,11 +1,14 @@
 import EmployeeLayout from "@/layouts/EmployeeLayout";
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 
 export default function EmployeeDashboard() {
 
-  const breadcrumbs = [
-    { label: 'Panel pracownika', href: '/employee/dashboard' },
-  ];
+
+
+
+    const breadcrumbs = [
+        { label: 'Panel Pracownika', href: '/employee/dashboard' },
+    ];
 
   return (
     <>

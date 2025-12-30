@@ -26,4 +26,18 @@ class EmployeeController extends Controller
             'employee' => $employee,
         ]);
     }
+
+    public function showEmployeeProfile()
+    {
+               return Inertia::render('employee/profile/show');
+    }
+
+    public function showAddress()
+    {
+        return Inertia::render('employee/address/show');
+    }
+    public function editAddress()
+    {
+        return Inertia::render('employee/address/edit');
+    }
 }

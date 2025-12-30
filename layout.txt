@@ -2,6 +2,9 @@ kody en13
 
 
 1000 - user
+1100
+1200
+1300 --address_completed
 
 
 
@@ -11,3 +14,7 @@ kody en13
 3000 - maszyny
 3100 - operacje maszyn
 3200 awarie maszyn
+
+
+4000 - urlop wniosek
+4100 - tabela z urlapomi usera
