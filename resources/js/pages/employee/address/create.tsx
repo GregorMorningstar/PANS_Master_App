@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { usePage, useForm, Link } from '@inertiajs/react';
 import EmployeeLayout from '@/layouts/EmployeeLayout';
 import { Button } from '@/components/ui/button';
@@ -6,9 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, MapPin, Home, Building } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { ArrowLeft, User, Phone, CreditCard, MapPin, Calendar, Heart, Camera, ChevronRight, ChevronLeft, Eye, Check } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 
 interface User {
     id: number;
@@ -18,198 +19,572 @@ interface User {
 }
 
 interface FormData {
-    type: 'home' | 'work' | 'other' | '';
-    street: string;
-    city: string;
-    postal_code: string;
-    country: string;
-    is_primary: boolean;
+    phone: string;
+    pesel: string;
+    address: string;
+    profile_photo: File | null;
+    birth_date: string;
+    gender: 'male' | 'female' | 'other' | '';
+    emergency_contact_name: string;
+    emergency_contact_phone: string;
 }
 
-export default function AddressCreate() {
-    const { user } = usePage<{ user: User }>().props;
+export default function ProfileCreate() {
+    const { auth } = usePage<{ auth: { user: User } }>().props;
+    const user = auth.user;
+    const [currentStep, setCurrentStep] = useState(1);
+    const totalSteps = 3;
 
     const breadcrumbs = [
         { label: 'Panel Pracownika', href: '/employee/dashboard' },
-        { label: 'Moje Adresy', href: '/employee/address' },
-        { label: 'Dodaj adres' },
+        { label: 'Mój profil', href: '/employee/profile' },
+        { label: 'Uzupełnij profil' },
     ];
 
     const { data, setData, post, processing, errors } = useForm<FormData>({
-        type: '',
-        street: '',
-        city: '',
-        postal_code: '',
-        country: 'Polska',
-        is_primary: false,
+        phone: '',
+        pesel: '',
+        address: '',
+        profile_photo: null,
+        birth_date: '',
+        gender: '',
+        emergency_contact_name: '',
+        emergency_contact_phone: '',
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        post('/employee/address/store', {
-            onSuccess: () => {
-                // Handle success - redirect to address list
-            },
-        });
-    };
+    const steps = [
+        { number: 1, title: 'Dane osobowe', description: 'Podstawowe informacje' },
+        { number: 2, title: 'Dodatkowe dane', description: 'Zdjęcie i kontakt awaryjny' },
+        { number: 3, title: 'Podgląd', description: 'Sprawdź i wyślij' }
+    ];
 
-    const getAddressTypeIcon = (type: string) => {
-        switch (type) {
-            case 'home': return <Home className="w-4 h-4" />;
-            case 'work': return <Building className="w-4 h-4" />;
-            default: return <MapPin className="w-4 h-4" />;
+    const validateStep = (step: number): boolean => {
+        switch (step) {
+            case 1:
+                return !!(
+                    data.phone && validatePhone(data.phone) &&
+                    data.pesel && validatePesel(data.pesel) &&
+                    data.address &&
+                    data.birth_date
+                );
+            case 2:
+                return true; 
+            case 3:
+                return true;
+            default:
+                return false;
         }
     };
 
+    const nextStep = () => {
+        if (currentStep < totalSteps && validateStep(currentStep)) {
+            setCurrentStep(prev => prev + 1);
+        }
+    };
+
+    const prevStep = () => {
+        if (currentStep > 1) {
+            setCurrentStep(prev => prev - 1);
+        }
+    };
+
+    const getStepStatus = (stepNumber: number) => {
+        if (stepNumber < currentStep) return 'completed';
+        if (stepNumber === currentStep) return 'current';
+        return 'upcoming';
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        post('/employee/adress');
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] || null;
+
+        if (file) {
+            const validation = validateImage(file);
+            if (!validation.isValid) {
+                alert(validation.message);
+                e.target.value = '';
+                setData('profile_photo', null);
+                return;
+            }
+        }
+
+        setData('profile_photo', file);
+    };
+
+    const formatPesel = (value: string) => {
+        const numericValue = value.replace(/\D/g, '');
+        return numericValue.substring(0, 11);
+    };
+
+    const formatPhone = (value: string) => {
+        const numericValue = value.replace(/\D/g, '');
+        return numericValue.substring(0, 15);
+    };
+
+    const validatePhone = (phone: string): boolean => {
+        const phoneRegex = /^\d{9,15}$/;
+        return phoneRegex.test(phone);
+    };
+
+    const validatePesel = (pesel: string): boolean => {
+        if (pesel.length !== 11) return false;
+
+        const weights = [1, 3, 7, 9, 1, 3, 7, 9, 1, 3];
+        let sum = 0;
+
+        for (let i = 0; i < 10; i++) {
+            sum += parseInt(pesel[i]) * weights[i];
+        }
+
+        const checkDigit = (10 - (sum % 10)) % 10;
+        return checkDigit === parseInt(pesel[10]);
+    };
+
+    const validateImage = (file: File): { isValid: boolean; message: string } => {
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        const maxSize = 2 * 1024 * 1024; // 2MB
+
+        if (!allowedTypes.includes(file.type)) {
+            return { isValid: false, message: 'Dozwolone są tylko pliki JPG i PNG' };
+        }
+
+        if (file.size > maxSize) {
+            return { isValid: false, message: 'Rozmiar pliku nie może przekraczać 2MB' };
+        }
+
+        return { isValid: true, message: '' };
+    };
+
     return (
-        <EmployeeLayout title="Dodaj adres" breadcrumbs={breadcrumbs}>
-            <div className="max-w-2xl mx-auto space-y-6 p-6">
+        <EmployeeLayout title="Uzupełnij profil" breadcrumbs={breadcrumbs}>
+            <div className="max-w-4xl mx-auto space-y-6 p-6">
                 {/* Header */}
                 <div className="flex items-center gap-4">
-                    <Link href="/employee/address">
+                    <Link href="/employee/profile">
                         <Button variant="outline" size="sm">
                             <ArrowLeft className="w-4 h-4 mr-2" />
                             Powrót
                         </Button>
                     </Link>
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Dodaj nowy adres</h1>
-                        <p className="text-gray-600 mt-1">Wprowadź dane nowego adresu</p>
+                        <p className="text-gray-600 mt-1">Krok {currentStep} z {totalSteps}</p>
                     </div>
                 </div>
 
+                {/* Progress Steps */}
+                <Card>
+                    <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                            {steps.map((step, index) => {
+                                const status = getStepStatus(step.number);
+                                return (
+                                    <div key={step.number} className="flex items-center">
+                                        <div className="flex flex-col items-center">
+                                            <div className={`
+                                                flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors
+                                                ${status === 'completed' ? 'bg-green-500 border-green-500 text-white' :
+                                                  status === 'current' ? 'bg-blue-500 border-blue-500 text-white' :
+                                                  'bg-gray-100 border-gray-300 text-gray-600'}
+                                            `}>
+                                                {status === 'completed' ? (
+                                                    <Check className="w-5 h-5" />
+                                                ) : (
+                                                    <span className="font-medium">{step.number}</span>
+                                                )}
+                                            </div>
+                                            <div className="mt-2 text-center">
+                                                <p className={`text-sm font-medium ${
+                                                    status === 'current' ? 'text-blue-600' : 'text-gray-600'
+                                                }`}>
+                                                    {step.title}
+                                                </p>
+                                                <p className="text-xs text-gray-500">{step.description}</p>
+                                            </div>
+                                        </div>
+                                        {index < steps.length - 1 && (
+                                            <div className={`w-24 h-0.5 mx-4 ${
+                                                status === 'completed' ? 'bg-green-500' : 'bg-gray-300'
+                                            }`}></div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </CardContent>
+                </Card>
+
+
+
+                {/* Step Content */}
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <MapPin className="w-5 h-5" />
-                                Dane adresu
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <Label htmlFor="type">Typ adresu</Label>
-                                <Select
-                                    value={data.type}
-                                    onValueChange={(value) => setData('type', value as 'home' | 'work' | 'other')}
-                                >
-                                    <SelectTrigger className={errors.type ? 'border-red-500' : ''}>
-                                        <SelectValue placeholder="Wybierz typ adresu" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="home">
-                                            <div className="flex items-center gap-2">
-                                                <Home className="w-4 h-4" />
-                                                <span>Domowy</span>
+
+                    {/* Step 1: Personal Information */}
+                    {currentStep === 1 && (
+                        <>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <User className="w-5 h-5" />
+                                        Dane osobowe
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <Label htmlFor="phone">Numer telefonu *</Label>
+                                            <div className="relative">
+                                                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
+                                                <Input
+                                                    id="phone"
+                                                    type="tel"
+                                                    value={data.phone}
+                                                    onChange={(e) => setData('phone', formatPhone(e.target.value))}
+                                                    placeholder="123456789"
+                                                    className={`pl-10 ${
+                                                        errors.phone || (data.phone && !validatePhone(data.phone))
+                                                        ? 'border-red-500' :
+                                                        data.phone && validatePhone(data.phone) ? 'border-green-500' : ''
+                                                    }`}
+                                                    maxLength={15}
+                                                />
                                             </div>
-                                        </SelectItem>
-                                        <SelectItem value="work">
-                                            <div className="flex items-center gap-2">
-                                                <Building className="w-4 h-4" />
-                                                <span>Służbowy</span>
+                                            {errors.phone && (
+                                                <p className="text-sm text-red-600 mt-1">{errors.phone}</p>
+                                            )}
+                                            {data.phone && !validatePhone(data.phone) && (
+                                                <p className="text-sm text-red-600 mt-1">Wprowadź poprawny numer telefonu (9-15 cyfr)</p>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <Label htmlFor="pesel">PESEL *</Label>
+                                            <div className="relative">
+                                                <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
+                                                <Input
+                                                    id="pesel"
+                                                    type="text"
+                                                    value={data.pesel}
+                                                    onChange={(e) => setData('pesel', formatPesel(e.target.value))}
+                                                    placeholder="12345678901"
+                                                    className={`pl-10 ${
+                                                        errors.pesel || (data.pesel && !validatePesel(data.pesel))
+                                                        ? 'border-red-500' :
+                                                        data.pesel && validatePesel(data.pesel) ? 'border-green-500' : ''
+                                                    }`}
+                                                    maxLength={11}
+                                                />
                                             </div>
-                                        </SelectItem>
-                                        <SelectItem value="other">
-                                            <div className="flex items-center gap-2">
+                                            {errors.pesel && (
+                                                <p className="text-sm text-red-600 mt-1">{errors.pesel}</p>
+                                            )}
+                                            {data.pesel && !validatePesel(data.pesel) && (
+                                                <p className="text-sm text-red-600 mt-1">Wprowadź poprawny numer PESEL (11 cyfr z poprawną cyfrą kontrolną)</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <Label htmlFor="birth_date">Data urodzenia *</Label>
+                                            <div className="relative">
+                                                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
+                                                <Input
+                                                    id="birth_date"
+                                                    type="date"
+                                                    value={data.birth_date}
+                                                    onChange={(e) => setData('birth_date', e.target.value)}
+                                                    className={`pl-10 ${errors.birth_date ? 'border-red-500' : ''}`}
+                                                />
+                                            </div>
+                                            {errors.birth_date && (
+                                                <p className="text-sm text-red-600 mt-1">{errors.birth_date}</p>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <Label htmlFor="gender">Płeć</Label>
+                                            <Select
+                                                value={data.gender}
+                                                onValueChange={(value) => setData('gender', value as 'male' | 'female' | 'other')}
+                                            >
+                                                <SelectTrigger className={errors.gender ? 'border-red-500' : ''}>
+                                                    <SelectValue placeholder="Wybierz płeć" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="male">Mężczyzna</SelectItem>
+                                                    <SelectItem value="female">Kobieta</SelectItem>
+                                                    <SelectItem value="other">Inna</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            {errors.gender && (
+                                                <p className="text-sm text-red-600 mt-1">{errors.gender}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <MapPin className="w-5 h-5" />
+                                        Adres zamieszkania
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div>
+                                        <Label htmlFor="address">Pełny adres *</Label>
+                                        <Textarea
+                                            id="address"
+                                            value={data.address}
+                                            onChange={(e) => setData('address', e.target.value)}
+                                            placeholder="ul. Przykładowa 12/34&#10;00-123 Warszawa&#10;Polska"
+                                            rows={3}
+                                            className={errors.address ? 'border-red-500' : ''}
+                                        />
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            Wprowadź pełny adres zamieszkania (ulica, kod pocztowy, miasto, kraj)
+                                        </p>
+                                        {errors.address && (
+                                            <p className="text-sm text-red-600 mt-1">{errors.address}</p>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </>
+                    )}
+
+                    {/* Step 2: Profile Photo & Emergency Contact */}
+                    {currentStep === 2 && (
+                        <>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Camera className="w-5 h-5" />
+                                        Zdjęcie profilowe
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div>
+                                        <Label htmlFor="profile_photo">Zdjęcie profilowe</Label>
+                                        <Input
+                                            id="profile_photo"
+                                            type="file"
+                                            accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                                            onChange={handleFileChange}
+                                            className={errors.profile_photo ? 'border-red-500' : ''}
+                                        />
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            Dopuszczalne formaty: <strong>JPG, PNG</strong> (max 2MB)
+                                        </p>
+                                        {errors.profile_photo && (
+                                            <p className="text-sm text-red-600 mt-1">{errors.profile_photo}</p>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Heart className="w-5 h-5" />
+                                        Kontakt awaryjny
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <Label htmlFor="emergency_contact_name">Imię i nazwisko</Label>
+                                            <Input
+                                                id="emergency_contact_name"
+                                                type="text"
+                                                value={data.emergency_contact_name}
+                                                onChange={(e) => setData('emergency_contact_name', e.target.value)}
+                                                placeholder="Jan Kowalski"
+                                                className={errors.emergency_contact_name ? 'border-red-500' : ''}
+                                            />
+                                            {errors.emergency_contact_name && (
+                                                <p className="text-sm text-red-600 mt-1">{errors.emergency_contact_name}</p>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <Label htmlFor="emergency_contact_phone">Numer telefonu</Label>
+                                            <div className="relative">
+                                                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
+                                                <Input
+                                                    id="emergency_contact_phone"
+                                                    type="tel"
+                                                    value={data.emergency_contact_phone}
+                                                    onChange={(e) => setData('emergency_contact_phone', formatPhone(e.target.value))}
+                                                    placeholder="123456789"
+                                                    className={`pl-10 ${
+                                                        errors.emergency_contact_phone ||
+                                                        (data.emergency_contact_phone && !validatePhone(data.emergency_contact_phone))
+                                                        ? 'border-red-500' :
+                                                        data.emergency_contact_phone && validatePhone(data.emergency_contact_phone) ? 'border-green-500' : ''
+                                                    }`}
+                                                    maxLength={15}
+                                                />
+                                            </div>
+                                            {errors.emergency_contact_phone && (
+                                                <p className="text-sm text-red-600 mt-1">{errors.emergency_contact_phone}</p>
+                                            )}
+                                            {data.emergency_contact_phone && !validatePhone(data.emergency_contact_phone) && (
+                                                <p className="text-sm text-red-600 mt-1">Wprowadź poprawny numer telefonu (9-15 cyfr)</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-gray-500">
+                                        Podaj dane osoby, z którą możemy się skontaktować w przypadku nagłej sytuacji.
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </>
+                    )}
+
+                    {/* Step 3: Preview */}
+                    {currentStep === 3 && (
+                        <>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Eye className="w-5 h-5" />
+                                        Podgląd danych
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    <Alert>
+                                        <Check className="h-4 w-4" />
+                                        <AlertDescription>
+                                            Sprawdź wprowadzone dane przed zapisaniem. Po zatwierdzeniu profil zostanie utworzony.
+                                        </AlertDescription>
+                                    </Alert>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-4">
+                                            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                                                <User className="w-4 h-4" />
+                                                Dane osobowe
+                                            </h3>
+                                            <div className="space-y-2 pl-6">
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-600">Telefon:</span>
+                                                    <span className="font-medium">{data.phone || '(nie podano)'}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-600">PESEL:</span>
+                                                    <span className="font-medium">{data.pesel || '(nie podano)'}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-600">Data urodzenia:</span>
+                                                    <span className="font-medium">{data.birth_date || '(nie podano)'}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-600">Płeć:</span>
+                                                    <span className="font-medium">
+                                                        {data.gender === 'male' ? 'Mężczyzna' :
+                                                         data.gender === 'female' ? 'Kobieta' :
+                                                         data.gender === 'other' ? 'Inna' : '(nie podano)'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                                                 <MapPin className="w-4 h-4" />
-                                                <span>Inny</span>
+                                                Adres zamieszkania
+                                            </h3>
+                                            <div className="pl-6">
+                                                <div className="bg-gray-50 p-3 rounded-md">
+                                                    <pre className="text-sm whitespace-pre-wrap">
+                                                        {data.address || '(nie podano)'}
+                                                    </pre>
+                                                </div>
                                             </div>
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {errors.type && (
-                                    <p className="text-sm text-red-600 mt-1">{errors.type}</p>
-                                )}
-                            </div>
+                                        </div>
 
-                            <div>
-                                <Label htmlFor="street">Ulica i numer</Label>
-                                <Input
-                                    id="street"
-                                    type="text"
-                                    value={data.street}
-                                    onChange={(e) => setData('street', e.target.value)}
-                                    placeholder="np. ul. Kowalska 15/2"
-                                    className={errors.street ? 'border-red-500' : ''}
-                                />
-                                {errors.street && (
-                                    <p className="text-sm text-red-600 mt-1">{errors.street}</p>
-                                )}
-                            </div>
+                                        <div className="space-y-4">
+                                            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                                                <Camera className="w-4 h-4" />
+                                                Zdjęcie profilowe
+                                            </h3>
+                                            <div className="pl-6">
+                                                <Badge variant={data.profile_photo ? "secondary" : "outline"}>
+                                                    {data.profile_photo ? data.profile_photo.name : 'Nie dodano zdjęcia'}
+                                                </Badge>
+                                            </div>
+                                        </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <Label htmlFor="postal_code">Kod pocztowy</Label>
-                                    <Input
-                                        id="postal_code"
-                                        type="text"
-                                        value={data.postal_code}
-                                        onChange={(e) => setData('postal_code', e.target.value)}
-                                        placeholder="00-000"
-                                        maxLength={6}
-                                        className={errors.postal_code ? 'border-red-500' : ''}
-                                    />
-                                    {errors.postal_code && (
-                                        <p className="text-sm text-red-600 mt-1">{errors.postal_code}</p>
-                                    )}
-                                </div>
+                                        <div className="space-y-4">
+                                            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                                                <Heart className="w-4 h-4" />
+                                                Kontakt awaryjny
+                                            </h3>
+                                            <div className="space-y-2 pl-6">
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-600">Imię i nazwisko:</span>
+                                                    <span className="font-medium">{data.emergency_contact_name || '(nie podano)'}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-600">Telefon:</span>
+                                                    <span className="font-medium">{data.emergency_contact_phone || '(nie podano)'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </>
+                    )}
 
-                                <div>
-                                    <Label htmlFor="city">Miasto</Label>
-                                    <Input
-                                        id="city"
-                                        type="text"
-                                        value={data.city}
-                                        onChange={(e) => setData('city', e.target.value)}
-                                        placeholder="np. Warszawa"
-                                        className={errors.city ? 'border-red-500' : ''}
-                                    />
-                                    {errors.city && (
-                                        <p className="text-sm text-red-600 mt-1">{errors.city}</p>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div>
-                                <Label htmlFor="country">Kraj</Label>
-                                <Input
-                                    id="country"
-                                    type="text"
-                                    value={data.country}
-                                    onChange={(e) => setData('country', e.target.value)}
-                                    placeholder="np. Polska"
-                                    className={errors.country ? 'border-red-500' : ''}
-                                />
-                                {errors.country && (
-                                    <p className="text-sm text-red-600 mt-1">{errors.country}</p>
-                                )}
-                            </div>
-
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="is_primary"
-                                    checked={data.is_primary}
-                                    onCheckedChange={(checked) => setData('is_primary', !!checked)}
-                                />
-                                <Label htmlFor="is_primary" className="text-sm font-normal">
-                                    Ustaw jako adres główny
-                                </Label>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Submit Buttons */}
+                    {/* Navigation Buttons */}
                     <Card>
                         <CardContent className="pt-6">
-                            <div className="flex justify-end gap-4">
-                                <Link href="/employee/address">
-                                    <Button variant="outline" type="button" disabled={processing}>
-                                        Anuluj
-                                    </Button>
-                                </Link>
-                                <Button type="submit" disabled={processing}>
-                                    {processing ? 'Zapisywanie...' : 'Dodaj adres'}
-                                </Button>
+                            <div className="flex justify-between">
+                                <div>
+                                    {currentStep > 1 && (
+                                        <Button type="button" variant="outline" onClick={prevStep} disabled={processing}>
+                                            <ChevronLeft className="w-4 h-4 mr-2" />
+                                            Poprzedni krok
+                                        </Button>
+                                    )}
+                                </div>
+
+                                <div className="flex gap-4">
+                                    <Link href="/employee/profile">
+                                        <Button variant="outline" type="button" disabled={processing}>
+                                            Anuluj
+                                        </Button>
+                                    </Link>
+
+                                    {currentStep < totalSteps ? (
+                                        <Button
+                                            type="button"
+                                            onClick={nextStep}
+                                            disabled={!validateStep(currentStep) || processing}
+                                            className="bg-blue-600 hover:bg-blue-700"
+                                        >
+                                            Następny krok
+                                            <ChevronRight className="w-4 h-4 ml-2" />
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            type="submit"
+                                            disabled={processing}
+                                            className="bg-green-600 hover:bg-green-700"
+                                        >
+                                            {processing ? 'Zapisywanie...' : 'Zapisz profil'}
+                                            <Check className="w-4 h-4 ml-2" />
+                                        </Button>
+                                    )}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>

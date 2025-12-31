@@ -16,6 +16,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\EmployeeDetailsController;
 use App\Http\Controller\UserProfileController;
+use App\Http\Controllers\Api\CompanyController;
 // Broadcasting authentication routes
 Broadcast::routes(['middleware' => ['web', 'auth']]);
 
@@ -113,10 +114,19 @@ Route::middleware('auth')->group(function () {
         });
         Route::prefix('adress')->name('address.')->group(function () {
             Route::get('/', [EmployeeController::class, 'showAddress'])->name('show');
+            Route::get('/create', [EmployeeController::class, 'createAddress'])->name('create');
             Route::get('/edit', [EmployeeController::class, 'editAddress'])->name('edit');
+            Route::post('/', [EmployeeController::class, 'storeAddress'])->name('store');
             Route::put('/update', [EmployeeController::class, 'updateAddress'])->name('update');
         });
 
+        Route::prefix('company')->name('company.')->group(function () {
+            Route::get('/', [EmployeeController::class, 'showCompany'])->name('show');
+            Route::get('/create', [EmployeeController::class, 'createCompany'])->name('create');
+            Route::get('/edit', [EmployeeController::class, 'editCompany'])->name('edit');
+            Route::post('/', [EmployeeController::class, 'storeCompany'])->name('store');
+            Route::put('/update', [EmployeeController::class, 'updateCompany'])->name('update');
+        });
                Route::get('/employee-details/{employeeId}', [EmployeeController::class, 'showDetails'])->name('details');
 
     });
@@ -149,5 +159,8 @@ Route::fallback(function () {
         'role'      => $user?->role,
     ], 404);
 });
-
+// API routes
+Route::prefix('api')->middleware(['web', 'auth'])->group(function () {
+    Route::get('/company/nip-lookup/{nip}', [App\Http\Controllers\Api\CompanyController::class, 'nipLookup']);
+});
 require __DIR__.'/settings.php';
