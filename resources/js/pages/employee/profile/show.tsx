@@ -73,7 +73,7 @@ export default function EmployeeShowProfile() {
                         <p className="text-gray-600 mt-1">Przegląd stanu twojego profilu</p>
                     </div>
                     <div className="flex gap-3">
-                        <Link href="/employee/adress/edit">
+                        <Link href="/employee/address/create">
                             <Button variant="outline" size="sm">
                                 <Edit className="w-4 h-4 mr-2" />
                                 Edytuj profil
@@ -168,10 +168,12 @@ export default function EmployeeShowProfile() {
                                     {getStatusText(profileStatus.work_time_completed)}
                                 </p>
                                 {!profileStatus.work_time_completed && (
-                                    <Button variant="outline" size="sm" className="w-full">
-                                        <Plus className="w-4 h-4 mr-2" />
-                                        Uzupełnij czas pracy
-                                    </Button>
+                                    <Link href="/employee/company/create">
+                                        <Button variant="outline" size="sm" className="w-full">
+                                            <Plus className="w-4 h-4 mr-2" />
+                                            Uzupełnij czas pracy
+                                        </Button>
+                                    </Link>
                                 )}
                             </CardContent>
                         </Card>
@@ -192,7 +194,7 @@ export default function EmployeeShowProfile() {
                                     {getStatusText(profileStatus.address_completed)}
                                 </p>
                                 {!profileStatus.address_completed ? (
-                                    <Link href="/employee/adress/edit">
+                                    <Link href="/employee/adress/create">
                                         <Button variant="outline" size="sm" className="w-full">
                                             <MapPin className="w-4 h-4 mr-2" />
                                             Dodaj adres
@@ -220,7 +222,7 @@ export default function EmployeeShowProfile() {
                             {profileStatus && !profileStatus.address_completed && (
                                 <span>
                                     {' '}Zacznij od{' '}
-                                    <Link href="/employee/adress/edit" className="font-medium text-blue-600 hover:text-blue-800">
+                                    <Link href="/employee/adress/create" className="font-medium text-blue-600 hover:text-blue-800">
                                         dodania adresu zamieszkania
                                     </Link>
                                     .
