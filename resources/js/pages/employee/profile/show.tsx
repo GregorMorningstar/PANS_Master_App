@@ -73,7 +73,7 @@ export default function EmployeeShowProfile() {
                         <p className="text-gray-600 mt-1">Przegląd stanu twojego profilu</p>
                     </div>
                     <div className="flex gap-3">
-                        <Link href="/employee/address/create">
+                        <Link href="/employee/adress/create">
                             <Button variant="outline" size="sm">
                                 <Edit className="w-4 h-4 mr-2" />
                                 Edytuj profil
@@ -144,10 +144,12 @@ export default function EmployeeShowProfile() {
                                     {getStatusText(profileStatus.education_completed)}
                                 </p>
                                 {!profileStatus.education_completed && (
-                                    <Button variant="outline" size="sm" className="w-full">
-                                        <Plus className="w-4 h-4 mr-2" />
-                                        Uzupełnij edukację
-                                    </Button>
+                                    <Link href="/employee/edukation/create">
+                                        <Button variant="outline" size="sm" className="w-full">
+                                            <Plus className="w-4 h-4 mr-2" />
+                                            Uzupełnij edukację
+                                        </Button>
+                                    </Link>
                                 )}
                             </CardContent>
                         </Card>

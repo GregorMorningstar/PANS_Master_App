@@ -34,13 +34,13 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
   const items: NavItemType[] = [
     {
       title: 'Panel główny',
-      href: '#',
+      href: '/employee/dashboard',
       icon: FaTachometerIcon,
     },
   ];
 
-  const [openKey, setOpenKey] = useState<'education' | 'career' | 'calendar' | 'machines' | 'profile' | null>(null);
-  const toggle = (key: 'education' | 'career' | 'calendar' | 'machines' | 'profile') =>
+  const [openKey, setOpenKey] = useState<'education' | 'company' | 'calendar' | 'machines' | 'profile' | null>(null);
+  const toggle = (key: 'education' | 'company' | 'calendar' | 'machines' | 'profile') =>
     setOpenKey(prev => (prev === key ? null : key));
 
   const currentUrl =
@@ -164,10 +164,16 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
                 <FontAwesomeIcon icon={faUser} className="mr-2" /> Mój profil
               </Link>
               <Link
-                href="/employee/address"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/address') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href="/employee/adress"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/adress') && !isActive('/employee/adress/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faList} className="mr-2" /> Mój adres
+              </Link>
+              <Link
+                href="/employee/adress/create"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/adress/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+              >
+                <FontAwesomeIcon icon={faList} className="mr-2" /> Dodaj adres
               </Link>
             </div>
           </div>
@@ -197,55 +203,55 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
           >
             <div className="flex flex-col space-y-1 pl-6">
               <Link
-                href="#"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/education/courses') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href="/employee/education"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/education') && !isActive('/employee/education/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
-                <FontAwesomeIcon icon={faList} className="mr-2" /> Moje kursy
+                <FontAwesomeIcon icon={faList} className="mr-2" /> Moja edukacja
               </Link>
               <Link
-                href="#"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/education/certificates') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href="/employee/education/create"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/education/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
-                <FontAwesomeIcon icon={faList} className="mr-2" /> Certyfikaty
+                <FontAwesomeIcon icon={faList} className="mr-2" /> Dodaj edukację
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Kariera */}
+        {/* Firma */}
         <div className="w-full mt-3">
           <button
             type="button"
-            onClick={() => toggle('career')}
+            onClick={() => toggle('company')}
             className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition
-              ${openKey === 'career' ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-            aria-expanded={openKey === 'career'}
+              ${openKey === 'company' ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+            aria-expanded={openKey === 'company'}
           >
             <div className="flex items-center gap-2 text-sm font-medium">
               <FontAwesomeIcon icon={faBriefcase} className="h-4 w-4" />
-              <span>Kariera</span>
+              <span>Firma</span>
             </div>
             <ChevronDown
-              className={`h-4 w-4 transition-transform duration-200 ${openKey === 'career' ? 'rotate-180' : 'rotate-0'}`}
+              className={`h-4 w-4 transition-transform duration-200 ${openKey === 'company' ? 'rotate-180' : 'rotate-0'}`}
             />
           </button>
 
           <div
-            className={`overflow-hidden transition-all duration-300 ${openKey === 'career' ? 'max-h-64 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}
-            aria-hidden={openKey !== 'career'}
+            className={`overflow-hidden transition-all duration-300 ${openKey === 'company' ? 'max-h-64 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}
+            aria-hidden={openKey !== 'company'}
           >
             <div className="flex flex-col space-y-1 pl-6">
               <Link
-                href="#"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/career/goals') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href="/employee/company"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/company') && !isActive('/employee/company/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
-                <FontAwesomeIcon icon={faList} className="mr-2" /> Cele kariery
+                <FontAwesomeIcon icon={faList} className="mr-2" /> Moja firma
               </Link>
               <Link
-                href="#"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/career/development') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href="/employee/company/create"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/company/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
-                <FontAwesomeIcon icon={faList} className="mr-2" /> Plan rozwoju
+                <FontAwesomeIcon icon={faList} className="mr-2" /> Dodaj firmę
               </Link>
             </div>
           </div>
@@ -277,16 +283,16 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
           >
             <div className="flex flex-col space-y-1 pl-6">
               <Link
-                href="#"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/machines/assigned') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href="/machines/report-failure"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/machines/report-failure') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
-                <FontAwesomeIcon icon={faList} className="mr-2" /> Przypisane maszyny
+                <FontAwesomeIcon icon={faWrench} className="mr-2" /> Zgłoś uster
               </Link>
               <Link
-                href="#"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/machines/operations') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href="/machines/failures/history"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/machines/failures/history') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
-                <FontAwesomeIcon icon={faWrench} className="mr-2" /> Operacje
+                <FontAwesomeIcon icon={faList} className="mr-2" /> Historia uster
               </Link>
             </div>
           </div>
