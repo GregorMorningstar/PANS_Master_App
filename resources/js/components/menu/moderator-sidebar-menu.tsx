@@ -17,6 +17,7 @@ import {
   faExclamationTriangle,
   faSitemap,
   faWrench,
+  faCalendar,
 } from '@fortawesome/free-solid-svg-icons';
 
 export default function ModeratorSidebarMenu(): React.ReactElement {
@@ -40,8 +41,8 @@ export default function ModeratorSidebarMenu(): React.ReactElement {
     },
   ];
 
-  const [openKey, setOpenKey] = useState<'employees' | 'departaments' | 'performance' | 'machines' | 'incidents' | null>(null);
-  const toggle = (key: 'employees' | 'departaments' | 'performance' | 'machines' | 'incidents') =>
+  const [openKey, setOpenKey] = useState<'employees' | 'departaments' | 'performance' | 'machines' | 'incidents' | 'leaves' | null>(null);
+  const toggle = (key: 'employees' | 'departaments' | 'performance' | 'machines' | 'incidents' | 'leaves') =>
     setOpenKey(prev => (prev === key ? null : key));
 
   const currentUrl =
@@ -134,6 +135,46 @@ export default function ModeratorSidebarMenu(): React.ReactElement {
             </div>
           </div>
         </div>
+
+        {/* Urlopy */}
+        <div className="w-full mt-3">
+          <button
+            type="button"
+            onClick={() => toggle('leaves')}
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition
+              ${openKey === 'leaves' ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+            aria-expanded={openKey === 'leaves'}
+          >
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <FontAwesomeIcon icon={faCalendar} className="h-4 w-4" />
+              <span>Urlopy</span>
+            </div>
+            <ChevronDown
+              className={`h-4 w-4 transition-transform duration-200 ${openKey === 'leaves' ? 'rotate-180' : 'rotate-0'}`}
+            />
+          </button>
+
+          <div
+            className={`overflow-hidden transition-all duration-300 ${openKey === 'leaves' ? 'max-h-64 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}
+            aria-hidden={openKey !== 'leaves'}
+          >
+            <div className="flex flex-col space-y-1 pl-6">
+              <Link
+                href="/moderator/leaves"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/leaves') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+              >
+                <FontAwesomeIcon icon={faCalendar} className="mr-2" /> Kalendarz urlopów
+              </Link>
+              <Link
+                href="/moderator/leaves/pending"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/leaves/pending') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+              >
+                <FontAwesomeIcon icon={faExclamationTriangle} className="mr-2" /> Oczekujące wnioski
+              </Link>
+            </div>
+          </div>
+        </div>
+
         {/* Departaments */}
         <div className="w-full mt-3">
           <button

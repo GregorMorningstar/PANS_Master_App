@@ -60,6 +60,12 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
             Route::get('/{id}', [UserController::class, 'show'])->name('users.show');
         });
 
+        // leaves: /moderator/leaves
+        Route::prefix('leaves')->name('leaves.')->group(function () {
+            Route::get('/', [ModeratorController::class, 'getLeavesCalendar'])->name('calendar');
+            Route::put('/{id}/status', [ModeratorController::class, 'updateLeaveStatus'])->name('status');
+        });
+
         //departaments: /moderator/departments
         Route::prefix('departments')->group(function () {
             Route::get('/', [DepartamentsController::class, 'moderatorIndex'])->name('departments.index');
@@ -127,6 +133,15 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [EmployeeController::class, 'storeCompany'])->name('store');
             Route::put('/update', [EmployeeController::class, 'updateCompany'])->name('update');
         });
+
+        Route::prefix('education')->name('education.')->group(function () {
+            Route::get('/', [EmployeeController::class, 'showEducation'])->name('index');
+            Route::get('/create', [EmployeeController::class, 'createEducation'])->name('create');
+            Route::get('/{id}/edit', [EmployeeController::class, 'editEducation'])->name('edit');
+            Route::post('/', [EmployeeController::class, 'storeEducation'])->name('store');
+            Route::put('/{id}', [EmployeeController::class, 'updateEducation'])->name('update');
+            Route::delete('/{id}', [EmployeeController::class, 'destroyEducation'])->name('destroy');
+        });
                Route::get('/employee-details/{employeeId}', [EmployeeController::class, 'showDetails'])->name('details');
 
     });
@@ -162,5 +177,6 @@ Route::fallback(function () {
 // API routes
 Route::prefix('api')->middleware(['web', 'auth'])->group(function () {
     Route::get('/company/nip-lookup/{nip}', [App\Http\Controllers\Api\CompanyController::class, 'nipLookup']);
+    Route::get('/schools/search', [App\Http\Controllers\Api\SchoolController::class, 'searchSchools']);
 });
 require __DIR__.'/settings.php';

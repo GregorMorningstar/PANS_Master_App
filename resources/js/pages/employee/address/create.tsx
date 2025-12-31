@@ -33,6 +33,7 @@ export default function ProfileCreate() {
     const { auth } = usePage<{ auth: { user: User } }>().props;
     const user = auth.user;
     const [currentStep, setCurrentStep] = useState(1);
+    const [showConfirmation, setShowConfirmation] = useState(false);
     const totalSteps = 3;
 
     const breadcrumbs = [
@@ -68,7 +69,7 @@ export default function ProfileCreate() {
                     data.birth_date
                 );
             case 2:
-                return true; 
+                return true;
             case 3:
                 return true;
             default:
@@ -96,8 +97,23 @@ export default function ProfileCreate() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        setShowConfirmation(true);
+    };
 
-        post('/employee/adress');
+    const handleConfirmSubmit = () => {
+        setShowConfirmation(false);
+        post('/employee/adress', {
+            onSuccess: () => {
+                alert('Profil został pomyślnie zapisany!');
+            },
+            onError: (errors) => {
+                console.log('Błędy walidacji:', errors);
+            }
+        });
+    };
+
+    const handleCancelConfirmation = () => {
+        setShowConfirmation(false);
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,14 +163,14 @@ export default function ProfileCreate() {
 
     const validateImage = (file: File): { isValid: boolean; message: string } => {
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-        const maxSize = 2 * 1024 * 1024; // 2MB
+        const maxSize = 10 * 1024 * 1024; // 10MB
 
         if (!allowedTypes.includes(file.type)) {
             return { isValid: false, message: 'Dozwolone są tylko pliki JPG i PNG' };
         }
 
         if (file.size > maxSize) {
-            return { isValid: false, message: 'Rozmiar pliku nie może przekraczać 2MB' };
+            return { isValid: false, message: 'Rozmiar pliku nie może przekraczać 10MB' };
         }
 
         return { isValid: true, message: '' };
@@ -576,11 +592,12 @@ export default function ProfileCreate() {
                                         </Button>
                                     ) : (
                                         <Button
-                                            type="submit"
+                                            type="button"
+                                            onClick={() => setShowConfirmation(true)}
                                             disabled={processing}
                                             className="bg-green-600 hover:bg-green-700"
                                         >
-                                            {processing ? 'Zapisywanie...' : 'Zapisz profil'}
+                                            Potwierdź i wyślij
                                             <Check className="w-4 h-4 ml-2" />
                                         </Button>
                                     )}
@@ -589,6 +606,61 @@ export default function ProfileCreate() {
                         </CardContent>
                     </Card>
                 </form>
+
+                {/* Modal potwierdzenia wysłania */}
+                {showConfirmation && (
+                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" onClick={handleCancelConfirmation}>
+                        <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" onClick={(e) => e.stopPropagation()}>
+                            <div className="mt-3 text-center">
+                                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                                    <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <h3 className="text-lg leading-6 font-medium text-gray-900 mt-4">Potwierdź zapisanie profilu</h3>
+                                <div className="mt-2 px-7 py-3">
+                                    <p className="text-sm text-gray-500">
+                                        Czy na pewno chcesz zapisać dane profilu?
+                                        Po potwierdzeniu informacje zostaną wysłane do systemu.
+                                    </p>
+                                    <div className="mt-4 bg-gray-50 rounded-lg p-3 text-left">
+                                        <p className="text-xs font-medium text-gray-700 mb-2">Podsumowanie:</p>
+                                        <p className="text-xs text-gray-600">• Telefon: {data.phone}</p>
+                                        <p className="text-xs text-gray-600">• PESEL: {data.pesel}</p>
+                                        <p className="text-xs text-gray-600">• Data urodzenia: {data.birth_date}</p>
+                                        <p className="text-xs text-gray-600">• Płeć: {data.gender === 'male' ? 'Mężczyzna' : data.gender === 'female' ? 'Kobieta' : data.gender === 'other' ? 'Inna' : 'Nie podano'}</p>
+                                        <p className="text-xs text-gray-600">• Adres: {data.address}</p>
+                                        {data.emergency_contact_name && (
+                                            <p className="text-xs text-gray-600">• Kontakt awaryjny: {data.emergency_contact_name} ({data.emergency_contact_phone})</p>
+                                        )}
+                                        {data.profile_photo && (
+                                            <p className="text-xs text-gray-600">• Zdjęcie profilowe: {data.profile_photo.name}</p>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="items-center px-4 py-3">
+                                    <div className="flex justify-center gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={handleCancelConfirmation}
+                                            className="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                        >
+                                            Anuluj
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={handleConfirmSubmit}
+                                            disabled={processing}
+                                            className="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-60"
+                                        >
+                                            {processing ? 'Zapisywanie...' : 'Tak, zapisz'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </EmployeeLayout>
     );

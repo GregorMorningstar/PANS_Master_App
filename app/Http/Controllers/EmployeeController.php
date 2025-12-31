@@ -93,4 +93,49 @@ class EmployeeController extends Controller
     {
         dd('update company', $request->all());
     }
+
+    public function createEducation()
+    {
+        return Inertia::render('employee/education/create');
+    }
+
+    public function showEducation()
+    {
+        return Inertia::render('employee/education/show');
+    }
+
+    public function editEducation()
+    {
+        return Inertia::render('employee/education/edit');
+    }
+
+    public function storeEducation(Request $request)
+    {
+        // Pokaż wszystkie dane przesyłane z formularza React/Inertia
+        dd([
+            'method' => $request->method(),
+            'all_data' => $request->all(),
+            'validation_test' => 'Education data received successfully from React/Inertia form'
+        ]);
+
+        $validatedData = $request->validate([
+            'startYear' => 'required|integer|min:1900|max:2030',
+            'endYear' => 'nullable|integer|min:1900|max:2030|gte:startYear',
+            'degree' => 'required|string|in:primary,gymnasium,secondary,vocational,bachelor,engineer,master,doctor',
+            'schoolName' => 'required|string|max:255',
+            'schoolAddress' => 'nullable|string|max:500',
+            'isOngoing' => 'boolean',
+            'certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+        ]);
+
+dd($validatedData);
+
+        // Tymczasowo wyświetlamy dane
+        return redirect()->route('employee.education.show')->with('success', 'Edukacja została pomyślnie dodana!');
+    }
+
+    public function updateEducation(Request $request)
+    {
+        dd('update education', $request->all());
+    }
 }
