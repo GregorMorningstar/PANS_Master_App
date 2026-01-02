@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\Contracts\UserServiceInterface;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class UserController extends Controller
 {
@@ -20,7 +21,7 @@ class UserController extends Controller
 
         $users = $this->users->getAllByRole($perPage, 'employee', $filters);
 
-        return inertia('moderator/user/index', [
+        return Inertia::render('moderator/user/index', [
             'users' => $users,
             'filters' => $filters,
         ]);
@@ -30,6 +31,16 @@ class UserController extends Controller
     {
         $user = $this->users->getById($id);
         dd($user);
-        return inertia('moderator/user/show', ['user' => $user]);
+        return Inertia::render('moderator/user/show', ['user' => $user]);
+    }
+
+    public function confirmationEducation()
+    {
+        return Inertia::render('moderator/user/confirmation-education');
+    }
+
+    public function confirmationWorkCertificates()
+    {
+        return Inertia::render('moderator/user/confirmation-work-certificates');
     }
 }
