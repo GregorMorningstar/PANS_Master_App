@@ -18,6 +18,8 @@ import {
   faSitemap,
   faWrench,
   faCalendar,
+  faSchool,
+    faEnvelopeCircleCheck,
 } from '@fortawesome/free-solid-svg-icons';
 
 export default function ModeratorSidebarMenu(): React.ReactElement {
@@ -127,12 +129,19 @@ export default function ModeratorSidebarMenu(): React.ReactElement {
                 <FontAwesomeIcon icon={faList} className="mr-2" /> Lista pracowników
               </Link>
               <Link
-                href="/moderator/users/create"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/users/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href="/moderator/users/confirmation-work-certificates"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/users/confirmation-work-certificates') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
-                <FontAwesomeIcon icon={faPlus} className="mr-2" /> Dodaj pracownika
+               <FontAwesomeIcon icon={faEnvelopeCircleCheck} className="mr-2" /> Potwierdz świadectwa pracowników
+              </Link>
+               <Link
+                href="/moderator/users/confirmation-education"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/users/confirmation-education') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+              >                <FontAwesomeIcon icon={faSchool} className="mr-2" /> Potwierdz edukacje
+
               </Link>
             </div>
+            
           </div>
         </div>
 

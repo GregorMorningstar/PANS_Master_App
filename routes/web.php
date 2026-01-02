@@ -57,6 +57,8 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
         // users: /moderator/users
         Route::prefix('users')->group(function () {
             Route::get('/', [UserController::class, 'index'])->name('users.index');
+               Route::get('/confirmation-education', [UserController::class, 'confirmationEducation'])->name('users.confirmation-education');
+               Route::get('confirmation-work-certificates', [UserController::class, 'confirmationWorkCertificates'])->name('users.confirmation-work-certificates');
             Route::get('/{id}', [UserController::class, 'show'])->name('users.show');
         });
 
