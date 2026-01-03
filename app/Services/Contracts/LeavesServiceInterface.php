@@ -32,4 +32,9 @@ interface LeavesServiceInterface
      * Pobierz urlopy według statusu
      */
     public function getLeavesByStatus(string $status);
+
+    /**
+     * Pobierz wszystkie oczekujące urlopy
+     */
+    public function getPendingLeaves(): Collection;
 }
