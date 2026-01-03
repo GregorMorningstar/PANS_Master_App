@@ -66,6 +66,7 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
         Route::prefix('leaves')->name('leaves.')->group(function () {
             Route::get('/', [ModeratorController::class, 'getLeavesCalendar'])->name('calendar');
             Route::put('/{id}/status', [ModeratorController::class, 'updateLeaveStatus'])->name('status');
+            Route::get('/pending', [ModeratorController::class, 'getPendingLeaves'])->name('pending');
         });
 
         //departaments: /moderator/departments

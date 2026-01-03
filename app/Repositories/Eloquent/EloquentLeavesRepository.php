@@ -144,6 +144,17 @@ class EloquentLeavesRepository implements LeavesRepositoryInterface
                 ->count(),
         ];
     }
+
+    /**
+     * Pobierz wszystkie oczekujące urlopy
+     */    public function getPendingLeaves(): Collection
+    {
+        return $this->leaves
+            ->with('user')
+            ->where('status', 'pending')
+            ->orderBy('start_date', 'desc')
+            ->get();
+    }
 }
 
 

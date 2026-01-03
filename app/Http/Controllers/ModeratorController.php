@@ -45,8 +45,12 @@ class ModeratorController extends Controller
     /**
      * Aktualizuj status urlopu
      */
-    public function updateLeaveStatus(Request $request, int $id)
+    public function getPendingLeaves()
     {
-        dd('urlop do zatwierdzenia lub odrzucenia', $id, $request->all());
+        $pendingLeaves = $this->leavesInterface->getPendingLeaves();
+       // dd($pendingLeaves);
+        return Inertia::render('moderator/user/leaves/pending', [
+            'pendingLeaves' => $pendingLeaves,
+        ]);
     }
 }

@@ -38,4 +38,9 @@ interface LeavesRepositoryInterface
      * Pobierz statystyki urlopów
      */
     public function getLeavesStatistics(): array;
+
+    /**
+     * Pobierz wszystkie oczekujące urlopy
+     */
+    public function getPendingLeaves(): Collection;
 }

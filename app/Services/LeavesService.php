@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Services\Contracts\LeavesServiceInterface;
 use App\Repositories\Contracts\LeavesRepositoryInterface;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 
 class LeavesService implements LeavesServiceInterface
 {
@@ -75,5 +76,13 @@ class LeavesService implements LeavesServiceInterface
     public function getLeavesByStatus(string $status)
     {
         return $this->leavesRepository->getLeavesByStatus($status);
+    }
+
+    /**
+     * Pobierz wszystkie oczekujące urlopy
+     */
+    public function getPendingLeaves(): Collection
+    {
+        return $this->leavesRepository->getPendingLeaves();
     }
 }
