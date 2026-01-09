@@ -3,11 +3,19 @@
 namespace App\Services;
 
 use App\Services\Contracts\FlagServiceInterface;
+use App\Repositories\Contracts\FlagRepositoryInterface;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
-class FlagService extends FlagServiceInterface
+class FlagService implements FlagServiceInterface
 {
- public function getRole(?User $user): ?string
+    public function __construct(private readonly FlagRepositoryInterface $flagRepository)
     {
-        return $user?->role;
+    }
+
+    public function getAddressFlagsForUser(): array
+    {
+        $profiles = $this->flagRepository->addressFlagsByUser();
+       
     }
 }

@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, Link } from '@inertiajs/react';
 import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle, faTimes, faUser, faMapMarkerAlt, faGraduationCap } from '@fortawesome/free-solid-svg-icons';
@@ -72,6 +72,9 @@ export default function EmployeeLayout({
 
     const completionPercentage = profileStatus?.overall_completion || 0;
 
+    // zawsze przekierowuj na stronę profilu
+    const actionHref = '/employee/profile';
+
     return (
       <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4 mb-4 shadow-sm">
         <div className="flex items-start">
@@ -132,14 +135,14 @@ export default function EmployeeLayout({
 
             {/* Action Buttons */}
             <div className="mt-4 flex flex-wrap gap-2">
-              <a
-                href="/employee/profile/edit"
+              <Link
+                href="/employee/profile"
                 className="relative overflow-hidden bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-sm font-bold text-white transition-all duration-300 inline-flex items-center shadow-lg hover:shadow-xl animate-pulse"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 animate-shine"></div>
                 <FontAwesomeIcon icon={faUser} className="h-3 w-3 mr-2 animate-bounce relative z-10" />
                 <span className="relative z-10 animate-pulse">UZUPEŁNIJ PROFIL</span>
-              </a>
+              </Link>
             </div>
           </div>
         </div>

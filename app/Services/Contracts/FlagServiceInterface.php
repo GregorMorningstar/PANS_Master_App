@@ -1,14 +1,9 @@
 <?php
 
 namespace App\Services\Contracts;
-
-use App\Models\User;
-
+use App\Models\UserProfile;
 interface FlagServiceInterface
 {
- /**
-     * Sprawdza, czy $user może wykonać $action na danym $resource.
-     * $action: 'view'|'edit'|'delete'|'create' itd.
-     */
-public function getRole(?User $user): ?string;
+
+    public function addressFlagsByUser(): UserProfile;
 }

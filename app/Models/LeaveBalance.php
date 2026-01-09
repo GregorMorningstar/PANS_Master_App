@@ -49,4 +49,5 @@ protected static function booted()
         });
 
     }
+
 }

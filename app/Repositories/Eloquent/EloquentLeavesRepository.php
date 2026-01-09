@@ -6,10 +6,13 @@ use App\Models\Leaves;
 use App\Repositories\Contracts\LeavesRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Carbon\Carbon;
+use App\Models\LeaveBalance;
+
 
 class EloquentLeavesRepository implements LeavesRepositoryInterface
 {
-    public function __construct(private readonly Leaves $leaves)
+    public function __construct(private readonly Leaves $leaves,
+     private readonly LeaveBalance $leaveBalance)
     {
     }
 
@@ -147,10 +150,76 @@ class EloquentLeavesRepository implements LeavesRepositoryInterface
 
     /**
      * Pobierz wszystkie oczekujące urlopy
-     */    public function getPendingLeaves(): Collection
+     */
+    public function getPendingLeaves(): Collection
     {
         return $this->leaves
             ->with('user')
+            ->where('status', 'pending')
+            ->orderBy('start_date', 'desc')
+            ->get();
+    }
+    public function getLeaveByIdAndYear(int $leaveId, int $year): ?Leaves
+    {
+        return $this->leaves
+            ->where('id', $leaveId)
+            ->whereYear('start_date', $year)
+            ->first();
+    }
+
+    /**
+     * Zatwierdź urlop i zaktualizuj saldo
+     */
+    public function approveLeave(int $leaveId, int $approvedBy, ?string $description = null, array $meta = []): bool
+    {
+
+        $leavesByIdAndYear = $this->getLeaveByIdAndYear($leaveId, now()->year);
+    dd($leavesByIdAndYear);  // tylko debug: pokaż tylko opis (i ew. meta) w dd
+        dd([
+            'leave_id'    => $leaveId,
+            'approved_by' => $approvedBy,
+            'description' => $description,
+            'meta'        => $meta,
+        ]);
+    }
+
+    /**
+     * Odrzuć urlop
+     */
+    public function rejectLeave( int $leaveId, int $rejectedBy, string $rejectionReason, array $meta = []): bool
+    {
+        $leave = $this->leaves->find($leaveId);
+        if (!$leave || $leave->status !== 'pending') {
+            return false;
+        }
+
+        $update = [
+            'status' => 'rejected',
+            'approved_by' => $rejectedBy,
+            'approved_at' => now(),
+            'rejection_reason' => $rejectionReason
+        ];
+
+        if (isset($meta['days'])) {
+            $update['days'] = (int) $meta['days'];
+        }
+        if (isset($meta['type'])) {
+            $update['type'] = $meta['type'];
+        }
+        if (isset($meta['user_id'])) {
+            $update['user_id'] = (int) $meta['user_id'];
+        }
+
+        return $leave->update($update);
+    }
+
+    /**
+     * Pobierz oczekujące urlopy dla konkretnego użytkownika
+     */
+    public function getUserPendingLeaves(int $userId): Collection
+    {
+        return $this->leaves
+            ->where('user_id', $userId)
             ->where('status', 'pending')
             ->orderBy('start_date', 'desc')
             ->get();

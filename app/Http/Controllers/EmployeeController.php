@@ -4,18 +4,30 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\Contracts\UserServiceInterface;
+use App\Repositories\Contracts\UserProfileRepositoryInterface;
+use App\Repositories\Contracts\FlagRepositoryInterface;
 use Inertia\Inertia;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 
 class EmployeeController extends Controller
 {
 
 
-    public function __construct(private readonly UserServiceInterface $userService)
-    {}
+    public function __construct(
+        private readonly UserServiceInterface $userService,
+        private readonly UserProfileRepositoryInterface $userProfileRepository,
+        private readonly FlagRepositoryInterface $flagRepository
+    ) {}
 
     public function index()
     {
-        return Inertia::render('employee/dashboard/index');
+        // poprawione wywołanie repozytorium (bez parametru, repo korzysta z Auth::id())
+        $userFlagByAddress = $this->flagRepository->addressFlagsByUser();
+
+        return Inertia::render('employee/dashboard/index', [
+            'addressFlags' => $userFlagByAddress,
+        ]);
     }
 
     public function showDetails(int $employeeId)
@@ -46,7 +58,39 @@ class EmployeeController extends Controller
     }
     public function storeAddress(Request $request)
     {
-        dd('store address', $request->all());
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'phone' => 'nullable|string|max:15',
+            'pesel' => 'nullable|string|size:11',
+            'address' => 'required|string|max:1000',
+            'profile_photo' => 'nullable|file|mimes:jpg,jpeg,png|max:10240',
+            'birth_date' => 'nullable|date',
+            'gender' => 'nullable|in:male,female,other',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:15',
+        ]);
+
+        // obsługa zdjęcia profilowego przez repozytorium
+        if ($request->hasFile('profile_photo')) {
+            /** @var UploadedFile $file */
+            $file = $request->file('profile_photo');
+            $path = $this->userProfileRepository->storeProfilePhoto($file, $user);
+            $validated['profile_photo'] = $path;
+        }
+
+        $profile = $this->userProfileRepository->getProfile($user);
+
+        if ($profile) {
+            $this->userProfileRepository->updateProfile($profile, $validated);
+        } else {
+            $this->userProfileRepository->createProfile($user, $validated);
+        }
+
+
+        $this->flagRepository->addressFlagsByUser();
+
+        return redirect()->route('employee.profile.show')->with('success', 'Profil został zapisany.');
     }
 
     public function showCompany()
@@ -82,9 +126,6 @@ class EmployeeController extends Controller
             'city' => 'nullable|string|max:100',
         ]);
 
-        // Tutaj możesz dodać logikę zapisywania do bazy danych
-        // np. Company::create($validatedData);
-
         // Tymczasowo wyświetlamy dane
         return redirect()->route('employee.company.show')->with('success', 'Firma została pomyślnie dodana!');
     }
@@ -112,11 +153,7 @@ class EmployeeController extends Controller
     public function storeEducation(Request $request)
     {
         // Pokaż wszystkie dane przesyłane z formularza React/Inertia
-        dd([
-            'method' => $request->method(),
-            'all_data' => $request->all(),
-            'validation_test' => 'Education data received successfully from React/Inertia form'
-        ]);
+       
 
         $validatedData = $request->validate([
             'startYear' => 'required|integer|min:1900|max:2030',
@@ -128,7 +165,7 @@ class EmployeeController extends Controller
             'certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
         ]);
 
-dd($validatedData);
+        dd($validatedData);
 
         // Tymczasowo wyświetlamy dane
         return redirect()->route('employee.education.show')->with('success', 'Edukacja została pomyślnie dodana!');
