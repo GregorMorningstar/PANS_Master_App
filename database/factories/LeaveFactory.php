@@ -15,7 +15,6 @@ class LeaveFactory extends Factory
 
     public function definition(): array
     {
-        $types = array_map(fn($e) => $e->value, LeavesType::cases());
         $statuses = array_map(fn($e) => $e->value, LeavesStatus::cases());
 
         $start = $this->faker->dateTimeBetween('-1 month', '+3 months');
@@ -48,7 +47,6 @@ class LeaveFactory extends Factory
             'start_date' => $start->format('Y-m-d'),
             'end_date' => $end->format('Y-m-d'),
             'days' => $daysCount, // dodana kalkulacja dni
-            'type' => $this->faker->randomElement($types),
             'description' => $this->faker->optional(0.7)->randomElement([
                 'Urlop wypoczynkowy z rodziną',
                 'Potrzebuję odpoczynku',

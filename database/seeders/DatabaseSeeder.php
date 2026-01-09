@@ -45,6 +45,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Employee',
                 'email' => 'employee@test.com',
                 'password' => bcrypt('qwer1234'),
+                'role' => 'employee',
                 'department_id' => Department::inRandomOrder()->value('id'),
             ]);
         }

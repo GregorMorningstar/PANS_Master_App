@@ -17,12 +17,11 @@ return new class extends Migration
             $table->id();
             $table->string('barcode')->unique()->nullable(); // unikalny kod kreskowy dla wniosku
             $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // id użytkownika składającego wniosek, kasuj wnioski przy usunięciu użytkownika
-            $table->foreignId('leave_balance_id')->nullable()->constrained('leave_balances')->nullOnDelete(); // id salda urlopowego, ustaw na null gdy usunięte
             $table->date('start_date'); // data rozpoczęcia urlopu
             $table->date('end_date'); // data zakończenia urlopu
             $table->integer('days')->default(0);// liczba dni urlopu
             // rodzaj urlopu - używa wartości z enuma App\Enums\LeavesType
-            $table->enum('type', array_map(fn($e) => $e->value, LeavesType::cases()))->index(); // rzutuj na App\Enums\LeavesType w modelu, indeks dla wydajności
+            $table->enum('type', array_map(fn($e) => $e->value, LeavesType::cases()))->default(LeavesType::ANNUAL->value)->index();
             $table->text('description')->nullable(); // opis/uzasadnienie urlopu
             // status wniosku - używa wartości z enuma App\Enums\LeavesStatus
             $table->enum('status', array_map(fn($e) => $e->value, LeavesStatus::cases()))->default(LeavesStatus::PENDING->value)->index(); // domyślnie 'pending'

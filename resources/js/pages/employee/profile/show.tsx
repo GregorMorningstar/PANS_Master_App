@@ -144,7 +144,7 @@ export default function EmployeeShowProfile() {
                                     {getStatusText(profileStatus.education_completed)}
                                 </p>
                                 {!profileStatus.education_completed && (
-                                    <Link href="/employee/edukation/create">
+                                    <Link href="/employee/education/create">
                                         <Button variant="outline" size="sm" className="w-full">
                                             <Plus className="w-4 h-4 mr-2" />
                                             Uzupełnij edukację

@@ -4,6 +4,7 @@ namespace App\Repositories\Contracts;
 use App\Models\Leaves;
 use Illuminate\Database\Eloquent\Collection;
 use Carbon\Carbon;
+use App\Models\LeaveBalance;
 
 interface LeavesRepositoryInterface
 {
@@ -13,6 +14,24 @@ interface LeavesRepositoryInterface
     public function updateLeave(int $id, array $data);
     public function deleteLeave(int $id): bool;
     public function getAllLeaves();
+    /**
+     * Zatwierdź urlop i zaktualizuj saldo
+     *
+     * @param array $meta dodatkowe dane: days, type, user_id, year
+     */
+    public function approveLeave(int $leaveId, int $approvedBy, string $description = null, array $meta = []): bool;
+
+    /**
+     * Odrzuć urlop
+     *
+     * @param array $meta dodatkowe dane: days, type, user_id, year
+     */
+    public function rejectLeave(int $leaveId, int $rejectedBy, string $rejectionReason, array $meta = []): bool;
+
+    /**
+     * Pobierz oczekujące urlopy dla konkretnego użytkownika
+     */
+    public function getUserPendingLeaves(int $userId): Collection;
 
     /**
      * Pobierz wszystkie urlopy w określonym przedziale dat
@@ -43,4 +62,10 @@ interface LeavesRepositoryInterface
      * Pobierz wszystkie oczekujące urlopy
      */
     public function getPendingLeaves(): Collection;
+
+    /**
+     * Pobierz urlop po id i roku
+     */
+
+    public function getLeaveByIdAndYear(int $leaveId, int $year): ?Leaves;
 }

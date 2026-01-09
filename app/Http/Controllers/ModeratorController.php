@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Services\Contracts\LeavesServiceInterface;
+use Carbon\Carbon;
 
 class ModeratorController extends Controller
 {
@@ -42,15 +43,73 @@ class ModeratorController extends Controller
         ]);
     }
 
-    /**
-     * Aktualizuj status urlopu
-     */
+
     public function getPendingLeaves()
     {
         $pendingLeaves = $this->leavesInterface->getPendingLeaves();
-       // dd($pendingLeaves);
+
         return Inertia::render('moderator/user/leaves/pending', [
             'pendingLeaves' => $pendingLeaves,
+        ]);
+    }
+
+    /**
+     * Zatwierdź urlop
+     */
+    public function approveLeave(Request $request, int $leaveId)
+    {
+        $request->validate([
+            'description' => 'required|string|min:1|max:1000'
+        ]);
+
+        $description = $request->input('description');
+        $approvedBy = auth()->id();
+
+        // opcjonalne dodatkowe dane przesyłane z frontendu
+        $meta = $request->only(['days', 'type', 'user_id', 'year']);
+
+        $success = $this->leavesInterface->approveLeave($leaveId, $approvedBy, $description, $meta);
+
+        if ($success) {
+            return redirect()->back()->with('success', 'Urlop został zatwierdzony.');
+        }
+
+        return redirect()->back()->with('error', 'Nie udało się zatwierdzić urlopu.');
+    }
+
+    /**
+     * Odrzuć urlop
+     */
+    public function rejectLeave(Request $request, int $leaveId)
+    {
+        $request->validate([
+            'rejection_reason' => 'required|string|min:1|max:1000'
+        ]);
+
+        $rejectionReason = $request->input('rejection_reason');
+        $rejectedBy = auth()->id();
+
+        $meta = $request->only(['days', 'type', 'user_id', 'year']);
+
+        $success = $this->leavesInterface->rejectLeave($leaveId, $rejectedBy, $rejectionReason, $meta);
+
+        if ($success) {
+            return redirect()->back()->with('success', 'Urlop został odrzucony.');
+        }
+
+        return redirect()->back()->with('error', 'Nie udało się odrzucić urlopu.');
+    }
+
+    /**
+     * Pobierz oczekujące urlopy konkretnego użytkownika
+     */
+    public function getUserPendingLeaves(int $userId)
+    {
+        $pendingLeaves = $this->leavesInterface->getUserPendingLeaves($userId);
+
+        return Inertia::render('moderator/user/leaves/user-pending', [
+            'pendingLeaves' => $pendingLeaves,
+            'userId' => $userId,
         ]);
     }
 }

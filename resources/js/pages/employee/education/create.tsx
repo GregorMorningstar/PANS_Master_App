@@ -144,26 +144,25 @@ export default function EmployeeEducationCreate() {
     };
 
     const handleConfirmSubmit = () => {
-        setShowConfirmation(true);
+        setShowConfirmation(false);
+        post('/employee/education', {
+            onSuccess: () => {
+                alert('Profil został pomyślnie zapisany!');
+            },
+            onError: (errors: Record<string, any>) => {
+                console.log('Błędy walidacji:', errors);
+            }
+        });
     };
 
     const handleFinalSubmit = () => {
         setShowConfirmation(false);
-        const formData = new FormData();
-        Object.entries(data).forEach(([key, value]) => {
-            if (value !== null) {
-                formData.append(key, value);
-            }
-        });
-        formData.append('isOngoing', isOngoing.toString());
-
-        post('/employee/edukation', formData, {
+        post('/employee/education', {
             onSuccess: () => {
-            reset();
-            alert('Edukacja została pomyślnie dodana!');
+                alert('Profil został pomyślnie zapisany!');
             },
-            onError: (errors: Record<string, string | string[]>) => {
-            console.log('Błędy walidacji:', errors);
+            onError: (errors) => {
+                console.log('Błędy walidacji:', errors);
             }
         });
     };

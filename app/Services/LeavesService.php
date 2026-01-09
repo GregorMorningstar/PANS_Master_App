@@ -6,10 +6,12 @@ use App\Services\Contracts\LeavesServiceInterface;
 use App\Repositories\Contracts\LeavesRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use App\Models\LeaveBalance;
 
 class LeavesService implements LeavesServiceInterface
 {
-    public function __construct(private readonly LeavesRepositoryInterface $leavesRepository)
+    public function __construct(private readonly LeavesRepositoryInterface $leavesRepository,
+    private readonly LeaveBalance $leaveBalance)
     {
     }
 
@@ -84,5 +86,29 @@ class LeavesService implements LeavesServiceInterface
     public function getPendingLeaves(): Collection
     {
         return $this->leavesRepository->getPendingLeaves();
+    }
+
+    /**
+     * Zatwierdź urlop
+     */
+    public function approveLeave(int $leaveId, int $approvedBy, string $description = null, array $meta = []): bool
+    {
+        return $this->leavesRepository->approveLeave($leaveId, $approvedBy, $description, $meta);
+    }
+
+    /**
+     * Odrzuć urlop
+     */
+    public function rejectLeave(int $leaveId, int $rejectedBy, string $rejectionReason, array $meta = []): bool
+    {
+        return $this->leavesRepository->rejectLeave($leaveId, $rejectedBy, $rejectionReason, $meta);
+    }
+
+    /**
+     * Pobierz oczekujące urlopy użytkownika
+     */
+    public function getUserPendingLeaves(int $userId): Collection
+    {
+        return $this->leavesRepository->getUserPendingLeaves($userId);
     }
 }

@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { router } from "@inertiajs/react";
 
 type Leave = {
+    description: string | null | undefined;
+    days: any;
     id: number;
     user_id: number;
     user?: { id: number; name: string } | null;
@@ -15,6 +18,10 @@ export default function PendingLeavesTable({ pendingLeaves = [] }: { pendingLeav
     const [items, setItems] = useState<Leave[]>(pendingLeaves);
     const [page, setPage] = useState<number>(1);
     const [perPage, setPerPage] = useState<number>(10);
+    const [showModal, setShowModal] = useState<boolean>(false);
+    const [modalType, setModalType] = useState<'approve' | 'reject'>('approve');
+    const [selectedLeave, setSelectedLeave] = useState<Leave | null>(null);
+    const [description, setDescription] = useState<string>('');
 
     useEffect(() => setItems(pendingLeaves), [pendingLeaves]);
 
@@ -35,27 +42,48 @@ export default function PendingLeavesTable({ pendingLeaves = [] }: { pendingLeav
         shown: paginated.length,
     };
 
-    async function approve(id: number) {
-        if (!confirm("Zatwierdzić urlop?")) return;
-        try {
-            await axios.post(`/moderator/user/leaves/${id}/store`);
-            setItems(prev => prev.filter(l => l.id !== id));
-        } catch (e) {
-            console.error(e);
-            alert("Błąd podczas zatwierdzania.");
-        }
-    }
+    const openModal = (leave: Leave, type: 'approve' | 'reject') => {
+        setSelectedLeave(leave);
+        setModalType(type);
+        setDescription('');
+        setShowModal(true);
+    };
 
-    async function cancelLeave(id: number) {
-        if (!confirm("Odrzucić urlop?")) return;
-        try {
-            await axios.post(`/moderator/user/leaves/${id}/cancel`);
-            setItems(prev => prev.filter(l => l.id !== id));
-        } catch (e) {
-            console.error(e);
-            alert("Błąd podczas odrzucania.");
-        }
-    }
+    const closeModal = () => {
+        setShowModal(false);
+        setSelectedLeave(null);
+        setDescription('');
+    };
+
+    const handleSubmit = () => {
+        if (!selectedLeave) return;
+
+        const endpoint = modalType === 'approve'
+            ? `/moderator/leaves/${selectedLeave.id}/approve`
+            : `/moderator/leaves/${selectedLeave.id}/reject`;
+
+        const meta = {
+            days: selectedLeave.days,
+            type: (selectedLeave as any).type ?? null,
+            user_id: selectedLeave.user_id,
+            year: new Date(selectedLeave.start_date).getFullYear(),
+        };
+
+        const data = modalType === 'approve'
+            ? { description, ...meta }
+            : { rejection_reason: description, ...meta };
+
+        router.put(endpoint, data, {
+            onSuccess: () => {
+                setItems(prev => prev.filter(l => l.id !== selectedLeave.id));
+                closeModal();
+            },
+            onError: (errors) => {
+                console.log('Errors:', errors);
+                alert(`Błąd podczas ${modalType === 'approve' ? 'zatwierdzania' : 'odrzucania'}`);
+            }
+        });
+    };
 
     return (
         <div>
@@ -80,38 +108,40 @@ export default function PendingLeavesTable({ pendingLeaves = [] }: { pendingLeav
                         <tr className="bg-gray-100 text-left">
                             <th className="px-4 py-2 border">ID</th>
                             <th className="px-4 py-2 border">Użytkownik</th>
+                            <th className="px-4 py-2 border">Ilość dni</th>
                             <th className="px-4 py-2 border">Data rozpoczęcia</th>
                             <th className="px-4 py-2 border">Data zakończenia</th>
                             <th className="px-4 py-2 border">Status</th>
-                            <th className="px-4 py-2 border">Powód</th>
+                            <th className="px-4 py-2 border">Powód (użytkownik)</th>
                             <th className="px-4 py-2 border">Akcje</th>
                         </tr>
                     </thead>
                     <tbody>
                         {paginated.length === 0 ? (
                             <tr>
-                                <td className="px-4 py-3 border text-center" colSpan={7}>Brak oczekujących urlopów</td>
+                                <td className="px-4 py-3 border text-center" colSpan={8}>Brak oczekujących urlopów</td>
                             </tr>
                         ) : (
                             paginated.map((leave) => (
                                 <tr key={leave.id} className="odd:bg-white even:bg-gray-50">
                                     <td className="px-4 py-2 border">{leave.id}</td>
                                     <td className="px-4 py-2 border">{leave.user?.name ?? `#${leave.user_id}`}</td>
+                                    <td className="px-4 py-2 border">{leave.days}</td>
                                     <td className="px-4 py-2 border">{formatDate(leave.start_date)}</td>
                                     <td className="px-4 py-2 border">{formatDate(leave.end_date)}</td>
                                     <td className="px-4 py-2 border">{leave.status}</td>
-                                    <td className="px-4 py-2 border">{leave.reason ?? "-"}</td>
+                                    <td className="px-4 py-2 border">{leave.reason ?? leave.description ?? "-"}</td>
                                     <td className="px-4 py-2 border">
                                         <div className="flex gap-2">
                                             <button
-                                                onClick={() => approve(leave.id)}
-                                                className="px-2 py-1 bg-green-500 text-white rounded text-sm"
+                                                onClick={() => openModal(leave, 'approve')}
+                                                className="px-2 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
                                             >
                                                 Zatwierdź
                                             </button>
                                             <button
-                                                onClick={() => cancelLeave(leave.id)}
-                                                className="px-2 py-1 bg-red-500 text-white rounded text-sm"
+                                                onClick={() => openModal(leave, 'reject')}
+                                                className="px-2 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
                                             >
                                                 Odrzuć
                                             </button>
@@ -140,6 +170,63 @@ export default function PendingLeavesTable({ pendingLeaves = [] }: { pendingLeav
                     <button disabled={page >= pages} onClick={() => setPage(p => Math.min(pages, p + 1))} className="px-3 py-1 border rounded disabled:opacity-50">Następna</button>
                 </div>
             </div>
+
+            {/* Modal */}
+            {showModal && (
+                <div className="fixed inset-0 flex items-center justify-center z-[9999] bg-transparent backdrop-blur-sm">
+                    <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4 shadow-2xl pointer-events-auto">
+                        <h3 className="text-lg font-semibold mb-4">
+                            {modalType === 'approve' ? 'Zatwierdź urlop' : 'Odrzuć urlop'}
+                        </h3>
+
+                        {selectedLeave && (
+                            <div className="mb-4 p-3 bg-gray-50 rounded">
+                                <div><strong>Użytkownik:</strong> {selectedLeave.user?.name ?? `#${selectedLeave.user_id}`}</div>
+                                <div><strong>Ilość dni:</strong> {selectedLeave.days}</div>
+                                <div><strong>Okres:</strong> {formatDate(selectedLeave.start_date)} - {formatDate(selectedLeave.end_date)}</div>
+                                <div><strong>Opis użytkownika:</strong> {selectedLeave.reason ?? selectedLeave.description ?? "-"}</div>
+                            </div>
+                        )}
+
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {modalType === 'approve' ? 'Opis zatwierdzenia *' : 'Powód odrzucenia *'}
+                            </label>
+                            <textarea
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                placeholder={modalType === 'approve' ? 'Podaj opis zatwierdzenia...' : 'Podaj powód odrzucenia...'}
+                                className="w-full p-2 border border-gray-300 rounded resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                rows={3}
+                                required
+                            />
+                            {description.trim() === '' && (
+                                <p className="text-red-500 text-sm mt-1">To pole jest wymagane</p>
+                            )}
+                        </div>
+
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={closeModal}
+                                className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
+                            >
+                                Anuluj
+                            </button>
+                            <button
+                                onClick={handleSubmit}
+                                disabled={!description.trim()}
+                                className={`px-4 py-2 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed ${
+                                    modalType === 'approve'
+                                        ? 'bg-green-500 hover:bg-green-600'
+                                        : 'bg-red-500 hover:bg-red-600'
+                                }`}
+                            >
+                                {modalType === 'approve' ? 'Zatwierdź' : 'Odrzuć'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -12,27 +12,30 @@ return new class extends Migration {
     {
         Schema::create('leave_balances', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->integer('year')->index();
+            // typ urlopu (np. 'vacation', 'sick')
+            $table->string('leave_type')->default('vacation')->index();
             $table->string('barcode')->unique()->nullable();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->integer('year');                 // rok kalendarzowy
-            $table->enum('leave_type', ['vacation','sick','personal'])->default('vacation');
-            $table->integer('entitlement_days');    // np. 20/24
+
+            // saldo i pola pomocnicze
+            $table->integer('entitlement_days')->default(0);
             $table->integer('used_days')->default(0);
             $table->integer('remaining_days')->default(0);
-            $table->integer('request_days')->default(2); // dni na żądanie
+            $table->integer('request_days')->default(0);
             $table->integer('request_used')->default(0);
-            $table->integer('seniority_years')->default(0);   // lata stażu pracy
-            $table->integer('work_time')->default(0);
-            $table->integer('education_time')->default(0);
+            $table->decimal('seniority_years', 8, 4)->default(0);
+            $table->decimal('work_time', 8, 2)->default(0);
+            $table->decimal('education_time', 8, 2)->default(0);
             $table->date('employment_start_date')->nullable();
-            $table->timestamps();
 
-            $table->unique(['user_id','year','leave_type']);
+            // unikalność dla user + rok + typ urlopu
+            $table->unique(['user_id', 'year', 'leave_type']);
+
+            $table->timestamps();
         });
     }
 
-
- 
     /**
      * Reverse the migrations.
      */
