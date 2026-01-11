@@ -12,17 +12,17 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     public function findById(int $id): ?User
     {
-        return $this->userModel->find($id);
+        return $this->userModel->with('profile')->find($id);
     }
 
     public function findAll(int $perPage = 15): LengthAwarePaginator
     {
-        return $this->userModel->paginate($perPage);
+        return $this->userModel->with('profile')->paginate($perPage);
     }
 
     public function findAllByRole(int $perPage = 15, ?string $role = null, array $filters = []): LengthAwarePaginator
     {
-        $query = $this->userModel->newQuery()->with('department');
+        $query = $this->userModel->newQuery()->with(['department', 'profile']);
 
         if ($role) {
             $query->where('role', $role);
@@ -51,7 +51,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     public function getEmployeeDetailsWithRelations(int $employeeId): ?User
     {
         return $this->userModel
-            ->with(['machines', 'department'])
+            ->with(['machines', 'department', 'profile'])
             ->find($employeeId);
     }
 }

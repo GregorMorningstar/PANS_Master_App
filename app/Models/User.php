@@ -147,4 +147,17 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserProfile::class);
     }
+
+    /**
+     * Accessor for avatar - returns profile photo URL if exists
+     */
+    public function getAvatarAttribute(): ?string
+    {
+        return $this->profile?->profile_photo_url;
+    }
+
+    public function schoolCertificates(): HasMany
+    {
+        return $this->hasMany(SchoolCertificate::class);
+    }
 }

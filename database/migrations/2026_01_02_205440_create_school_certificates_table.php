@@ -13,6 +13,14 @@ return new class extends Migration
     {
         Schema::create('school_certificates', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('barcode')->unique()->nullable();
+            $table->string('school_name');
+            $table->string('school_address');
+            $table->integer('start_year');
+            $table->integer('end_year')->nullable();
+            $table->string('education_level');
+            $table->string('certificate_path')->nullable();
             $table->timestamps();
         });
     }

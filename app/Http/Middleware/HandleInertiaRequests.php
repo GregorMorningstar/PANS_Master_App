@@ -44,7 +44,7 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user() ? [
-                    ...$request->user()->toArray(),
+                    ...$request->user()->load('profile')->toArray(),
                     'role' => $request->user()->role->value, // Konwertuj enum na string
                 ] : null,
             ],

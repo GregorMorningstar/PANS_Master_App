@@ -6,4 +6,5 @@ interface FlagServiceInterface
 {
 
     public function addressFlagsByUser(): UserProfile;
+    public function educationFlagsByUser(): UserProfile;
 }

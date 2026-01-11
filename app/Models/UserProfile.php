@@ -13,6 +13,7 @@ class UserProfile extends Model
 
     protected $fillable = [
         'user_id',
+        'barcode',
         'phone',
         'pesel',
         'address',
@@ -27,12 +28,26 @@ class UserProfile extends Model
         'birth_date' => 'date',
     ];
 
+    protected $appends = [
+        'profile_photo_url',
+    ];
+
     protected static function booted()
     {
+        // usuwanie pliku przy usuwaniu profilu
         static::deleting(function ($profile) {
-            // Usuń zdjęcie profilowe przy usuwaniu profilu
             if ($profile->profile_photo && Storage::disk('public')->exists($profile->profile_photo)) {
                 Storage::disk('public')->delete($profile->profile_photo);
+            }
+        });
+
+        // generowanie barcode po utworzeniu
+        static::created(function ($userProfile) {
+            if (!$userProfile->barcode) {
+                $prefix = '5000';
+                $idStr = (string) $userProfile->id;
+                $barcode = $prefix . str_pad($idStr, 13 - strlen($prefix), '0', STR_PAD_LEFT);
+                $userProfile->updateQuietly(['barcode' => $barcode]);
             }
         });
     }

@@ -28,8 +28,8 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Contracts\LeavesRepositoryInterface::class => \App\Repositories\Eloquent\EloquentLeavesRepository::class,
             \App\Services\Contracts\UserProfileServiceInterface::class => \App\Services\UserProfileService::class,
             \App\Repositories\Contracts\UserProfileRepositoryInterface::class => \App\Repositories\Eloquent\EloquentUserProfileRepository::class,
-            \App\Services\Contracts\UserServiceInterface::class => \App\Services\UserService::class,
-            \App\Repositories\Contracts\UserRepositoryInterface::class => \App\Repositories\Eloquent\EloquentUserRepository::class,
+            \App\Services\Contracts\EducationServiceInterface::class => \App\Services\EducationService::class,
+            \App\Repositories\Contracts\EducationRepositoryInterface::class => \App\Repositories\Eloquent\EloquentEducationRepository::class,
         ];
 
         foreach ($bindings as $abstract => $concrete) {

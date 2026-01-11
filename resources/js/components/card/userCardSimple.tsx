@@ -36,8 +36,8 @@ export default function UserCardSimple({ user, className = '' }: UserCardProps) 
   const isModerator = ['moderator', 'admin'].includes(currentUserRole.toLowerCase());
   const canManage = isModerator || isCurrentUser;
 
-  const avatarUrl = user.avatar
-    ? `/storage/${user.avatar}`
+  const avatarUrl = user.profile?.profile_photo_url || user.avatar
+    ? (user.profile?.profile_photo_url || `/storage/${user.avatar}`)
     : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&size=160&background=4F46E5&color=ffffff&rounded=true&bold=true`;
 
   return (

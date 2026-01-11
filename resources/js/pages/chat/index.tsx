@@ -238,7 +238,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ user_id, other_user_id, users, chat
                   onClick={() => { window.location.href = `/chat?other_user_id=${user.id}`; }}
                 >
                   <img
-                    src={`https://i.pravatar.cc/150?u=${user.id}`}
+                    src={user.profile?.profile_photo_url || user.avatar || `https://i.pravatar.cc/150?u=${user.id}`}
                     className="object-cover h-12 w-12 rounded-full"
                     alt={user.name}
                   />
@@ -263,7 +263,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ user_id, other_user_id, users, chat
                 <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
                   {!isOwn && (
                     <img
-                      src={`https://i.pravatar.cc/100?u=${msg.sender_id}`}
+                      src={activeUser?.profile?.profile_photo_url || activeUser?.avatar || `https://i.pravatar.cc/100?u=${msg.sender_id}`}
                       className="object-cover h-8 w-8 rounded-full mr-2"
                       alt="avatar"
                     />
@@ -276,7 +276,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ user_id, other_user_id, users, chat
                   </div>
                   {isOwn && (
                     <img
-                      src={`https://i.pravatar.cc/100?u=${msg.sender_id}`}
+                      src={users.find(u => u.id === user_id)?.profile?.profile_photo_url || users.find(u => u.id === user_id)?.avatar || `https://i.pravatar.cc/100?u=${msg.sender_id}`}
                       className="object-cover h-8 w-8 rounded-full ml-2"
                       alt="avatar"
                     />
@@ -288,7 +288,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ user_id, other_user_id, users, chat
             {isTyping && activeUser && (
               <div className="flex justify-start">
                 <img
-                  src={`https://i.pravatar.cc/100?u=${other_user_id}`}
+                  src={activeUser?.profile?.profile_photo_url || activeUser?.avatar || `https://i.pravatar.cc/100?u=${other_user_id}`}
                   className="object-cover h-8 w-8 rounded-full mr-2"
                   alt="avatar"
                 />

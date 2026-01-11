@@ -13,9 +13,14 @@ class FlagService implements FlagServiceInterface
     {
     }
 
-    public function getAddressFlagsForUser(): array
+    public function addressFlagsByUser(): array
     {
         $profiles = $this->flagRepository->addressFlagsByUser();
-       
+
+    }
+    public function educationFlagsByUser(): array
+    {
+        $educations = $this->flagRepository->educationFlagsByUser();
+
     }
 }

@@ -46,7 +46,21 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
   const currentUrl =
     (page as any).url ?? (typeof window !== 'undefined' ? window.location.pathname : '');
 
-  const isActive = (href: string) => currentUrl?.startsWith(href);
+  // normalize and support both "adress" and "address" spellings
+  const normalize = (p: string) => p.replace(/\/+$/, '').toLowerCase();
+  const isActive = (href: string) => {
+    const cur = normalize(currentUrl || '');
+    const h = normalize(href);
+    if (cur.startsWith(h)) return true;
+    // support common misspelling: adress <-> address
+    if (h.includes('/adress')) {
+      return cur.startsWith(h.replace('/adress', '/address'));
+    }
+    if (h.includes('/address')) {
+      return cur.startsWith(h.replace('/address', '/adress'));
+    }
+    return false;
+  };
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
@@ -63,6 +77,22 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
     setIsCollapsed(el.clientWidth < threshold);
     return () => ro.disconnect();
   }, []);
+
+  // centralize routes for easy changes
+  const routes = {
+    dashboard: '/employee/dashboard',
+    calendar: '/employee/calendar',
+    calendarHistory: '/employee/calendar/history',
+    profile: '/employee/profile',
+    address: '/employee/adress',
+    addressCreate: '/employee/adress/create',
+    educationList: '/employee/education/all',
+    educationCreate: '/employee/education/create',
+    companyList: '/employee/company',
+    companyCreate: '/employee/company/create',
+    machinesReport: '/machines/report-failure',
+    machinesHistory: '/machines/failures/history',
+  };
 
   return (
     <div ref={containerRef} className="w-full flex flex-col items-center gap-3 px-3">
@@ -95,7 +125,7 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
       </div>
 
       <div className="w-full mt-2">
-           {/* Kalendarz */}
+           {/* Calendar */}
         <div className="w-full mt-3">
           <button
             type="button"
@@ -119,14 +149,14 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
           >
             <div className="flex flex-col space-y-1 pl-6">
               <Link
-                href="/employee/calendar"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/calendar') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href={routes.calendar}
+                className={`text-sm px-2 py-1 rounded block ${isActive(routes.calendar) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faList} className="mr-2" /> Mój grafik
               </Link>
               <Link
-                href="/employee/calendar/history"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/calendar/history') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href={routes.calendarHistory}
+                className={`text-sm px-2 py-1 rounded block ${isActive(routes.calendarHistory) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faList} className="mr-2" /> Nieobecności
               </Link>
@@ -134,7 +164,7 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
           </div>
         </div>
 
-        {/* Mój Profil */}
+        {/* My Profile */}
         <div className="w-full mt-3">
           <button
             type="button"
@@ -158,20 +188,20 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
           >
             <div className="flex flex-col space-y-1 pl-6">
               <Link
-                href="/employee/profile"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/profile') && !isActive('/employee/address') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href={routes.profile}
+                className={`text-sm px-2 py-1 rounded block ${isActive(routes.profile) && !isActive(routes.address) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faUser} className="mr-2" /> Mój profil
               </Link>
               <Link
-                href="/employee/adress"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/adress') && !isActive('/employee/adress/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href={routes.address}
+                className={`text-sm px-2 py-1 rounded block ${isActive(routes.address) && !isActive(routes.addressCreate) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faList} className="mr-2" /> Mój adres
               </Link>
               <Link
-                href="/employee/adress/create"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/adress/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href={routes.addressCreate}
+                className={`text-sm px-2 py-1 rounded block ${isActive(routes.addressCreate) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faList} className="mr-2" /> Dodaj adres
               </Link>
@@ -179,7 +209,7 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
           </div>
         </div>
 
-        {/* Edukacja */}
+        {/* Education */}
         <div className="w-full">
           <button
             type="button"
@@ -203,14 +233,14 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
           >
             <div className="flex flex-col space-y-1 pl-6">
               <Link
-                href="/employee/education"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/education') && !isActive('/employee/education/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href={routes.educationList}
+                className={`text-sm px-2 py-1 rounded block ${isActive(routes.educationList) && !isActive(routes.educationCreate) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faList} className="mr-2" /> Moja edukacja
               </Link>
               <Link
-                href="/employee/education/create"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/education/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href={routes.educationCreate}
+                className={`text-sm px-2 py-1 rounded block ${isActive(routes.educationCreate) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faList} className="mr-2" /> Dodaj edukację
               </Link>
@@ -218,7 +248,7 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
           </div>
         </div>
 
-        {/* Firma */}
+        {/* Company */}
         <div className="w-full mt-3">
           <button
             type="button"
@@ -242,14 +272,14 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
           >
             <div className="flex flex-col space-y-1 pl-6">
               <Link
-                href="/employee/company"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/company') && !isActive('/employee/company/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href={routes.companyList}
+                className={`text-sm px-2 py-1 rounded block ${isActive(routes.companyList) && !isActive(routes.companyCreate) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faList} className="mr-2" /> Moja firma
               </Link>
               <Link
-                href="/employee/company/create"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/employee/company/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href={routes.companyCreate}
+                className={`text-sm px-2 py-1 rounded block ${isActive(routes.companyCreate) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faList} className="mr-2" /> Dodaj firmę
               </Link>
@@ -257,9 +287,7 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
           </div>
         </div>
 
-
-
-        {/* Maszyny */}
+        {/* Machines */}
         <div className="w-full mt-3">
           <button
             type="button"
@@ -283,14 +311,14 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
           >
             <div className="flex flex-col space-y-1 pl-6">
               <Link
-                href="/machines/report-failure"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/machines/report-failure') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href={routes.machinesReport}
+                className={`text-sm px-2 py-1 rounded block ${isActive(routes.machinesReport) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faWrench} className="mr-2" /> Zgłoś uster
               </Link>
               <Link
-                href="/machines/failures/history"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/machines/failures/history') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href={routes.machinesHistory}
+                className={`text-sm px-2 py-1 rounded block ${isActive(routes.machinesHistory) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faList} className="mr-2" /> Historia uster
               </Link>

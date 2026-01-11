@@ -15,7 +15,7 @@ class ChatController extends Controller
     {
        $user_id = Auth::id();
        $other_user_id = $request->integer('other_user_id');
-       $users = User::select('id','name','email')->orderBy('name')->get();
+       $users = User::select('id','name','email')->with('profile')->orderBy('name')->get();
 
        $chats = [];
        if ($other_user_id) {
