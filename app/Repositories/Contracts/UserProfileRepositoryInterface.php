@@ -19,4 +19,10 @@ interface UserProfileRepositoryInterface
     public function deleteProfile(UserProfile $profile): bool;
     public function storeProfilePhoto(UploadedFile $file, User $user): string;
     public function deleteProfilePhoto(string $path): bool;
+
+
+    //metody dla edukacji
+    public function addEducation(UserProfile $profile, array $data): UserProfile;
+    public function updateEducation(UserProfile $profile, array $data): UserProfile;
+    public function deleteEducation(UserProfile $profile): bool;
 }

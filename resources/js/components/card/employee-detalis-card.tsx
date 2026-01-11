@@ -52,7 +52,7 @@ export default function EmployeeDetailsCard({ employee }: { employee: any }) {
           {/* Zdjęcie */}
           <div className="flex flex-col items-center gap-3">
             <img
-              src={employee.profile_photo_url || '/storage/image/profile/man-profile-awatar.jpg'}
+              src={employee.profile?.profile_photo_url || employee.profile_photo_url || '/storage/image/profile/man-profile-awatar.jpg'}
               alt={employee.name}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -238,7 +238,7 @@ export default function EmployeeDetailsCard({ employee }: { employee: any }) {
       <div className="p-6">
         <h2 className="text-xl font-semibold mb-4">Akcje</h2>
         <div className="flex gap-3">
-         
+
           {isOwner && (
             <a
               href={`/employee/profile/edit`}
@@ -276,7 +276,7 @@ export default function EmployeeDetailsCard({ employee }: { employee: any }) {
           <div className="bg-green-500 text-white p-4 rounded-t-lg flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img
-                src={employee.profile_photo_url || '/storage/image/profile/man-profile-awatar.jpg'}
+                src={employee.profile?.profile_photo_url || employee.profile_photo_url || '/storage/image/profile/man-profile-awatar.jpg'}
                 alt={employee.name}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;

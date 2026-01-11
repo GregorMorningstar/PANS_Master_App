@@ -3,6 +3,7 @@
 
 namespace App\Repositories\Eloquent;
 
+use App\Models\SchoolCertificate;
 use App\Models\User;
 use App\Models\UserProfile;
 use App\Repositories\Contracts\FlagRepositoryInterface;
@@ -12,7 +13,8 @@ use Illuminate\Support\Facades\Auth;
 class EloquentFlagRepository implements FlagRepositoryInterface
 {
     public function __construct(private readonly User $user,
-                                private readonly UserProfile $userProfile)
+                                private readonly UserProfile $userProfile,
+                                private readonly SchoolCertificate $schoolCertificate)
     {
     }
 
@@ -36,6 +38,27 @@ class EloquentFlagRepository implements FlagRepositoryInterface
 
         }
 
-        return collect();
+        return new Collection();
+    }
+
+    public function educationFlagsByUser(): Collection
+    {
+        $education = $this->schoolCertificate->where('user_id', Auth::id())->get();
+        $educationCount = $education->count();
+
+        if ($educationCount > 0) {
+            $user = $this->user->find(Auth::id());
+            $user->is_complited_education = true;
+            $user->save();
+
+            return $education;
+        } else {
+            $user = $this->user->find(Auth::id());
+            $user->is_complited_education = false;
+            $user->save();
+
+        }
+
+        return new Collection();
     }
 }

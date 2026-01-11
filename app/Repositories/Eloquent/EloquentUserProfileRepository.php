@@ -11,6 +11,11 @@ use Illuminate\Support\Facades\Storage;
 
 class EloquentUserProfileRepository implements UserProfileRepositoryInterface
 {
+    public function __construct(
+        private readonly UserProfile $userProfile
+    ) {
+    }
+
     public function checkEducationCompletion(User $user): bool
     {
         return (bool) ($user->is_complited_education ?? false);
@@ -71,4 +76,27 @@ class EloquentUserProfileRepository implements UserProfileRepositoryInterface
 
         return false;
     }
+
+
+    //metody dla edukacji
+    public function addEducation(UserProfile $profile, array $data): UserProfile
+    {
+        $profile->education = $data;
+        $profile->save();
+        return $profile->fresh();
+    }
+
+    public function updateEducation(UserProfile $profile, array $data): UserProfile
+    {
+        $profile->education = $data;
+        $profile->save();
+        return $profile->fresh();
+    }
+
+    public function deleteEducation(UserProfile $profile): bool
+    {
+        $profile->education = null;
+        return $profile->save();
+    }
 }
+

@@ -146,6 +146,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [EmployeeController::class, 'storeEducation'])->name('store');
             Route::put('/{id}', [EmployeeController::class, 'updateEducation'])->name('update');
             Route::delete('/{id}', [EmployeeController::class, 'destroyEducation'])->name('destroy');
+            Route::get('/all', [EmployeeController::class, 'showEducationDetails'])->name('show');
         });
                Route::get('/employee-details/{employeeId}', [EmployeeController::class, 'showDetails'])->name('details');
 
@@ -184,4 +185,19 @@ Route::prefix('api')->middleware(['web', 'auth'])->group(function () {
     Route::get('/company/nip-lookup/{nip}', [App\Http\Controllers\Api\CompanyController::class, 'nipLookup']);
     Route::get('/schools/search', [App\Http\Controllers\Api\SchoolController::class, 'searchSchools']);
 });
+
+// Education routes
+Route::middleware(['auth', 'verified'])
+    ->prefix('education')
+    ->name('education.')
+    ->group(function () {
+        Route::get('/', [App\Http\Controllers\EducationController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\EducationController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\EducationController::class, 'store'])->name('store');
+        Route::get('/{certificate}', [App\Http\Controllers\EducationController::class, 'show'])->name('show');
+        Route::get('/{certificate}/edit', [App\Http\Controllers\EducationController::class, 'edit'])->name('edit');
+        Route::put('/{certificate}', [App\Http\Controllers\EducationController::class, 'update'])->name('update');
+        Route::delete('/{certificate}', [App\Http\Controllers\EducationController::class, 'destroy'])->name('destroy');
+    });
+
 require __DIR__.'/settings.php';

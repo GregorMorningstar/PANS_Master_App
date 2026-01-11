@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\Contracts\UserServiceInterface;
+use App\Services\Contracts\EducationServiceInterface;
 use App\Repositories\Contracts\UserProfileRepositoryInterface;
 use App\Repositories\Contracts\FlagRepositoryInterface;
 use Inertia\Inertia;
@@ -17,7 +18,8 @@ class EmployeeController extends Controller
     public function __construct(
         private readonly UserServiceInterface $userService,
         private readonly UserProfileRepositoryInterface $userProfileRepository,
-        private readonly FlagRepositoryInterface $flagRepository
+        private readonly FlagRepositoryInterface $flagRepository,
+        private readonly EducationServiceInterface $educationService
     ) {}
 
     public function index()
@@ -153,7 +155,7 @@ class EmployeeController extends Controller
     public function storeEducation(Request $request)
     {
         // Pokaż wszystkie dane przesyłane z formularza React/Inertia
-       
+
 
         $validatedData = $request->validate([
             'startYear' => 'required|integer|min:1900|max:2030',
@@ -165,8 +167,26 @@ class EmployeeController extends Controller
             'certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
         ]);
 
-        dd($validatedData);
+        $user = Auth::user();
 
+        // Handle certificate file upload
+        if ($request->hasFile('certificate')) {
+            $file = $request->file('certificate');
+            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            $extension = $file->getClientOriginalExtension();
+            $uniqueName = 'certificate_' . $user->id . '_' . time() . '_' . uniqid() . '.' . $extension;
+            $path = $file->storeAs('certificates', $uniqueName, 'public');
+            $validatedData['certificate_path'] = $path;
+        }
+
+        $education = $this->educationService->createSchoolCertificate($user, $validatedData);
+        if($education) {
+            $this->flagRepository->educationFlagsByUser();
+        } else {
+            return back()->withErrors([
+                'education' => 'Wystąpił błąd podczas zapisywania edukacji.'
+            ]);
+        }
         // Tymczasowo wyświetlamy dane
         return redirect()->route('employee.education.show')->with('success', 'Edukacja została pomyślnie dodana!');
     }
@@ -174,5 +194,40 @@ class EmployeeController extends Controller
     public function updateEducation(Request $request)
     {
         dd('update education', $request->all());
+    }
+
+    public function showEducationDetails(Request $request)
+    {
+        $user = Auth::user();
+        $page = (int) $request->get('page', 1);
+
+        // get paginated certificates for current user (4 per page)
+        $certificates = $this->educationService->getPaginatedCertificatesForUser($user, 4);
+
+        // get current certificate - for now show the first one from current page
+        $education = $certificates->items()[0] ?? null;
+
+        // prepare pagination data for individual certificate navigation
+        $pagination = null;
+        if ($certificates->total() > 1) {
+            $currentPage = $certificates->currentPage();
+            $totalPages = $certificates->lastPage();
+
+            $pagination = [
+                'prev_url' => $currentPage > 1 ?
+                    route('employee.education.show', ['page' => $currentPage - 1]) :
+                    null,
+                'next_url' => $currentPage < $totalPages ?
+                    route('employee.education.show', ['page' => $currentPage + 1]) :
+                    null,
+                'current' => $currentPage,
+                'total' => $totalPages
+            ];
+        }
+
+        return Inertia::render('employee/education/show-details', [
+            'education' => $education,
+            'pagination' => $pagination,
+        ]);
     }
 }
