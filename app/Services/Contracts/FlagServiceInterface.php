@@ -7,4 +7,5 @@ interface FlagServiceInterface
 
     public function addressFlagsByUser(): UserProfile;
     public function educationFlagsByUser(): UserProfile;
+    public function workingFlagsByUser(): UserProfile;
 }

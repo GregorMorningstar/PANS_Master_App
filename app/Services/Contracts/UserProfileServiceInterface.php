@@ -9,4 +9,5 @@ interface UserProfileServiceInterface
     public function getCompanyDataByNip(string $nip): array;
 
     public function validateNip(string $nip): bool;
+    public function getUserProfileByUserId(int $userId): ?array;
 }

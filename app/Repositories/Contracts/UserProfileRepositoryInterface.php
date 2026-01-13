@@ -19,6 +19,11 @@ interface UserProfileRepositoryInterface
     public function deleteProfile(UserProfile $profile): bool;
     public function storeProfilePhoto(UploadedFile $file, User $user): string;
     public function deleteProfilePhoto(string $path): bool;
+    /**
+     * Zwraca model UserProfile (z sparsowanym polem `address`) lub null.
+     */
+    public function getAdressByUserId(?int $userId = null): ?UserProfile;
+    public function findByUserId(int $userId): ?UserProfile;
 
 
     //metody dla edukacji

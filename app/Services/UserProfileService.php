@@ -5,7 +5,8 @@ namespace App\Services;
 use App\Services\Contracts\UserProfileServiceInterface;
 use App\Repositories\Contracts\UserProfileRepositoryInterface;
 use App\Models\User;
-
+use App\Services\NipService;
+use Illuminate\Support\Facades\Auth;
 class UserProfileService implements UserProfileServiceInterface
 {
     public function __construct(
@@ -43,5 +44,21 @@ class UserProfileService implements UserProfileServiceInterface
     public function validateNip(string $nip): bool
     {
         return $this->nipService->validateNip($nip);
+    }
+
+    public function getUserProfileByUserId(?int $userId = null): ?array
+    {
+        $userId = $userId ?? Auth::id();
+        if (! $userId) {
+            return null;
+        }
+
+        $profile = $this->userProfileRepository->getAdressByUserId($userId);
+        if (! $profile) {
+            return null;
+        }
+
+        // zwracamy atrybuty modelu jako tablicę dla serwisów
+        return $profile->toArray();
     }
 }

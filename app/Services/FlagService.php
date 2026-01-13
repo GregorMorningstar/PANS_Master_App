@@ -23,4 +23,9 @@ class FlagService implements FlagServiceInterface
         $educations = $this->flagRepository->educationFlagsByUser();
 
     }
+    public function workingFlagsByUser(): array
+    {
+        $workings = $this->flagRepository->employmentFlagsByUser();
+
+    }
 }

@@ -6,6 +6,7 @@ namespace App\Repositories\Eloquent;
 use App\Models\SchoolCertificate;
 use App\Models\User;
 use App\Models\UserProfile;
+use App\Models\EmploymentCertificate;
 use App\Repositories\Contracts\FlagRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +15,8 @@ class EloquentFlagRepository implements FlagRepositoryInterface
 {
     public function __construct(private readonly User $user,
                                 private readonly UserProfile $userProfile,
-                                private readonly SchoolCertificate $schoolCertificate)
+                                private readonly SchoolCertificate $schoolCertificate,
+                                private readonly EmploymentCertificate $employmentCertificate)
     {
     }
 
@@ -57,6 +59,25 @@ class EloquentFlagRepository implements FlagRepositoryInterface
             $user->is_complited_education = false;
             $user->save();
 
+        }
+
+        return new Collection();
+    }
+    public function employmentFlagsByUser(): Collection
+    {
+         $employment = $this->employmentCertificate->where('user_id', Auth::id())->get();
+        $employmentCount = $employment->count();
+
+        if ($employmentCount > 0) {
+            $user = $this->user->find(Auth::id());
+            $user->is_complited_work_time = true;
+            $user->save();
+
+            return $employment;
+        } else {
+            $user = $this->user->find(Auth::id());
+            $user->is_complited_work_time = false;
+            $user->save();
         }
 
         return new Collection();

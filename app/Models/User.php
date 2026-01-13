@@ -160,4 +160,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(SchoolCertificate::class);
     }
+
+    public function employmentCertificates(): HasMany
+    {
+        return $this->hasMany(EmploymentCertificate::class);
+    }
 }

@@ -83,7 +83,9 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
         });
     });
 
-Route::middleware('auth')->group(function () {
+
+
+    Route::middleware('auth')->group(function () {
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
 
@@ -110,6 +112,7 @@ Route::middleware('auth')->group(function () {
         Route::prefix('dashboard')->name('dashboard.')->group(function () {
             Route::get('/', [EmployeeController::class, 'index'])->name('index');
         });
+        // Employee calendar routes
         Route::prefix('calendar')->name('calendar.')->group(function () {
             Route::get('/',[CalendarController::class, 'index'])->name('index');
             Route::post('/store',[CalendarController::class, 'store'])->name('store');
@@ -118,11 +121,12 @@ Route::middleware('auth')->group(function () {
             Route::put('/update/{id}',[CalendarController::class, 'update'])->name('update');
             Route::get('/history',[CalendarController::class, 'history'])->name('history');
         });
-
+         // Employee profile routes
         Route::prefix('profile')->name('profile.')->group(function () {
             Route::get('/', [EmployeeController::class, 'showEmployeeProfile'])->name('show');
 
         });
+        // Employee address routes
         Route::prefix('adress')->name('address.')->group(function () {
             Route::get('/', [EmployeeController::class, 'showAddress'])->name('show');
             Route::get('/create', [EmployeeController::class, 'createAddress'])->name('create');
@@ -130,7 +134,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [EmployeeController::class, 'storeAddress'])->name('store');
             Route::put('/update', [EmployeeController::class, 'updateAddress'])->name('update');
         });
-
+        // Employee company routes
         Route::prefix('company')->name('company.')->group(function () {
             Route::get('/', [EmployeeController::class, 'showCompany'])->name('show');
             Route::get('/create', [EmployeeController::class, 'createCompany'])->name('create');
@@ -138,7 +142,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [EmployeeController::class, 'storeCompany'])->name('store');
             Route::put('/update', [EmployeeController::class, 'updateCompany'])->name('update');
         });
-
+        // Employee education routes
         Route::prefix('education')->name('education.')->group(function () {
             Route::get('/', [EmployeeController::class, 'showEducation'])->name('index');
             Route::get('/create', [EmployeeController::class, 'createEducation'])->name('create');
@@ -148,12 +152,12 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{id}', [EmployeeController::class, 'destroyEducation'])->name('destroy');
             Route::get('/all', [EmployeeController::class, 'showEducationDetails'])->name('show');
         });
-               Route::get('/employee-details/{employeeId}', [EmployeeController::class, 'showDetails'])->name('details');
+
 
     });
 
 });
-
+// Authenticated user dashboard
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
