@@ -25,6 +25,8 @@ return new class extends Migration
             $table->boolean('is_complited_education')->default(false);
             $table->boolean('is_complited_work_time')->default(false);
             $table->boolean('is_complited_address')->default(false);
+            $table->integer('monthly_work_time_target')->default(0);
+            $table->integer('monthly_education_time_target')->default(0);
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();

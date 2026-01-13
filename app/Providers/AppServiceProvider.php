@@ -30,7 +30,10 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Contracts\UserProfileRepositoryInterface::class => \App\Repositories\Eloquent\EloquentUserProfileRepository::class,
             \App\Services\Contracts\EducationServiceInterface::class => \App\Services\EducationService::class,
             \App\Repositories\Contracts\EducationRepositoryInterface::class => \App\Repositories\Eloquent\EloquentEducationRepository::class,
-        ];
+            \App\Services\Contracts\EmploymentCertificateServiceInterface::class => \App\Services\EmploymentCertificateService::class,
+            \App\Repositories\Contracts\EmploymentCertificateRepositoryInterface::class => \App\Repositories\Eloquent\EloquentEmploymentCertificateRepository::class,
+
+            ];
 
         foreach ($bindings as $abstract => $concrete) {
             $this->app->bind($abstract, $concrete);

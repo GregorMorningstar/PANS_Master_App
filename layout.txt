@@ -22,3 +22,5 @@ kody en13
 5000 - user profile
 
 6000 - edukacja
+
+7000 - swiadectwa pracy

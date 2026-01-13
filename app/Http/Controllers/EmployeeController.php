@@ -7,6 +7,7 @@ use App\Services\Contracts\UserServiceInterface;
 use App\Services\Contracts\EducationServiceInterface;
 use App\Repositories\Contracts\UserProfileRepositoryInterface;
 use App\Repositories\Contracts\FlagRepositoryInterface;
+use App\Services\Contracts\EmploymentCertificateServiceInterface;
 use Inertia\Inertia;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +20,8 @@ class EmployeeController extends Controller
         private readonly UserServiceInterface $userService,
         private readonly UserProfileRepositoryInterface $userProfileRepository,
         private readonly FlagRepositoryInterface $flagRepository,
-        private readonly EducationServiceInterface $educationService
+        private readonly EducationServiceInterface $educationService,
+        private readonly EmploymentCertificateServiceInterface $employmentCertificateService
     ) {}
 
     public function index()
@@ -43,12 +45,20 @@ class EmployeeController extends Controller
 
     public function showEmployeeProfile()
     {
-               return Inertia::render('employee/profile/show');
+        $address = $this->userProfileRepository->getAdressByUserId();
+
+        return Inertia::render('employee/profile/show', [
+            'address' => $address,
+        ]);
     }
 
     public function showAddress()
     {
-        return Inertia::render('employee/address/show');
+        $profile = $this->userProfileRepository->getAdressByUserId();
+
+        return Inertia::render('employee/address/show', [
+            'address' => $profile?->address ?? null,
+        ]);
     }
     public function editAddress()
     {
@@ -112,21 +122,54 @@ class EmployeeController extends Controller
 
     public function storeCompany(Request $request)
     {
-        // Pokaż wszystkie dane przesyłane z formularza React/Inertia
-        dd([
-            'method' => $request->method(),
-            'all_data' => $request->all(),
-            'validation_test' => 'Data received successfully from React/Inertia form'
-        ]);
+
 
         $validatedData = $request->validate([
+
             'nip' => 'required|string|size:10',
             'name' => 'required|string|max:255',
             'address' => 'nullable|string',
             'street' => 'nullable|string|max:255',
             'zip' => 'nullable|string|max:10',
             'city' => 'nullable|string|max:100',
+            'workCertificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
         ]);
+
+        $user = Auth::user();
+
+        // map incoming request fields to model fillable keys and include user_id
+        $payload = [
+            'user_id' => $user->id,
+            'nip' => $validatedData['nip'],
+            'company_name' => $validatedData['name'] ?? null,
+            'street' => $validatedData['street'] ?? null,
+            'zip_code' => $validatedData['zip'] ?? null,
+            'city' => $validatedData['city'] ?? null,
+            'start_date' => $request->input('workStartDate'),
+            'end_date' => $request->input('workEndDate'),
+            'position' => $request->input('position'),
+            'additional_info' => $request->input('jobDescription'),
+        ];
+
+        // handle uploaded work certificate file
+        if ($request->hasFile('workCertificate')) {
+            $file = $request->file('workCertificate');
+            $extension = $file->getClientOriginalExtension();
+            $uniqueName = 'work_certificate_' . $user->id . '_' . time() . '_' . uniqid() . '.' . $extension;
+            $path = $file->storeAs('work_certificates', $uniqueName, 'public');
+            $payload['work_certificate_file_path'] = $path;
+        }
+
+        $work_certification = $this->employmentCertificateService->employeeCreateCertificate($payload);
+
+        if ($work_certification) {
+            $this->flagRepository->employmentFlagsByUser();
+        } else {
+            return back()->withErrors([
+                'company' => 'Wystąpił błąd podczas zapisywania firmy.'
+            ]);
+        }
+
 
         // Tymczasowo wyświetlamy dane
         return redirect()->route('employee.company.show')->with('success', 'Firma została pomyślnie dodana!');
