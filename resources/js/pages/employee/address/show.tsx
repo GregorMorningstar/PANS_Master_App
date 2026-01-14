@@ -13,14 +13,14 @@ export default function ShowEmployeeAddress() {
 
     const page = usePage().props as any;
     const adress = page.address ?? null;
-
+    const user = page.user ?? null;
 
     const useEffect = () => {
         console.log(adress);
     };
     return (
       <EmployeeLayout title="Szczegóły Adresu" breadcrumbs={breadcrumbs}>
-          <CardAdress address={adress} />
+          <CardAdress address={adress} user={user} />
 
       </EmployeeLayout>
     );

@@ -26,6 +26,7 @@ class UserProfile extends Model
 
     protected $casts = [
         'birth_date' => 'date',
+        'address' => 'array',
     ];
 
     protected $appends = [

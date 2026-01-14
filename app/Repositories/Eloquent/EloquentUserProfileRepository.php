@@ -118,19 +118,7 @@ class EloquentUserProfileRepository implements UserProfileRepositoryInterface
             return null;
         }
 
-        // jeśli w modelu pole address jest przechowywane jako JSON string - zdekoduj,
-        // ale zwróć cały model (Inertia potrafi serializować modele/arrayy z atrybutami)
-        $address = $profile->address ?? null;
-        if (is_string($address)) {
-            $decoded = json_decode($address, true);
-            $profile->address = is_array($decoded) ? $decoded : null;
-        }
-
-        // jeśli to obiekt lub array, ustaw bez zmian (Inertia zobaczy array lub null)
-        if (is_object($address) || is_array($address)) {
-            $profile->address = $address;
-        }
-
+      
         return $profile;
     }
 }

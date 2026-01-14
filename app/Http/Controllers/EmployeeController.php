@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\Contracts\UserServiceInterface;
 use App\Services\Contracts\EducationServiceInterface;
-use App\Repositories\Contracts\UserProfileRepositoryInterface;
+use App\Services\Contracts\UserProfileServiceInterface;
 use App\Repositories\Contracts\FlagRepositoryInterface;
 use App\Services\Contracts\EmploymentCertificateServiceInterface;
 use Inertia\Inertia;
@@ -14,11 +14,9 @@ use Illuminate\Support\Facades\Auth;
 
 class EmployeeController extends Controller
 {
-
-
     public function __construct(
         private readonly UserServiceInterface $userService,
-        private readonly UserProfileRepositoryInterface $userProfileRepository,
+        private readonly UserProfileServiceInterface $userProfileService,
         private readonly FlagRepositoryInterface $flagRepository,
         private readonly EducationServiceInterface $educationService,
         private readonly EmploymentCertificateServiceInterface $employmentCertificateService
@@ -45,7 +43,7 @@ class EmployeeController extends Controller
 
     public function showEmployeeProfile()
     {
-        $address = $this->userProfileRepository->getAdressByUserId();
+        $address = $this->userProfileService->getAddressData();
 
         return Inertia::render('employee/profile/show', [
             'address' => $address,
@@ -54,10 +52,12 @@ class EmployeeController extends Controller
 
     public function showAddress()
     {
-        $profile = $this->userProfileRepository->getAdressByUserId();
+        $address = $this->userProfileService->getAddressData();
+        $user = Auth::user();
 
         return Inertia::render('employee/address/show', [
-            'address' => $profile?->address ?? null,
+            'address' => $address,
+            'user' => $user,
         ]);
     }
     public function editAddress()
@@ -83,20 +83,20 @@ class EmployeeController extends Controller
             'emergency_contact_phone' => 'nullable|string|max:15',
         ]);
 
-        // obsługa zdjęcia profilowego przez repozytorium
+        // obsługa zdjęcia profilowego przez serwis
         if ($request->hasFile('profile_photo')) {
             /** @var UploadedFile $file */
             $file = $request->file('profile_photo');
-            $path = $this->userProfileRepository->storeProfilePhoto($file, $user);
+            $path = $this->userProfileService->storeProfilePhoto($file, $user);
             $validated['profile_photo'] = $path;
         }
 
-        $profile = $this->userProfileRepository->getProfile($user);
+        $profile = $this->userProfileService->getProfile($user);
 
         if ($profile) {
-            $this->userProfileRepository->updateProfile($profile, $validated);
+            $this->userProfileService->updateProfile($profile, $validated);
         } else {
-            $this->userProfileRepository->createProfile($user, $validated);
+            $this->userProfileService->createProfile($user, $validated);
         }
 
 
