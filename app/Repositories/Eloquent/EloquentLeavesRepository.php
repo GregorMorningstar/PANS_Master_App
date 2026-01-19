@@ -224,6 +224,21 @@ class EloquentLeavesRepository implements LeavesRepositoryInterface
             ->orderBy('start_date', 'desc')
             ->get();
     }
+
+    /**
+     * Pobierz użyte urlopy konkretnego użytkownika
+     */
+    public function getUsedLeavesByUser(int $userId): Collection
+    {
+        $today = Carbon::today();
+
+        return $this->leaves
+            ->where('user_id', $userId)
+            ->where('status', 'approved')
+            ->where('start_date', '<', $today)
+            ->orderBy('start_date', 'desc')
+            ->get();
+    }
 }
 
 

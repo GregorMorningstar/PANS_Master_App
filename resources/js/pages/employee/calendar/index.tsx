@@ -105,6 +105,19 @@ export default function EmployeeCalendar() {
 
     const calendarRef = useRef<any>(null);
     const [selectedEvent, setSelectedEvent] = useState<any>(null);
+    const [initialDate, setInitialDate] = useState<string | undefined>(undefined);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const params = new URLSearchParams(window.location.search);
+        const d = params.get('date');
+        if (d) {
+            setInitialDate(d);
+            return;
+        }
+        const hash = (window.location.hash || '').replace('#', '');
+        if (hash) setInitialDate(hash);
+    }, []);
 
     const breadcrumbs = [
         { label: 'Panel pracownika', href: 'employee.dashboard' },
@@ -306,6 +319,7 @@ export default function EmployeeCalendar() {
                             center: 'title',
                             right: 'dayGridMonth,timeGridWeek,timeGridDay',
                         }}
+                        initialDate={initialDate}
                         buttonText={{
                             today: 'Dziś',
                             month: 'Miesiąc',

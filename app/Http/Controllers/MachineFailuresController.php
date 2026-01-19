@@ -79,4 +79,6 @@ class MachineFailuresController extends Controller
 
         return redirect()->back()->with('error', 'Nie udało się usunąć zgłoszenia awarii.');
     }
+
+   
 }

@@ -68,4 +68,12 @@ interface LeavesRepositoryInterface
      */
 
     public function getLeaveByIdAndYear(int $leaveId, int $year): ?Leaves;
+
+
+    /**
+     * Pobierz użyte urlopy konkretnego użytkownika
+     *
+     * @param int $userId
+     */
+    public function getUsedLeavesByUser(int $userId): Collection;
 }

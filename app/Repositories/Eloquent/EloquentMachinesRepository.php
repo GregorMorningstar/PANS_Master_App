@@ -9,7 +9,7 @@ use App\Enums\MachineStatus;
 
 class EloquentMachinesRepository implements MachinesRepositoryInterface
 {
-    protected Machines $model;
+    private readonly Machines $model;
 
     public function __construct(Machines $model)
     {
@@ -77,5 +77,10 @@ class EloquentMachinesRepository implements MachinesRepositoryInterface
         $machine->last_failure_date = now();
         $machine->status = MachineStatus::BREAKDOWN;
         return $machine->save();
+    }
+
+    public function getUserMachines(int $userId, int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->model->where('user_id', $userId)->with('operator','operations','machineFailures','department')->paginate($perPage);
     }
 }

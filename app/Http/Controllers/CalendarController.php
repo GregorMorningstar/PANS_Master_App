@@ -7,6 +7,7 @@ use App\Services\Contracts\LeavesServiceInterface;
 use App\Enums\LeavesType;
 use App\Enums\LeavesStatus;
 use Carbon\Carbon;
+use Inertia\Inertia;
 
 class CalendarController extends Controller
 {
@@ -24,8 +25,11 @@ class CalendarController extends Controller
 
     public function history()
     {
-        return inertia('employee/calendar/history');
+        $usedLeaves = $this->leavesService->getUsedLeavesByUser(auth()->id());
+       // dd($usedLeaves);
+        return inertia('employee/calendar/history', ['usedLeaves' => $usedLeaves]);
     }
+
 
     public function store(Request $request)
     {
@@ -101,15 +105,21 @@ class CalendarController extends Controller
     public function show($id)
     {
         $leave = $this->leavesService->getLeavesById($id);
-        $user = auth()->user();
+        if (!$leave) {
+            abort(404, 'Nie znaleziono urlopu.');
+        }
 
-        $moderator = \App\Models\User::where('role', 'moderator')->first();
+        $user = auth()->user();
+        // Only owner or moderator can view
+        if ($leave->user_id !== $user->id && ($user->role ?? '') !== 'moderator') {
+            abort(403, 'Nie masz uprawnień do podglądu tego urlopu.');
+        }
 
         return inertia('employee/calendar/detalis-leaves', [
             'leave' => $leave,
             'currentUserRole' => $user->role ?? 'employee',
             'currentUserId' => $user->id,
-            'moderatorId' => $moderator?->id,
+            'redirectBackInSeconds' => 5,
         ]);
     }
 
@@ -229,5 +239,25 @@ class CalendarController extends Controller
 
         return redirect('/employee/calendar')
                         ->with('success', 'Wniosek urlopu został usunięty pomyślnie.');
+    }
+
+    public function detailsLeavesById($id){
+        if (!$id) {
+            abort(404, 'Nie podano ID urlopu.');
+        }
+        $leave = $this->leavesService->getLeavesById($id);
+        if (!$leave) {
+            abort(404, 'Nie znaleziono urlopu.');
+        }
+
+        $user = auth()->user();
+        if ($leave->user_id !== $user->id && ($user->role ?? '') !== 'moderator') {
+            abort(403, 'Nie masz uprawnień do podglądu tego urlopu.');
+        }
+
+        return Inertia::render('employee/calendar/detalis-leaves', [
+            'leave' => $leave,
+            'redirectBackInSeconds' => 5,
+        ]);
     }
 }

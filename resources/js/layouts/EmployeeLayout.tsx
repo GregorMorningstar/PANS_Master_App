@@ -72,7 +72,6 @@ export default function EmployeeLayout({
 
     const completionPercentage = profileStatus?.overall_completion || 0;
 
-    // zawsze przekierowuj na stronę profilu
     const actionHref = '/employee/profile';
 
     return (
