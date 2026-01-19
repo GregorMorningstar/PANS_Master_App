@@ -115,4 +115,13 @@ class MachinesController extends Controller
             return redirect()->back()->withErrors(['error' => 'Wystąpił błąd podczas usuwania maszyny.']);
         }
     }
+
+    public function getUserMachines()
+    {
+        $allMachines = $this->machineService->getUserMachines(auth()->id(), 15);
+     //  dd($allMachines);
+        return Inertia::render('machines/user-machines', [
+            'machines' => $allMachines,
+        ]);
+    }
 }

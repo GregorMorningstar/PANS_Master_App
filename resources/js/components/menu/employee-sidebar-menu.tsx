@@ -16,7 +16,9 @@ import {
   faList,
   faWrench,
   faUser,
+  faNetworkWired,
 } from '@fortawesome/free-solid-svg-icons';
+import { machine } from 'os';
 
 export default function EmployeeSidebarMenu(): React.ReactElement {
   const page = usePage();
@@ -67,7 +69,7 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
   useEffect(() => {
     if (!containerRef.current) return;
     const el = containerRef.current;
-    const threshold = 80; // px - adjust as needed (sidebar icon width ~48-64)
+    const threshold = 80;
     const ro = new ResizeObserver(() => {
       const w = el.clientWidth;
       setIsCollapsed(w < threshold);
@@ -92,6 +94,7 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
     companyCreate: '/employee/company/create',
     machinesReport: '/machines/report-failure',
     machinesHistory: '/machines/failures/history',
+    machinesUser: '/machines/user',
   };
 
   return (
@@ -310,6 +313,11 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
             aria-hidden={openKey !== 'machines'}
           >
             <div className="flex flex-col space-y-1 pl-6">
+              <Link href={routes.machinesUser}
+                className={`text-sm px-2 py-1 rounded block ${isActive(routes.machinesUser) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+              >
+                <FontAwesomeIcon icon={faNetworkWired} className="mr-2" /> Moje maszyny
+              </Link>
               <Link
                 href={routes.machinesReport}
                 className={`text-sm px-2 py-1 rounded block ${isActive(routes.machinesReport) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}

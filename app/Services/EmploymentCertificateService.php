@@ -17,5 +17,8 @@ class EmploymentCertificateService implements EmploymentCertificateServiceInterf
         return $this->repository->employeeCreateCertificate($data);
     }
 
-    
+    public function getCertificatesByUserId(int $userId): ?\Illuminate\Database\Eloquent\Collection
+    {
+        return $this->repository->getCertificatesByUserId($userId);
+    }
 }

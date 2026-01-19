@@ -57,4 +57,10 @@ interface LeavesServiceInterface
      * Pobierz wszystkie oczekujące urlopy
      */
     public function getPendingLeaves(): Collection;
+
+    /**
+     * Pobierz użyte urlopy konkretnego użytkownika
+     *
+     * @param int $userId
+     */    public function getUsedLeavesByUser(int $userId): Collection;
 }

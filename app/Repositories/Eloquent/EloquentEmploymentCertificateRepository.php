@@ -17,4 +17,9 @@ class EloquentEmploymentCertificateRepository implements EmploymentCertificateRe
 
     }
 
+    public function getCertificatesByUserId(int $userId): ?\Illuminate\Database\Eloquent\Collection
+    {
+        return $this->employmentCertificate->where('user_id', $userId)->with('user')->get();
+    }
+
 }

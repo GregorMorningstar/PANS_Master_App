@@ -111,4 +111,13 @@ class LeavesService implements LeavesServiceInterface
     {
         return $this->leavesRepository->getUserPendingLeaves($userId);
     }
+
+    /**
+     * Pobierz użyte urlopy konkretnego użytkownika
+     *
+     * @param int $userId
+     */    public function getUsedLeavesByUser(int $userId): Collection
+    {
+        return $this->leavesRepository->getUsedLeavesByUser($userId);
+    }
 }

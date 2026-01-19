@@ -78,7 +78,6 @@ class MachineService implements MachinesServiceInterface
     public function deleteMachine(int $id): bool
     {
 
-        //metoda sprawdzająca czy maszyna ma przypisanych użytkowników
         if ($this->machinesRepository->hasAssignedUsers($id)) {
             throw new InvalidArgumentException('Maszyna ma przypisanych użytkowników. Najpierw odłącz użytkowników.');
         }
@@ -98,5 +97,10 @@ class MachineService implements MachinesServiceInterface
     public function updateStatus(int $machineId, string $status): bool
     {
         return $this->machinesRepository->updateStatus($machineId, $status);
+    }
+
+    public function getUserMachines(int $userId, int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->machinesRepository->getUserMachines($userId, $perPage);
     }
 }

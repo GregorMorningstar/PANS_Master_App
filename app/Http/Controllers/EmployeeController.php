@@ -107,7 +107,11 @@ class EmployeeController extends Controller
 
     public function showCompany()
     {
-        return Inertia::render('employee/company/show');
+
+    $company = $this->employmentCertificateService->getCertificatesByUserId(Auth::id());
+        return Inertia::render('employee/company/show', [
+            'company' => $company,
+        ]);
     }
 
     public function createCompany()
