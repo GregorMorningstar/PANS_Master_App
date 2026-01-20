@@ -6,18 +6,27 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Services\Contracts\MachinesServiceInterface;
 use App\Services\Contracts\MachineFailureServiceInterface;
-use Illuminate\Support\Facades\Auth;
 class MachineFailuresController extends Controller
 {
-    public function __construct(private readonly MachinesServiceInterface $machineService,
-                                private readonly MachineFailureServiceInterface $machineFailureService)
-    {}
+    private MachinesServiceInterface $machineService;
+    private MachineFailureServiceInterface $machineFailureService;
+
+    public function __construct(MachinesServiceInterface $machineService,
+                                MachineFailureServiceInterface $machineFailureService)
+    {
+        $this->machineService = $machineService;
+        $this->machineFailureService = $machineFailureService;
+    }
     public function index()
     {
+        $userMachinesFailures =  $this->machineService->getUserMachines(auth()->id(), 15);
+
         $allmachineFailures = $this->machineFailureService->getAllFailuresWithMachines();
       //  dd($allmachineFailures);
 
-        return Inertia::render('machines/failures/index',['allmachineFailures' => $allmachineFailures]);
+        return Inertia::render('machines/failures/index',[
+            'allmachineFailures' => $allmachineFailures,
+         'userMachinesFailures' => $userMachinesFailures]);
      }
 
     public function history()
@@ -80,5 +89,5 @@ class MachineFailuresController extends Controller
         return redirect()->back()->with('error', 'Nie udało się usunąć zgłoszenia awarii.');
     }
 
-   
+
 }

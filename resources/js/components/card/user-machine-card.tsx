@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { usePage, Link } from '@inertiajs/react';
 import Barcode from 'react-barcode';
 
-export default function UserMachinesCard({ userMachines: propUserMachines }: { userMachines?: any[] }) {
+export default function UserMachinesCard({ userMachines: propUserMachines }: { userMachines?: any }) {
     const page = usePage<any>();
-    const userMachines = propUserMachines ?? page.props?.machines ?? [];
+    const raw = propUserMachines ?? page.props?.machines ?? [];
+    const userMachines: any[] = Array.isArray(raw) ? raw : (raw?.data && Array.isArray(raw.data) ? raw.data : []);
     const [expandedOpsMap, setExpandedOpsMap] = useState<Record<string|number, number | null>>({});
     const [expandedFailMap, setExpandedFailMap] = useState<Record<string|number, number | null>>({});
 
