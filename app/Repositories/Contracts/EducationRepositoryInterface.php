@@ -5,6 +5,7 @@ namespace App\Repositories\Contracts;
 use App\Models\SchoolCertificate;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface EducationRepositoryInterface
 {
@@ -18,4 +19,6 @@ interface EducationRepositoryInterface
 
     // return all certificates for given user id (by user -> user_profile relation)
     public function getAllByCurrentUserId(int $id): Collection;
+
+    public function getAllPendingCertificates(int $perPage = 6, array $filters = []): LengthAwarePaginator;
 }

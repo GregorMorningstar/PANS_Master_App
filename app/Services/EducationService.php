@@ -6,6 +6,7 @@ use App\Models\SchoolCertificate;
 use App\Models\User;
 use App\Services\Contracts\EducationServiceInterface;
 use App\Repositories\Contracts\EducationRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class EducationService implements EducationServiceInterface
 {
@@ -42,8 +43,15 @@ class EducationService implements EducationServiceInterface
     }
 
     // get paginated certificates for user
-    public function getPaginatedCertificatesForUser(User $user, int $perPage = 4): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public function getPaginatedCertificatesForUser(User $user, int $perPage = 4): LengthAwarePaginator
     {
         return $this->educationRepository->getUserCertificatesPaginated($user, $perPage);
+    }
+//get all recort pending certificates
+    public function getAllPendingCertificates(array $filters = []): LengthAwarePaginator
+    {
+        $perPage = (int) ($filters['per_page'] ?? 6);
+
+        return $this->educationRepository->getAllPendingCertificates($perPage, $filters);
     }
 }

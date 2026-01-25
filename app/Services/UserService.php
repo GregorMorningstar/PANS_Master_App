@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Services\Contracts\UserServiceInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\UserProfileRepositoryInterface;
+use App\Services\Contracts\EmploymentCertificateServiceInterface;
 use App\Models\User;
 use App\Models\UserProfile;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -14,10 +15,15 @@ use Illuminate\Validation\ValidationException;
 
 class UserService implements UserServiceInterface
 {
+    private EmploymentCertificateServiceInterface $employmentCertificateService;
+
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
-        private readonly UserProfileRepositoryInterface $userProfileRepository
-    ) {}
+        private readonly UserProfileRepositoryInterface $userProfileRepository,
+        EmploymentCertificateServiceInterface $employmentCertificateService
+    ) {
+        $this->employmentCertificateService = $employmentCertificateService;
+    }
 
     public function getById(int $id): ?User
     {
@@ -56,7 +62,7 @@ class UserService implements UserServiceInterface
         }
 
         $profileData = $data;
-        
+
         // Obsługa zdjęcia
         if (isset($data['profile_photo']) && $data['profile_photo'] instanceof UploadedFile) {
             $photoPath = $this->userProfileRepository->storeProfilePhoto($data['profile_photo'], $user);
@@ -84,13 +90,13 @@ class UserService implements UserServiceInterface
         }
 
         $profile = $user->profile;
-        
+
         if (!$profile) {
             return $this->createUserProfile($user, $data);
         }
 
         $profileData = $data;
-        
+
         // Obsługa zdjęcia
         if (isset($data['profile_photo']) && $data['profile_photo'] instanceof UploadedFile) {
             $photoPath = $this->userProfileRepository->storeProfilePhoto($data['profile_photo'], $user);
@@ -108,7 +114,7 @@ class UserService implements UserServiceInterface
     public function deleteUserProfile(User $user): bool
     {
         $profile = $user->profile;
-        
+
         if (!$profile) {
             return false;
         }
@@ -119,17 +125,24 @@ class UserService implements UserServiceInterface
     public function deleteProfilePhoto(User $user): bool
     {
         $profile = $user->profile;
-        
+
         if (!$profile || !$profile->profile_photo) {
             return false;
         }
 
         $deleted = $this->userProfileRepository->deleteProfilePhoto($profile->profile_photo);
-        
+
         if ($deleted) {
             $profile->update(['profile_photo' => null]);
         }
 
         return $deleted;
+    }
+
+    public function getAllCertificatesWithPendingStatus(array $filters): ?LengthAwarePaginator
+    {
+        $perPage = (int) ($filters['per_page'] ?? 6);
+
+        return $this->employmentCertificateService->getAllCertificatesWithPendingStatus($perPage, $filters);
     }
 }

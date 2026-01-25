@@ -18,6 +18,7 @@ class SchoolCertificate extends Model
         'end_year',
         'education_level',
         'certificate_path',
+        'status'
     ];
  protected static function booted()
     {
