@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Repositories\Contracts\EducationRepositoryInterface;
 use App\Repositories\Contracts\FlagRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
+use App\Enums\StatusAplication;
 
 class EloquentEducationRepository implements EducationRepositoryInterface
 {
@@ -76,5 +77,30 @@ class EloquentEducationRepository implements EducationRepositoryInterface
             ->where('user_id', $id)
             ->orderByDesc('created_at')
             ->get();
+    }
+
+    public function getAllPendingCertificates(int $perPage = 6, array $filters = []): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $query = $this->schoolCertificate->where('status', 'pending')->with('user');
+
+        if (!empty($filters['name'])) {
+            $query->whereHas('user', function ($q) use ($filters) {
+                $q->where('name', 'LIKE', '%' . $filters['name'] . '%');
+            });
+        }
+
+        if (!empty($filters['school'])) {
+            $query->where('school_name', 'LIKE', '%' . $filters['school'] . '%');
+        }
+
+        if (!empty($filters['year_from'])) {
+            $query->where('start_year', '>=', $filters['year_from']);
+        }
+
+        if (!empty($filters['year_to'])) {
+            $query->where('end_year', '<=', $filters['year_to']);
+        }
+
+        return $query->paginate($perPage);
     }
 }
