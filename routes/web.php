@@ -58,9 +58,11 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
         Route::prefix('users')->group(function () {
             Route::get('/', [UserController::class, 'index'])->name('users.index');
                Route::get('/confirmation-education', [UserController::class, 'confirmationEducation'])->name('users.confirmation-education');
+               Route::post ('/education/approve', [UserController::class, 'approveEducation'])->name('users.approve-education');
                Route::get('confirmation-work-certificates', [UserController::class, 'confirmationWorkCertificates'])->name('users.confirmation-work-certificates');
-            Route::get('/{id}', [UserController::class, 'show'])->name('users.show');
-        });
+               Route::post ('/work-certificates/approve', [UserController::class, 'approveWorkCertificate'])->name('users.approve-work-certificates');
+               Route::get('/{id}', [UserController::class, 'show'])->name('users.show');
+        }   );
 
         // leaves: /moderator/leaves
         Route::prefix('leaves')->name('leaves.')->group(function () {

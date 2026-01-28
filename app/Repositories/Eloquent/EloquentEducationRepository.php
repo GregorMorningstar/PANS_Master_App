@@ -8,6 +8,7 @@ use App\Repositories\Contracts\EducationRepositoryInterface;
 use App\Repositories\Contracts\FlagRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use App\Enums\StatusAplication;
+use App\Enums\EducationsDegree;
 
 class EloquentEducationRepository implements EducationRepositoryInterface
 {
@@ -103,4 +104,87 @@ class EloquentEducationRepository implements EducationRepositoryInterface
 
         return $query->paginate($perPage);
     }
+//get maximum education level for user an return int or null
+    public function getMaximumEducationLevelForUser(int $userId): ?int
+    {
+        $all_education = $this->schoolCertificate
+            ->where('user_id', $userId)
+            ->where('status', StatusAplication::APPROVED)
+            ->orderByDesc('created_at')
+            ->get();
+
+        if ($all_education->isEmpty()) {
+            return null;
+        }
+
+        $levels = $all_education->pluck('education_level')
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray();
+
+        if (empty($levels)) {
+            return null;
+        }
+
+        $normalize = function (string $lvl): ?string {
+            foreach (EducationsDegree::cases() as $case) {
+                if ($case->value === $lvl || $case->name === $lvl) {
+                    return $case->value;
+                }
+            }
+            return null;
+        };
+
+        $valid = [];
+        foreach ($levels as $lvl) {
+            $v = $normalize((string)$lvl);
+            if ($v !== null) {
+                $valid[] = $v;
+            }
+        }
+
+        if (empty($valid)) {
+            return null;
+        }
+
+        $order = array_flip(EducationsDegree::getAll());
+
+        $maxLevel = null;
+        $maxYears = -1;
+
+        foreach ($valid as $v) {
+            $years = EducationsDegree::yearsFor($v);
+            if ($years > $maxYears) {
+                $maxYears = $years;
+                $maxLevel = $v;
+                continue;
+            }
+
+            if ($years === $maxYears && $maxLevel !== null) {
+                $curPos = $order[$v] ?? PHP_INT_MAX;
+                $maxPos = $order[$maxLevel] ?? PHP_INT_MAX;
+                if ($curPos > $maxPos) {
+                    $maxLevel = $v;
+                }
+            }
+        }
+
+        return $maxYears >= 0 ? $maxYears : null;
+    }
+
+    public function findByIdWithUser(int $id): ?SchoolCertificate
+    {
+        return $this->schoolCertificate->with('user')->find($id);
+    }
+
+    public function setStatusCertificate(SchoolCertificate $certificate, StatusAplication $status): SchoolCertificate
+    {
+        $certificate->status = $status->value;
+        $certificate->save();
+
+        return $certificate;
+    }
+
+    
 }

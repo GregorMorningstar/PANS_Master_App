@@ -74,4 +74,13 @@ enum EducationsDegree: string
         // traktuj jako value (np. "primary")
         return self::EDUCATION_YEARS[$str] ?? 0;
     }
+
+    //pobieranie wszystkich poziomów edukacji jako tablica value
+    public static function getAll(): array
+    {
+        return array_map(
+            fn(self $c) => $c->value,
+            self::cases()
+        );
+    }
 }

@@ -2,110 +2,75 @@
 
 namespace App\Enums;
 
-class StatusAplication
+enum StatusAplication: string
 {
-	public const PENDING = 'pending';
-	public const APPROVED = 'approved';
-	public const REJECTED = 'rejected';
-	public const EDITED = 'edited';
+	case PENDING = 'pending';
+	case APPROVED = 'approved';
+	case REJECTED = 'rejected';
+	case EDITED = 'edited';
 
 	/**
-	 * Zwraca listę wszystkich statusów (klucze)
+	 * Return array of values for migrations or schema enums
 	 *
-	 * @return array
+	 * @return string[]
 	 */
 	public static function all(): array
 	{
-		return [
-			self::PENDING,
-			self::APPROVED,
-			self::REJECTED,
-			self::EDITED,
-		];
+		return array_map(fn(self $c) => $c->value, self::cases());
 	}
 
-	/**
-	 * Polskie etykiety statusów
-	 *
-	 * @return array<string,string>
-	 */
 	public static function labels(): array
 	{
 		return [
-			self::PENDING => 'Oczekujący',
-			self::APPROVED => 'Zatwierdzony',
-			self::REJECTED => 'Odrzucony',
-			self::EDITED => 'Edytowany',
+			self::PENDING->value => 'Oczekujący',
+			self::APPROVED->value => 'Zatwierdzony',
+			self::REJECTED->value => 'Odrzucony',
+			self::EDITED->value => 'Edytowany',
 		];
 	}
 
-	/**
-	 * Zwraca polską etykietę dla statusu
-	 *
-	 * @param string $status
-	 * @return string
-	 */
-	public static function label(string $status): string
+	public static function label(string|self $status): string
 	{
+		$key = $status instanceof self ? $status->value : $status;
 		$labels = self::labels();
 
-		return $labels[$status] ?? $status;
+		return $labels[$key] ?? $key;
 	}
 
-	/**
-	 * Mapowanie kolorów (hex) dla statusów
-	 *
-	 * @return array<string,string>
-	 */
 	public static function colors(): array
 	{
 		return [
-			self::PENDING => '#FFD54F', // żółty
-			self::APPROVED => '#10B981', // zielony
-			self::REJECTED => '#EF4444', // czerwony
-			self::EDITED => '#3B82F6', // niebieski
+			self::PENDING->value => '#FFD54F',
+			self::APPROVED->value => '#10B981',
+			self::REJECTED->value => '#EF4444',
+			self::EDITED->value => '#3B82F6',
 		];
 	}
 
-	/**
-	 * Zwraca hex koloru dla statusu
-	 *
-	 * @param string $status
-	 * @return string|null
-	 */
-	public static function color(string $status): ?string
+	public static function color(string|self $status): ?string
 	{
+		$key = $status instanceof self ? $status->value : $status;
 		$colors = self::colors();
 
-		return $colors[$status] ?? null;
+		return $colors[$key] ?? null;
 	}
 
-	/**
-	 * Mapowanie klas Tailwind dla odznak/badge
-	 *
-	 * @return array<string,string>
-	 */
 	public static function badgeClasses(): array
 	{
 		return [
-			self::PENDING => 'bg-yellow-100 text-yellow-800',
-			self::APPROVED => 'bg-green-100 text-green-800',
-			self::REJECTED => 'bg-red-100 text-red-800',
-			self::EDITED => 'bg-blue-100 text-blue-800',
+			self::PENDING->value => 'bg-yellow-100 text-yellow-800',
+			self::APPROVED->value => 'bg-green-100 text-green-800',
+			self::REJECTED->value => 'bg-red-100 text-red-800',
+			self::EDITED->value => 'bg-blue-100 text-blue-800',
 		];
 	}
 
-	/**
-	 * Zwraca klasę Tailwind dla statusu (przydatne w widokach)
-	 *
-	 * @param string $status
-	 * @return string|null
-	 */
-	public static function badgeClass(string $status): ?string
+	public static function badgeClass(string|self $status): ?string
 	{
+		$key = $status instanceof self ? $status->value : $status;
 		$map = self::badgeClasses();
 
-		return $map[$status] ?? null;
+		return $map[$key] ?? null;
 	}
 }
 

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\Contracts\EducationServiceInterface;
 use App\Repositories\Contracts\EducationRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use App\Enums\StatusAplication;
 
 class EducationService implements EducationServiceInterface
 {
@@ -53,5 +54,20 @@ class EducationService implements EducationServiceInterface
         $perPage = (int) ($filters['per_page'] ?? 6);
 
         return $this->educationRepository->getAllPendingCertificates($perPage, $filters);
+    }
+
+    public function getMaximumEducationLevelForUser(int $userId): ?int
+    {
+        return $this->educationRepository->getMaximumEducationLevelForUser($userId);
+    }
+
+    public function getCertificateWithUserById(int $id): ?SchoolCertificate
+    {
+        return $this->educationRepository->findByIdWithUser($id);
+    }
+
+    public function setStatusCertificate(SchoolCertificate $certificate, StatusAplication $status): SchoolCertificate
+    {
+        return $this->educationRepository->setStatusCertificate($certificate, $status);
     }
 }
