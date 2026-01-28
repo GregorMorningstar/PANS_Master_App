@@ -6,6 +6,7 @@ use App\Models\SchoolCertificate;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use App\Enums\StatusAplication;
 
 interface EducationRepositoryInterface
 {
@@ -21,4 +22,10 @@ interface EducationRepositoryInterface
     public function getAllByCurrentUserId(int $id): Collection;
 
     public function getAllPendingCertificates(int $perPage = 6, array $filters = []): LengthAwarePaginator;
+
+    public function getMaximumEducationLevelForUser(int $userId): ?int;
+
+    public function findByIdWithUser(int $id): ?SchoolCertificate;
+
+    public function setStatusCertificate(SchoolCertificate $certificate, StatusAplication $status): SchoolCertificate;
 }

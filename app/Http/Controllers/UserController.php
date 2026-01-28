@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Services\Contracts\UserServiceInterface;
 use App\Services\Contracts\EducationServiceInterface;
+use App\Enums\StatusAplication;
+use App\Enums\EducationsDegree;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -77,4 +79,60 @@ class UserController extends Controller
             'filters' => $filters,
         ]);
     }
+
+
+public function approveEducation(Request $request)
+{
+    $validatedData = $request->validate([
+        'certificate_id' => 'required|integer|exists:school_certificates,id',
+        'action' => 'required|string|in:approve,reject',
+    ]);
+
+    $schoolCertificate = $this->educationService
+        ->getCertificateWithUserById($validatedData['certificate_id']);
+    if (!$schoolCertificate) {
+        return redirect()->back()->withErrors(['certificate' => 'Nie znaleziono świadectwa.']);
+    }
+=    try {
+        $updated = $this->educationService->setStatusCertificate(
+            $schoolCertificate,
+            $validatedData['action'] === 'approve'
+                ? StatusAplication::APPROVED
+                : StatusAplication::REJECTED
+        );
+
+        if (!$updated) {
+            return redirect()->back()->withErrors(['certificate' => 'Nie udało się zaktualizować statusu.']);
+        }
+
+        if ($validatedData['action'] === 'approve') {
+            $certYears = EducationsDegree::yearsFor($schoolCertificate->education_level);
+            $certMonths = (int) $certYears * 12;
+
+            $user = $this->users->getById($schoolCertificate->user_id);
+            if ($user) {
+                $currentMonths = (int) ($user->monthly_education_time_target ?? 0);
+
+                \Log::info("Zatwierdzanie certyfikatu - user_id: {$user->id}, education_level: {$schoolCertificate->education_level}, certYears: {$certYears}, certMonths: {$certMonths}, currentMonths: {$currentMonths}");
+
+                if ($certMonths > $currentMonths) {
+                    $user->monthly_education_time_target = $certMonths;
+                    $saved = $user->save();
+                    \Log::info("Zapisano nową wartość monthly_education_time_target = {$certMonths}, status: " . ($saved ? 'SUCCESS' : 'FAILED'));
+                } else {
+                    \Log::info("Pominięto aktualizację - certMonths ({$certMonths}) <= currentMonths ({$currentMonths})");
+                }
+            } else {
+                \Log::warning("Nie znaleziono użytkownika o ID: {$schoolCertificate->user_id}");
+            }
+        }
+
+        return redirect()->back()->with('success', 'Status świadectwa został zaktualizowany.');
+    } catch (\Throwable $e) {
+        throw new \Exception('Błąd podczas aktualizacji statusu świadectwa: ' . $e->getMessage());
+    }
+}
+
+
+
 }

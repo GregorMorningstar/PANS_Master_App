@@ -247,7 +247,8 @@ class EmployeeController extends Controller
     {
         $user = Auth::user();
         $page = (int) $request->get('page', 1);
-
+       $maxEducation = $this->educationService->getMaximumEducationLevelForUser($user->id);
+      //  dd($maxEducation);
         // get paginated certificates for current user (4 per page)
         $certificates = $this->educationService->getPaginatedCertificatesForUser($user, 4);
 
