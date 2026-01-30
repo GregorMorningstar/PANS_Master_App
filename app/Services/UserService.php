@@ -145,4 +145,9 @@ class UserService implements UserServiceInterface
 
         return $this->employmentCertificateService->getAllCertificatesWithPendingStatus($perPage, $filters);
     }
+
+    public function setWorkedMonths(int $userId, int $months): ?User
+    {
+       return $this->userRepository->setWorkedMonths($userId, $months);
+    }
 }

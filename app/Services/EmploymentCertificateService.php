@@ -6,6 +6,7 @@ use App\Services\Contracts\EmploymentCertificateServiceInterface;
 use App\Repositories\Contracts\EmploymentCertificateRepositoryInterface;
 use App\Models\EmploymentCertificate;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use App\Enums\StatusAplication;
 
 class EmploymentCertificateService implements EmploymentCertificateServiceInterface
 {
@@ -28,4 +29,19 @@ class EmploymentCertificateService implements EmploymentCertificateServiceInterf
     {
         return $this->repository->getAllCertificatesWithPendingStatus($perPage, $filters);
     }
+
+    public function setStatusCertificate(EmploymentCertificate $certificate, StatusAplication $status): EmploymentCertificate
+    {
+        $certificate->status = $status->value;
+        $certificate->save();
+        return $certificate;
+    }
+
+    public function calculateTenureInMonths(EmploymentCertificate $certificate): int
+    {
+
+
+        return $this->repository->calculateTenureInMonths($certificate);
+    }
+
 }

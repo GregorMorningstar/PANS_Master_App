@@ -19,9 +19,9 @@ class EloquentEmploymentCertificateRepository implements EmploymentCertificateRe
 
     }
 
-    public function getCertificatesByUserId(int $userId): ?\Illuminate\Database\Eloquent\Collection
+    public function getCertificatesByUserId(int $certificateId): ?\Illuminate\Database\Eloquent\Collection
     {
-        return $this->employmentCertificate->where('user_id', $userId)->with('user')->get();
+        return $this->employmentCertificate->where('id', $certificateId)->with('user')->get();
     }
 
     public function getAllCertificatesWithPendingStatus(int $perPage = 6, array $filters = []): ?\Illuminate\Contracts\Pagination\LengthAwarePaginator
@@ -60,4 +60,25 @@ class EloquentEmploymentCertificateRepository implements EmploymentCertificateRe
 
         return $query->paginate($perPage);
     }
+
+     public function setStatusCertificate(EmploymentCertificate $certificate, StatusAplication $status): EmploymentCertificate
+    {
+        $certificate->status = $status->value;
+        $certificate->save();
+
+        return $certificate;
+    }
+
+   public function calculateTenureInMonths(EmploymentCertificate $certificate): int
+{
+    $startDate = new \DateTime($certificate->start_date);
+    $endDate   = new \DateTime($certificate->end_date);
+
+    $diff = $startDate->diff($endDate);
+
+    $months = $diff->y * 12 + $diff->m;
+
+    return $diff->invert ? -$months : $months;
+}
+    
 }

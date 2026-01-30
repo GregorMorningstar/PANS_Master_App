@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\Contracts\UserServiceInterface;
 use App\Services\Contracts\EducationServiceInterface;
+ use App\Services\Contracts\EmploymentCertificateServiceInterface;
 use App\Enums\StatusAplication;
 use App\Enums\EducationsDegree;
 use Illuminate\Http\Request;
@@ -12,7 +13,8 @@ use Inertia\Inertia;
 class UserController extends Controller
 {
     public function __construct(private readonly UserServiceInterface $users,
-                                private readonly EducationServiceInterface $educationService)
+                                private readonly EducationServiceInterface $educationService,
+                                    private readonly EmploymentCertificateServiceInterface $employmentCertificateService)
     {
     }
 
@@ -93,7 +95,7 @@ public function approveEducation(Request $request)
     if (!$schoolCertificate) {
         return redirect()->back()->withErrors(['certificate' => 'Nie znaleziono świadectwa.']);
     }
-=    try {
+    try {
         $updated = $this->educationService->setStatusCertificate(
             $schoolCertificate,
             $validatedData['action'] === 'approve'
@@ -131,6 +133,52 @@ public function approveEducation(Request $request)
     } catch (\Throwable $e) {
         throw new \Exception('Błąd podczas aktualizacji statusu świadectwa: ' . $e->getMessage());
     }
+}
+
+public function approveWorkCertificate(Request $request)
+{
+
+//dd(request()->all());
+    $actualCertificate = $this->employmentCertificateService->getCertificatesByUserId($request->input('certificate_id'));
+    if ($actualCertificate instanceof \Illuminate\Database\Eloquent\Collection) {
+        $actualCertificate = $actualCertificate->first();
+    }
+    //zmiana statusu
+if(!$actualCertificate) {
+    return redirect()->back()->withErrors(['certificate' => 'Nie znaleziono certyfikatu.']);
+}
+    $updated = $this->employmentCertificateService->setStatusCertificate(
+        $actualCertificate,
+        $request->input('action') === 'approve'
+            ? StatusAplication::APPROVED
+            : StatusAplication::REJECTED
+    );
+    if (!$updated) {
+        return redirect()->back()->withErrors(['certificate' => 'Nie udało się zaktualizować statusu.']);
+    }
+
+    // Obliczanie ilości miesięcy i aktualizacja użytkownika tylko przy zatwierdzeniu
+    if ($request->input('action') === 'approve') {
+        $monthlyWorkTimeTarget = $this->employmentCertificateService->calculateTenureInMonths($actualCertificate);
+
+        if ($monthlyWorkTimeTarget > 0) {
+            $user = $this->users->getById($actualCertificate->user_id);
+            if ($user) {
+                try {
+                    // Dodaj nowe miesiące do istniejącej wartości
+                    $currentMonths = (int) ($user->monthly_work_time_target ?? 0);
+                    $newTotal = $currentMonths + $monthlyWorkTimeTarget;
+                    $this->users->setWorkedMonths($user->id, $newTotal);
+
+                    \Log::info("Zaktualizowano monthly_work_time_target dla user_id: {$user->id}, dodano: {$monthlyWorkTimeTarget}, nowa suma: {$newTotal}");
+                } catch (\Throwable $e) {
+                    throw new \Exception('Błąd podczas aktualizacji miesięcznego czasu pracy: ' . $e->getMessage());
+                }
+            }
+        }
+    }
+
+    return redirect()->back()->with('success', 'Status certyfikatu został zaktualizowany.');
 }
 
 
