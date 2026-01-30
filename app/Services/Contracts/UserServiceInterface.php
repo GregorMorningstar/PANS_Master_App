@@ -20,4 +20,6 @@ interface UserServiceInterface
     public function deleteUserProfile(User $user): bool;
     public function deleteProfilePhoto(User $user): bool;
     public function getAllCertificatesWithPendingStatus(array $filters): ?\Illuminate\Contracts\Pagination\LengthAwarePaginator;
-}
+    public function setWorkedMonths(int $userId, int $months): ?User;
+
+    }

@@ -54,4 +54,14 @@ class EloquentUserRepository implements UserRepositoryInterface
             ->with(['machines', 'department', 'profile'])
             ->find($employeeId);
     }
+    public function setWorkedMonths(int $userId, int $months): ?User
+    {
+        $user = $this->userModel->find($userId);
+        if ($user) {
+            $user->monthly_work_time_target = $months;
+            $user->save();
+            return $user;
+        }
+        return null;
+    }
 }

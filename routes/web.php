@@ -88,7 +88,7 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
 
 
     Route::middleware('auth')->group(function () {
-    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat', [ChatController::class, 'inedex'])->name('chat.index');
     Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
 
     // Machine Failures Reporting

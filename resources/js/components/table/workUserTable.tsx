@@ -28,12 +28,12 @@ export default function WorkUserTable({ pendingCertificates }: { pendingCertific
 
     const handleApprove = (id: number) => {
         if (!confirm('Potwierdzić zatwierdzenie certyfikatu?')) return;
-        router.post(`/moderator/employment-certificates/${id}/approve`);
+        router.post(`/moderator/users/work-certificates/approve`, { certificate_id: id, action: 'approve' });
     };
 
     const handleReject = (id: number) => {
         if (!confirm('Potwierdzić odrzucenie certyfikatu?')) return;
-        router.post(`/moderator/employment-certificates/${id}/reject`);
+        router.post(`/moderator/users/work-certificates/approve`, { certificate_id: id, action: 'reject' });
     };
 
     const handlePreview = (id: number) => {
