@@ -59,8 +59,10 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
             Route::get('/', [UserController::class, 'index'])->name('users.index');
                Route::get('/confirmation-education', [UserController::class, 'confirmationEducation'])->name('users.confirmation-education');
                Route::post ('/education/approve', [UserController::class, 'approveEducation'])->name('users.approve-education');
-               Route::get('confirmation-work-certificates', [UserController::class, 'confirmationWorkCertificates'])->name('users.confirmation-work-certificates');
+               Route::post('/education/reject', [UserController::class, 'rejectEducation'])->name('users.reject-education');
+               Route::get('/confirmation-work-certificates', [UserController::class, 'confirmationWorkCertificates'])->name('users.confirmation-work-certificates');
                Route::post ('/work-certificates/approve', [UserController::class, 'approveWorkCertificate'])->name('users.approve-work-certificates');
+               Route::post('/work-certificates/reject', [UserController::class, 'rejectWorkCertificate'])->name('users.reject-work-certificates');
                Route::get('/{id}', [UserController::class, 'show'])->name('users.show');
         }   );
 

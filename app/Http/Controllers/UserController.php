@@ -121,6 +121,15 @@ public function approveEducation(Request $request)
                     $user->monthly_education_time_target = $certMonths;
                     $saved = $user->save();
                     \Log::info("Zapisano nową wartość monthly_education_time_target = {$certMonths}, status: " . ($saved ? 'SUCCESS' : 'FAILED'));
+
+                        if($saved) {
+                            // sprawdź i ewentualnie zaktualizuj roczne dni urlopu
+                            $this->users->getAnnualLeaveDays($user->id);
+                            \Log::info("sprawdzano ilosc dni do urlopu");
+                        } else {
+                            \Log::error("Nie udało się zaktualizować monthly_education_time_target dla user_id: {$user->id}");
+                        }
+                    // kontynuuj — końcowy redirect zwróci się do listy potwierdzeń
                 } else {
                     \Log::info("Pominięto aktualizację - certMonths ({$certMonths}) <= currentMonths ({$currentMonths})");
                 }
@@ -165,13 +174,19 @@ if(!$actualCertificate) {
             $user = $this->users->getById($actualCertificate->user_id);
             if ($user) {
                 try {
-                    // Dodaj nowe miesiące do istniejącej wartości
                     $currentMonths = (int) ($user->monthly_work_time_target ?? 0);
                     $newTotal = $currentMonths + $monthlyWorkTimeTarget;
-                    $this->users->setWorkedMonths($user->id, $newTotal);
+                    $save = $this->users->setWorkedMonths($user->id, $newTotal);
 
                     \Log::info("Zaktualizowano monthly_work_time_target dla user_id: {$user->id}, dodano: {$monthlyWorkTimeTarget}, nowa suma: {$newTotal}");
-                } catch (\Throwable $e) {
+                if($save) {
+                    // sprawdź i ewentualnie zaktualizuj roczne dni urlopu
+                    $this->users->getAnnualLeaveDays($user->id);
+                    \Log::info("sprawdzano ilosc dni do urlopu");
+                } else {
+                    \Log::error("Nie udało się zaktualizować monthly_work_time_target dla user_id: {$user->id}");
+                }
+                    } catch (\Throwable $e) {
                     throw new \Exception('Błąd podczas aktualizacji miesięcznego czasu pracy: ' . $e->getMessage());
                 }
             }
@@ -180,7 +195,5 @@ if(!$actualCertificate) {
 
     return redirect()->back()->with('success', 'Status certyfikatu został zaktualizowany.');
 }
-
-
 
 }

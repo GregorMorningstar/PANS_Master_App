@@ -2,9 +2,28 @@ import WorkUserTable from "@/components/table/workUserTable";
 import ModeratorLayout from "@/layouts/ModeratorLayout";
 import { usePage, router, Link } from "@inertiajs/react";
 import React, { useState, useRef, useEffect } from 'react';
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
 export default function ConfirmationWorkCertificates() {
-    const { pendingCertificates, filters: initialFilters } = usePage().props as any;
+    const { pendingCertificates, filters: initialFilters, flash } = usePage().props as any;
+    const [showSuccess, setShowSuccess] = useState(!!flash?.success);
+    const [showError, setShowError] = useState(!!flash?.error);
+
+    useEffect(() => {
+        if (flash?.success) {
+            setShowSuccess(true);
+            const timer = setTimeout(() => setShowSuccess(false), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [flash?.success]);
+
+    useEffect(() => {
+        if (flash?.error) {
+            setShowError(true);
+            const timer = setTimeout(() => setShowError(false), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [flash?.error]);
 
     const breadcrumbs = [
         { label: 'Moderator', href: '/moderator' },
@@ -56,6 +75,28 @@ export default function ConfirmationWorkCertificates() {
     return (
         <ModeratorLayout breadcrumbs={breadcrumbs} title="Potwierdzenia Świadectw Pracy">
             <div className="p-4">
+                {/* Success Message */}
+                {showSuccess && flash?.success && (
+                    <div className="mb-4 flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg shadow-sm">
+                        <CheckCircleIcon className="h-5 w-5 text-green-600 flex-shrink-0" />
+                        <span className="flex-1">{flash.success}</span>
+                        <button onClick={() => setShowSuccess(false)} className="text-green-600 hover:text-green-800">
+                            <XCircleIcon className="h-5 w-5" />
+                        </button>
+                    </div>
+                )}
+
+                {/* Error Message */}
+                {showError && flash?.error && (
+                    <div className="mb-4 flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg shadow-sm">
+                        <XCircleIcon className="h-5 w-5 text-red-600 flex-shrink-0" />
+                        <span className="flex-1">{flash.error}</span>
+                        <button onClick={() => setShowError(false)} className="text-red-600 hover:text-red-800">
+                            <XCircleIcon className="h-5 w-5" />
+                        </button>
+                    </div>
+                )}
+
                 <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
                     <div>
                         <label className="text-sm text-gray-600">Użytkownik</label>

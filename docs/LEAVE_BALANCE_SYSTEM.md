@@ -4,7 +4,7 @@
 
 System automatycznego zarządzania balansami urlopowymi, który:
 - Automatycznie tworzy nowe balansy urlopowe dla wszystkich użytkowników na koniec roku
-- Oblicza dni urlopu na podstawie stażu pracy (20 dni dla < 10 lat, 24 dni dla ≥ 10 lat)
+- Oblicza dni urlopu na podstawie stażu pracy (20 dni dla < 5 lat, 26 dni dla ≥ 5 lat)
 - Uruchamia się automatycznie 31 grudnia o 23:59
 
 ## Struktura tabeli `leave_balances`
@@ -14,7 +14,7 @@ System automatycznego zarządzania balansami urlopowymi, który:
 | user_id | Foreign Key | Powiązanie z użytkownikiem |
 | year | Integer | Rok kalendarzowy |
 | leave_type | Enum | Typ urlopu (vacation, sick, personal) |
-| entitlement_days | Integer | Przysługujące dni (20/24) |
+| entitlement_days | Integer | Przysługujące dni (20/26) |
 | used_days | Integer | Wykorzystane dni |
 | remaining_days | Integer | Pozostałe dni |
 | seniority_years | Integer | Lata stażu pracy |
@@ -59,8 +59,8 @@ crontab -e
    - `user.created_at` (jako fallback)
 
 2. **Przysługujące dni**:
-   - **< 10 lat stażu**: 20 dni urlopu
-   - **≥ 10 lat stażu**: 24 dni urlopu
+   - **< 5 lat stażu**: 20 dni urlopu
+   - **≥ 5 lat stażu**: 26 dni urlopu
 
 ## Integracja z systemem urlopów
 
