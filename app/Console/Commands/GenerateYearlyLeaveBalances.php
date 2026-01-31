@@ -30,12 +30,12 @@ class GenerateYearlyLeaveBalances extends Command
     {
         $year = $this->option('year') ?: date('Y');
         $force = $this->option('force');
-        
+
         $this->info("Generating leave balances for year: {$year}");
 
         // Sprawdź czy już istnieją rekordy dla tego roku
         $existingCount = LeaveBalance::where('year', $year)->count();
-        
+
         if ($existingCount > 0 && !$force) {
             if (!$this->confirm("Found {$existingCount} existing records for year {$year}. Continue anyway?")) {
                 $this->info('Operation cancelled.');
@@ -43,7 +43,8 @@ class GenerateYearlyLeaveBalances extends Command
             }
         }
 
-        $users = User::whereNotNull('email_verified_at')->get();
+        $users = User::select('id', 'email_verified_at', 'employment_start_date', 'created_at', 'monthly_work_time_target', 'monthly_education_time_target')
+            ->get();
         $created = 0;
         $skipped = 0;
 
@@ -73,8 +74,11 @@ class GenerateYearlyLeaveBalances extends Command
                 $seniorityYears = Carbon::parse($user->created_at)->diffInYears(Carbon::createFromDate($year, 1, 1));
             }
 
-            // Determine entitlement based on seniority
-            $entitlementDays = $seniorityYears >= 10 ? 24 : 20;
+            // Oblicz łączny czas pracy i edukacji w miesiącach
+            $totalMonths = (int)($user->monthly_work_time_target ?? 0) + (int)($user->monthly_education_time_target ?? 0);
+
+            // Przysługujące dni urlopu: 26 dni dla stażu ≥ 5 lat LUB łącznego czasu > 120 miesięcy (10 lat), inaczej 20 dni
+            $entitlementDays = ($seniorityYears >= 5 || $totalMonths > 120) ? 26 : 20;
 
             // Utwórz lub zaktualizuj balance
             $leaveBalance = LeaveBalance::updateOrCreate(

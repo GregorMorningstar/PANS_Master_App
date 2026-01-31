@@ -165,4 +165,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(EmploymentCertificate::class);
     }
+
+    // relacja z LeaveBalance (1:N)
+    public function leaves_balance(): HasMany
+    {
+        return $this->hasMany(LeaveBalance::class, 'user_id');
+    }
 }

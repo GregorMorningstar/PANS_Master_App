@@ -150,4 +150,9 @@ class UserService implements UserServiceInterface
     {
        return $this->userRepository->setWorkedMonths($userId, $months);
     }
+
+    public function getAnnualLeaveDays(int $userId): ?User
+    {
+        return $this->userRepository->getAnnualLeaveDays($userId);
+    }
 }
