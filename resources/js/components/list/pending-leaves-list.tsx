@@ -1,10 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 
 type Leave = {
-    description: string | null | undefined;
-    days: any;
     id: number;
     user_id: number;
     user?: { id: number; name: string } | null;
@@ -12,10 +10,29 @@ type Leave = {
     end_date: string;
     status: string;
     reason?: string | null;
+    description?: string | null;
+    days: number;
+    type?: string | null;
 };
 
 export default function PendingLeavesTable({ pendingLeaves = [] }: { pendingLeaves: Leave[] }) {
+    const { flash } = usePage().props as any;
+
     const [items, setItems] = useState<Leave[]>(pendingLeaves);
+    const [successMsg, setSuccessMsg] = useState<string | null>(flash?.success ?? null);
+    const [errorMsg, setErrorMsg] = useState<string | null>(flash?.error ?? null);
+
+    // sync flash from server on page load / visits (AFTER state declarations)
+    useEffect(() => {
+        setSuccessMsg(flash?.success ?? null);
+        setErrorMsg(flash?.error ?? null);
+    }, [flash?.success, flash?.error]);
+
+    // clear success when an error appears
+    useEffect(() => {
+        if (errorMsg) setSuccessMsg(null);
+    }, [errorMsg]);
+
     const [page, setPage] = useState<number>(1);
     const [perPage, setPerPage] = useState<number>(10);
     const [showModal, setShowModal] = useState<boolean>(false);
@@ -24,6 +41,21 @@ export default function PendingLeavesTable({ pendingLeaves = [] }: { pendingLeav
     const [description, setDescription] = useState<string>('');
 
     useEffect(() => setItems(pendingLeaves), [pendingLeaves]);
+
+    // clear flash messages after a timeout
+    useEffect(() => {
+        if (successMsg) {
+            const t = setTimeout(() => setSuccessMsg(null), 5000);
+            return () => clearTimeout(t);
+        }
+    }, [successMsg]);
+
+    useEffect(() => {
+        if (errorMsg) {
+            const t = setTimeout(() => setErrorMsg(null), 7000);
+            return () => clearTimeout(t);
+        }
+    }, [errorMsg]);
 
     const total = items.length;
     const pages = Math.max(1, Math.ceil(total / perPage));
@@ -59,10 +91,11 @@ export default function PendingLeavesTable({ pendingLeaves = [] }: { pendingLeav
         if (!selectedLeave) return;
 
         const endpoint = modalType === 'approve'
-            ? `/moderator/leaves/${selectedLeave.id}/approve`
-            : `/moderator/leaves/${selectedLeave.id}/reject`;
+            ? `/moderator/leaves/approve`
+            : `/moderator/leaves/reject`;
 
         const meta = {
+            id: selectedLeave.id,
             days: selectedLeave.days,
             type: (selectedLeave as any).type ?? null,
             user_id: selectedLeave.user_id,
@@ -73,20 +106,51 @@ export default function PendingLeavesTable({ pendingLeaves = [] }: { pendingLeav
             ? { description, ...meta }
             : { rejection_reason: description, ...meta };
 
-        router.put(endpoint, data, {
-            onSuccess: () => {
-                setItems(prev => prev.filter(l => l.id !== selectedLeave.id));
-                closeModal();
+        // clear any previous flashes immediately to avoid showing stale success
+        setSuccessMsg(null);
+        setErrorMsg(null);
+
+        router.post(endpoint, data, {
+            onSuccess: (page) => {
+                const serverFlash = (page?.props as any)?.flash ?? {};
+                if (serverFlash.error) {
+                    setErrorMsg(serverFlash.error);
+                    setSuccessMsg(null);
+                    return;
+                }
+                // success path
+                setItems(prev => prev.filter(l => l.id !== selectedLeave!.id));
+                try { closeModal(); } catch (e) {}
+                setSuccessMsg(serverFlash.success ?? (modalType === 'approve' ? 'Urlop zatwierdzony.' : 'Urlop odrzucony.'));
+                setErrorMsg(null);
             },
             onError: (errors) => {
-                console.log('Errors:', errors);
-                alert(`Błąd podczas ${modalType === 'approve' ? 'zatwierdzania' : 'odrzucania'}`);
+                // Inertia will call onError for 422 — extract message or fallback
+                const errMsg = (errors && typeof errors === 'object')
+                    ? (errors.error ?? Object.values(errors)[0] ?? 'Błąd serwera')
+                    : 'Błąd serwera';
+                setErrorMsg(errMsg as string);
+                setSuccessMsg(null);
             }
         });
     };
 
     return (
         <div>
+            {/* flash messages */}
+            {successMsg && (
+                <div className="mb-4 p-3 bg-green-100 text-green-800 rounded">
+                    {successMsg}
+                    <button onClick={() => setSuccessMsg(null)} className="ml-4 font-bold">×</button>
+                </div>
+            )}
+            {errorMsg && (
+                <div className="mb-4 p-3 bg-red-100 text-red-800 rounded">
+                    {errorMsg}
+                    <button onClick={() => setErrorMsg(null)} className="ml-4 font-bold">×</button>
+                </div>
+            )}
+
             <div className="mb-4 grid grid-cols-3 gap-4">
                 <div className="p-3 bg-white rounded shadow">
                     <div className="text-sm text-gray-500">Łącznie oczekujących</div>

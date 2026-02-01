@@ -71,8 +71,8 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
             Route::get('/', [ModeratorController::class, 'getLeavesCalendar'])->name('calendar');
             Route::get('/pending', [ModeratorController::class, 'getPendingLeaves'])->name('pending');
             Route::get('/pending/{userId}', [ModeratorController::class, 'getUserPendingLeaves'])->name('pending.user');
-            Route::put('/{leaveId}/approve', [ModeratorController::class, 'approveLeave'])->name('approve');
-            Route::put('/{leaveId}/reject', [ModeratorController::class, 'rejectLeave'])->name('reject');
+            Route::post('/approve', [ModeratorController::class, 'approveLeave'])->name('approve');
+            Route::post('/reject',  [ModeratorController::class, 'rejectLeave'])->name('reject');
         });
 
         //departaments: /moderator/departments

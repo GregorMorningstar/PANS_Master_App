@@ -21,6 +21,7 @@ class Leaves extends Model
         'end_date',
         'type',
         'description',
+        'rejection_reason',
         'status',
         'approved_by',
         'approved_at',

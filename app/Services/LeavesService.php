@@ -120,4 +120,9 @@ class LeavesService implements LeavesServiceInterface
     {
         return $this->leavesRepository->getUsedLeavesByUser($userId);
     }
+
+    public function setLeaveBalance(int $leaveId, int $day, int $userId, string $description): LeaveBalance
+    {
+        return $this->leavesRepository->setLeaveBalance($leaveId, $day, $userId, $description);
+    }
 }

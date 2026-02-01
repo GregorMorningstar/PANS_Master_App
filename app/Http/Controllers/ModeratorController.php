@@ -56,48 +56,55 @@ class ModeratorController extends Controller
     /**
      * Zatwierdź urlop
      */
-    public function approveLeave(Request $request, int $leaveId)
+    public function approveLeave(Request $request)
     {
-        $request->validate([
-            'description' => 'required|string|min:1|max:1000'
+        $data = $request->validate([
+            'id' => 'required|integer',
+            'days' => 'required|integer',
+            'user_id' => 'required|integer',
+            'description' => 'nullable|string',
+            'type' => 'nullable|string',
+            'year' => 'nullable|integer',
         ]);
 
-        $description = $request->input('description');
-        $approvedBy = auth()->id();
+        try {
+            $this->leavesInterface->setLeaveBalance(
+                $data['id'],
+                $data['days'],
+                $data['user_id'],
+                $data['description'] ?? ''
+            );
 
-        // opcjonalne dodatkowe dane przesyłane z frontendu
-        $meta = $request->only(['days', 'type', 'user_id', 'year']);
+            return redirect()->route('moderator.leaves.pending')
+                ->with('success', 'Urlop zatwierdzony.');
+        } catch (\Exception $e) {
+            // DEBUG: sprawdź czy łapiemy wyjątek
+            \Log::info('ZŁAPAŁEM WYJĄTEK w approveLeave', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
-        $success = $this->leavesInterface->approveLeave($leaveId, $approvedBy, $description, $meta);
-
-        if ($success) {
-            return redirect()->back()->with('success', 'Urlop został zatwierdzony.');
+            // wymuszamy pełne przeładowanie strony pending z flash error
+            return redirect()->route('moderator.leaves.pending')
+                ->with('error', $e->getMessage() ?: 'Wystąpił błąd podczas zatwierdzania urlopu.');
         }
-
-        return redirect()->back()->with('error', 'Nie udało się zatwierdzić urlopu.');
     }
 
-    /**
-     * Odrzuć urlop
-     */
-    public function rejectLeave(Request $request, int $leaveId)
+    
+    public function rejectLeave(Request $request)
     {
-        $request->validate([
-            'rejection_reason' => 'required|string|min:1|max:1000'
+        $data = $request->validate([
+            'id' => 'required|integer',
+            'rejection_reason' => 'required|string|min:1|max:1000',
+            'days' => 'required|integer',
+            'type' => 'nullable|string',
+            'user_id' => 'required|integer',
+            'year' => 'required|integer',
         ]);
 
-        $rejectionReason = $request->input('rejection_reason');
-        $rejectedBy = auth()->id();
 
-        $meta = $request->only(['days', 'type', 'user_id', 'year']);
-
-        $success = $this->leavesInterface->rejectLeave($leaveId, $rejectedBy, $rejectionReason, $meta);
-
-        if ($success) {
-            return redirect()->back()->with('success', 'Urlop został odrzucony.');
-        }
-
-        return redirect()->back()->with('error', 'Nie udało się odrzucić urlopu.');
+        return redirect()->route('moderator.leaves.pending')
+            ->with('success', 'Urlop odrzucony.');
     }
 
     /**
