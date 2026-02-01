@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\Leaves;
+use App\Enums\LeavesType;
 
 class LeaveBalance extends Model
 {
@@ -36,7 +37,8 @@ class LeaveBalance extends Model
     {
         return $this->hasMany(Leaves::class, 'leave_balance_id');
     }
-protected static function booted()
+
+    protected static function booted()
     {
         static::created(function ($leavesBalance) {
             $prefix = '4100';
@@ -47,7 +49,30 @@ protected static function booted()
                 $leavesBalance->save();
             }
         });
-
     }
 
+    /**
+     * Zwraca enum LeavesType lub null jeśli nieznany
+     */
+    public function getTypeEnumAttribute(): ?LeavesType
+    {
+        $rawType = $this->attributes['leave_type'] ?? '';
+        return LeavesType::fromDatabase($rawType);
+    }
+
+    /**
+     * Normalizowana wartość typu (string)
+     */
+    public function getTypeNormalizedAttribute(): ?string
+    {
+        return $this->type_enum?->value;
+    }
+
+    /**
+     * Surowa wartość typu z bazy (dla debugowania)
+     */
+    public function getRawTypeAttribute(): string
+    {
+        return (string) ($this->attributes['leave_type'] ?? '');
+    }
 }

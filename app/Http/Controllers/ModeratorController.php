@@ -85,12 +85,22 @@ class ModeratorController extends Controller
             ]);
 
             // wymuszamy pełne przeładowanie strony pending z flash error
-            return redirect()->route('moderator.leaves.pending')
-                ->with('error', $e->getMessage() ?: 'Wystąpił błąd podczas zatwierdzania urlopu.');
+            // zaloguj aktualną sesję i klucze flash dla diagnostyki
+            \Log::info('Session before redirect (approveLeave catch)', [
+                'session_all' => session()->all(),
+                'flash_success' => session()->get('success'),
+                'flash_error' => session()->get('error'),
+                '_flash_meta' => session()->get('_flash'),
+            ]);
+
+            // usuń ewentualny success flash, ustaw error i przekieruj
+            session()->forget('success');
+            session()->flash('error', $e->getMessage() ?: 'Wystąpił błąd podczas zatwierdzania urlopu.');
+            return redirect()->route('moderator.leaves.pending');
         }
     }
 
-    
+
     public function rejectLeave(Request $request)
     {
         $data = $request->validate([
@@ -102,9 +112,36 @@ class ModeratorController extends Controller
             'year' => 'required|integer',
         ]);
 
+        try {
+            $meta = [
+                'days' => $data['days'],
+                'type' => $data['type'] ?? null,
+                'user_id' => $data['user_id'],
+                'year' => $data['year'] ?? null,
+            ];
 
-        return redirect()->route('moderator.leaves.pending')
-            ->with('success', 'Urlop odrzucony.');
+            $this->leavesInterface->rejectLeave(
+                $data['id'],
+                auth()->id(),
+                $data['rejection_reason'],
+                $meta
+            );
+
+            // Usuń ewentualny success i ustaw error flash na powód odrzucenia (wyświetli się czerwony komunikat)
+            session()->forget('success');
+            session()->flash('error', $data['rejection_reason']);
+
+            return redirect()->route('moderator.leaves.pending');
+        } catch (\Exception $e) {
+            \Log::error('Error rejecting leave', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            session()->forget('success');
+            session()->flash('error', $e->getMessage() ?: 'Wystąpił błąd podczas odrzucania urlopu.');
+            return redirect()->route('moderator.leaves.pending');
+        }
     }
 
     /**
