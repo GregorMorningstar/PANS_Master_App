@@ -2,17 +2,21 @@
 
 namespace App\Repositories\Eloquent;
 
-use App\Models\Leaves;
 use App\Repositories\Contracts\LeavesRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Carbon\Carbon;
+use App\Models\Leaves;
 use App\Models\LeaveBalance;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 
 class EloquentLeavesRepository implements LeavesRepositoryInterface
 {
     public function __construct(private readonly Leaves $leaves,
-     private readonly LeaveBalance $leaveBalance)
+     private readonly LeaveBalance $leaveBalance,
+     private readonly User $user,
+     private readonly LeaveBalance $leavesBalance)
     {
     }
 
@@ -186,18 +190,23 @@ class EloquentLeavesRepository implements LeavesRepositoryInterface
     /**
      * Odrzuć urlop
      */
-    public function rejectLeave( int $leaveId, int $rejectedBy, string $rejectionReason, array $meta = []): bool
+    public function rejectLeave(int $leaveId, int $rejectedBy, string $rejectionReason, array $meta = []): bool
     {
         $leave = $this->leaves->find($leaveId);
         if (!$leave || $leave->status !== 'pending') {
             return false;
         }
 
+        $rejectionReason = trim((string) $rejectionReason);
+        if ($rejectionReason === '') {
+            $rejectionReason = 'Brak dni do wykorzystania';
+        }
+
         $update = [
             'status' => 'rejected',
-            'approved_by' => $rejectedBy,
+            'approved_by' => $rejectedBy ?: Auth::id(),
             'approved_at' => now(),
-            'rejection_reason' => $rejectionReason
+            'rejection_reason' => $rejectionReason,
         ];
 
         if (isset($meta['days'])) {
@@ -210,7 +219,16 @@ class EloquentLeavesRepository implements LeavesRepositoryInterface
             $update['user_id'] = (int) $meta['user_id'];
         }
 
-        return $leave->update($update);
+        $leave->fill($update);
+        $saved = (bool) $leave->save();
+        if($saved){
+            throw new \Exception('Urlop odrzucony: Brak dni do wykorzystania.');
+        }
+        if (!$saved) {
+            throw new \Exception('Nie udało się odrzucić urlopu.');
+        }
+
+        return true;
     }
 
     /**
@@ -238,6 +256,58 @@ class EloquentLeavesRepository implements LeavesRepositoryInterface
             ->where('start_date', '<', $today)
             ->orderBy('start_date', 'desc')
             ->get();
+    }
+
+    public function setLeaveBalance(int $leaveId, int $day, int $userId, string $description): LeaveBalance
+    {
+        // Pobierz wniosek urlopowy
+        $leave = $this->leaves->find($leaveId);
+
+        if (!$leave) {
+            throw new \Exception("Leave request not found");
+        }
+
+        $leaveBalance = $this->leaveBalance->where('user_id', $leave->user_id)
+            ->where('year', now()->year)
+            ->first();
+
+        if (!$leaveBalance) {
+            throw new \Exception("Leave balance not found");
+        }
+
+        $user = $this->user->find($leave->user_id);
+
+        if ($leaveBalance->remaining_days < $day) {
+            $leave->status = 'rejected';
+            $leave->approved_by = \Illuminate\Support\Facades\Auth::id();
+            $leave->approved_at = now();
+            $leave->rejection_reason = "Niewystarczające saldo urlopu.";
+            $leave->save();
+
+            throw new \Exception('Urlop odrzucony: Niewystarczające saldo urlopu.');
+        }
+
+        if($leaveBalance->remaining_days >= $day) {
+            $leaveBalance->used_days += $day;
+            $leaveBalance->remaining_days -= $day;
+            $leaveBalance->save();
+
+            $leave->status = 'approved';
+            $leave->approved_by = \Illuminate\Support\Facades\Auth::id();
+            $leave->approved_at = now();
+            $leave->description = $description;
+            $leave->save();
+        }
+
+        \Log::info('KOD WYKONUJE SIĘ DALEJ - saldo wystarczające', [
+            'leave_id' => $leaveId,
+            'remaining_days' => $leaveBalance->remaining_days,
+            'requested_days' => $day
+        ]);
+
+
+
+        return $leaveBalance;
     }
 }
 

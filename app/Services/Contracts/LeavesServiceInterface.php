@@ -63,4 +63,6 @@ interface LeavesServiceInterface
      *
      * @param int $userId
      */    public function getUsedLeavesByUser(int $userId): Collection;
+
+    public function setLeaveBalance(int $leaveId, int $day,int $userId, string $description): LeaveBalance;
 }
