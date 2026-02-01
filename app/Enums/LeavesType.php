@@ -46,4 +46,21 @@ enum LeavesType: string
             self::ON_DEMAND => 'bg-green-100 text-green-800',
         };
     }
+
+    public static function fromDatabase(string $value): ?self
+    {
+        $raw = trim(strtolower((string) $value));
+
+        // historyczne/alternatywne wartości -> mapowanie na enum
+        if ($raw === 'approved' || $raw === 'vacation') {
+            $raw = self::ANNUAL->value;
+        }
+
+        return self::tryFrom($raw);
+    }
+
+    public static function values(): array
+    {
+        return array_map(fn(LeavesType $c) => $c->value, self::cases());
+    }
 }

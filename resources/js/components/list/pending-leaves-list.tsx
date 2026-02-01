@@ -114,6 +114,10 @@ export default function PendingLeavesTable({ pendingLeaves = [] }: { pendingLeav
             onSuccess: (page) => {
                 const serverFlash = (page?.props as any)?.flash ?? {};
                 if (serverFlash.error) {
+                    // Backend returned an error but likely updated the leave status (e.g. rejected due to insufficient balance).
+                    // Remove the item from pending list and close modal, but show the error message.
+                    setItems(prev => prev.filter(l => l.id !== selectedLeave!.id));
+                    try { closeModal(); } catch (e) {}
                     setErrorMsg(serverFlash.error);
                     setSuccessMsg(null);
                     return;

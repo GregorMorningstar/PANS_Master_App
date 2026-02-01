@@ -9,6 +9,7 @@ use App\Models\Leaves;
 use App\Models\LeaveBalance;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use App\Enums\LeavesType;
 
 
 class EloquentLeavesRepository implements LeavesRepositoryInterface
@@ -176,15 +177,20 @@ class EloquentLeavesRepository implements LeavesRepositoryInterface
      */
     public function approveLeave(int $leaveId, int $approvedBy, ?string $description = null, array $meta = []): bool
     {
-
+        // Implementacja zatwierdzania może być dodana tutaj w przyszłości.
         $leavesByIdAndYear = $this->getLeaveByIdAndYear($leaveId, now()->year);
-    dd($leavesByIdAndYear);  // tylko debug: pokaż tylko opis (i ew. meta) w dd
-        dd([
-            'leave_id'    => $leaveId,
+
+        // Jeśli potrzebne — logujemy przywołanie approveLeave dla śledzenia
+        \Log::info('approveLeave called', [
+            'leave_id' => $leaveId,
             'approved_by' => $approvedBy,
             'description' => $description,
-            'meta'        => $meta,
+            'meta' => $meta,
+            'found_leave' => $leavesByIdAndYear ? true : false,
         ]);
+
+        // Tymczasowo nie implementujemy pełnej logiki (używamy setLeaveBalance z kontrolera)
+        return false;
     }
 
     /**
@@ -221,9 +227,6 @@ class EloquentLeavesRepository implements LeavesRepositoryInterface
 
         $leave->fill($update);
         $saved = (bool) $leave->save();
-        if($saved){
-            throw new \Exception('Urlop odrzucony: Brak dni do wykorzystania.');
-        }
         if (!$saved) {
             throw new \Exception('Nie udało się odrzucić urlopu.');
         }
@@ -260,26 +263,54 @@ class EloquentLeavesRepository implements LeavesRepositoryInterface
 
     public function setLeaveBalance(int $leaveId, int $day, int $userId, string $description): LeaveBalance
     {
-        // Pobierz wniosek urlopowy
         $leave = $this->leaves->find($leaveId);
 
         if (!$leave) {
             throw new \Exception("Leave request not found");
         }
 
+        $year = Carbon::parse($leave->start_date)->year;
+
         $leaveBalance = $this->leaveBalance->where('user_id', $leave->user_id)
-            ->where('year', now()->year)
+            ->where('year', $year)
             ->first();
 
         if (!$leaveBalance) {
-            throw new \Exception("Leave balance not found");
+            throw new \Exception("Leave balance not found for year: {$year}");
         }
 
-        $user = $this->user->find($leave->user_id);
+        \Log::info('setLeaveBalance - raw data from DB', [
+            'leave_id' => $leaveId,
+            'leave_balance_id' => $leaveBalance->id,
+            'raw_leave_type' => $leaveBalance->raw_type,
+            'attributes' => $leaveBalance->attributes,
+        ]);
 
-        if ($leaveBalance->remaining_days < $day) {
+        $typeEnum = $leaveBalance->type_enum;
+
+        if (!$typeEnum) {
+            \Log::error('setLeaveBalance - unknown leave type', [
+                'leave_id' => $leaveId,
+                'leave_balance_id' => $leaveBalance->id,
+                'raw_type' => $leaveBalance->raw_type,
+                'all_attributes' => $leaveBalance->attributes,
+            ]);
+            throw new \Exception("Nieznany typ urlopu: {$leaveBalance->raw_type}");
+        }
+
+        \Log::info('setLeaveBalance - checking balance', [
+            'leave_id' => $leaveId,
+            'user_id' => $leave->user_id,
+            'year' => $year,
+            'requested_days' => $day,
+            'balance_remaining' => $leaveBalance->remaining_days,
+            'balance_used' => $leaveBalance->used_days,
+            'balance_type' => $typeEnum->value,
+        ]);
+
+        if (($typeEnum === LeavesType::ANNUAL || $typeEnum === LeavesType::ON_DEMAND) && $leaveBalance->remaining_days < $day) {
             $leave->status = 'rejected';
-            $leave->approved_by = \Illuminate\Support\Facades\Auth::id();
+            $leave->approved_by = Auth::id();
             $leave->approved_at = now();
             $leave->rejection_reason = "Niewystarczające saldo urlopu.";
             $leave->save();
@@ -287,25 +318,72 @@ class EloquentLeavesRepository implements LeavesRepositoryInterface
             throw new \Exception('Urlop odrzucony: Niewystarczające saldo urlopu.');
         }
 
-        if($leaveBalance->remaining_days >= $day) {
+        if ($typeEnum === LeavesType::ANNUAL) {
             $leaveBalance->used_days += $day;
             $leaveBalance->remaining_days -= $day;
             $leaveBalance->save();
 
+            \Log::info('setLeaveBalance - saving ANNUAL leave', [
+                'leave_id' => $leave->id,
+                'justification_param' => $description,
+                'justification_length' => strlen($description),
+            ]);
+
             $leave->status = 'approved';
-            $leave->approved_by = \Illuminate\Support\Facades\Auth::id();
+            $leave->approved_by = Auth::id();
             $leave->approved_at = now();
-            $leave->description = $description;
+            $leave->rejection_reason = $description;
             $leave->save();
+
+            \Log::info('setLeaveBalance - ANNUAL saved', [
+                'leave_id' => $leave->id,
+                'rejection_reason_in_model' => $leave->rejection_reason,
+            ]);
+
+        } elseif (in_array($typeEnum, [LeavesType::SICK, LeavesType::UNPAID, LeavesType::PARENTAL, LeavesType::COMPASSIONATE], true)) {
+
+            $leave->status = 'approved';
+            $leave->approved_by = Auth::id();
+            $leave->approved_at = now();
+            $leave->rejection_reason = $description;
+            $leave->save();
+
+        } elseif ($typeEnum === LeavesType::ON_DEMAND) {
+
+            if ($day > 2) {
+                $leave->status = 'rejected';
+                $leave->approved_by = Auth::id();
+                $leave->approved_at = now();
+                $leave->rejection_reason = "Urlop na żądanie nie może przekraczać 2 dni.";
+                $leave->save();
+
+                throw new \Exception('Urlop odrzucony: Urlop na żądanie nie może przekraczać 2 dni.');
+            }
+
+            if ($leaveBalance->remaining_days < $day) {
+                $leave->status = 'rejected';
+                $leave->approved_by = Auth::id();
+                $leave->approved_at = now();
+                $leave->rejection_reason = "Niewystarczające saldo urlopu na żądanie.";
+                $leave->save();
+
+                throw new \Exception('Urlop odrzucony: Niewystarczające saldo urlopu na żądanie.');
+            }
+
+            $leaveBalance->used_days += $day;
+            $leaveBalance->remaining_days -= $day;
+            $leaveBalance->request_used = ($leaveBalance->request_used ?? 0) + $day;
+            $leaveBalance->save();
+
+            $leave->status = 'approved';
+            $leave->approved_by = Auth::id();
+            $leave->approved_at = now();
+            $leave->rejection_reason = $description;
+            $leave->save();
+
+        } else {
+            throw new \Exception('Nieznany typ urlopu.');
         }
-
-        \Log::info('KOD WYKONUJE SIĘ DALEJ - saldo wystarczające', [
-            'leave_id' => $leaveId,
-            'remaining_days' => $leaveBalance->remaining_days,
-            'requested_days' => $day
-        ]);
-
-
 
         return $leaveBalance;
     }

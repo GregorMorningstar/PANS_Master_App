@@ -1,6 +1,7 @@
 import { dashboard, login, register } from '@/routes';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
+import LoginCard from '@/components/auth/LoginCard';
 
 export default function Welcome({
     canRegister = true,
@@ -8,6 +9,21 @@ export default function Welcome({
     canRegister?: boolean;
 }) {
     const { auth } = usePage<SharedData>().props;
+
+    // If user is not authenticated, show modern centered login
+    if (!auth.user) {
+        return (
+            <>
+                <Head title="Login">
+                    <link rel="preconnect" href="https://fonts.bunny.net" />
+                    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+                </Head>
+                <div className="min-h-screen flex items-center justify-center bg-black">
+                    <LoginCard />
+                </div>
+            </>
+        );
+    }
 
     return (
         <>
