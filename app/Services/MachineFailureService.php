@@ -40,5 +40,9 @@ class MachineFailureService implements MachineFailureServiceInterface
     {
         return $this->machineFailureRepository->setZeroFailureCount($machineId);
     }
-    
+    public function getFailureHistory(array $filters = [], int $perPage = 15): array
+    {
+        return $this->machineFailureRepository->getFailureHistory($filters, $perPage);
+    }
+
 }

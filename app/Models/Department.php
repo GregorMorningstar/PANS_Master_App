@@ -80,6 +80,9 @@ class Department extends Model
     {
         return $this->hasMany(User::class, 'department_id');
     }
+    public function machineFailures(): HasMany
+    {
+        return $this->hasMany(MachineFailure::class, 'department_id');
+    }
 
-  
 }

@@ -96,13 +96,12 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
     // Machine Failures Reporting
     Route::prefix('machines')->name('machines.')->group(function () {
         Route::get('/report-failure', [MachineFailuresController::class, 'index'])->name('report-failure');
-
         Route::get('user/', [MachinesController::class, 'getUserMachines'])->name('user.machines');
 
-        Route::prefix('failures')->name('failures.')->group(function () {
+        Route::prefix('/failures')->name('failures.')->group(function () {
             Route::get('/add-new/{machine_id}', [MachineFailuresController::class, 'create'])->name('create');
             Route::post('/', [MachineFailuresController::class, 'store'])->name('store');
-                Route::prefix('history')->name('history.')->group(function () {
+                Route::prefix('/history')->name('history.')->group(function () {
                     Route::get('/', [MachineFailuresController::class, 'history'])->name('index');
             });
             Route::prefix('edit')->name('edit.')->group(function () {

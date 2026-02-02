@@ -11,7 +11,7 @@ export default function AuthModernLayout({
     title,
     description,
 }: PropsWithChildren<AuthModernLayoutProps>) {
-    const [logoSrc, setLogoSrc] = useState('/storage/image/logo/Logo-PANS-2022-pelne-2-scaled.jpg');
+    const [logoSrc, setLogoSrc] = useState('/storage/image/Logo-PANS-2022-pelne-2-scaled.jpg');
 
     const onLogoError = () => {
         if (logoSrc !== '/images/Logo-PANS-2022-pelne-2-scaled.jpg') {
