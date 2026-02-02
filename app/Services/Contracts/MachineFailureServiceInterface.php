@@ -13,4 +13,5 @@ public function findFailureById(int $id);
 public function updateMachineFailure(int $id, array $data): bool;
 public function deleteMachineFailure(int $id): bool;
 public function setZeroFailureCount(int $machineId): bool;
+public function getFailureHistory(array $filters = [], int $perPage = 15): array;
 }

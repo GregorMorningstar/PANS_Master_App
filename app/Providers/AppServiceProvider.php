@@ -32,7 +32,8 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Contracts\EducationRepositoryInterface::class => \App\Repositories\Eloquent\EloquentEducationRepository::class,
             \App\Services\Contracts\EmploymentCertificateServiceInterface::class => \App\Services\EmploymentCertificateService::class,
             \App\Repositories\Contracts\EmploymentCertificateRepositoryInterface::class => \App\Repositories\Eloquent\EloquentEmploymentCertificateRepository::class,
-
+            \App\Services\Contracts\MachineFailureServiceInterface::class => \App\Services\MachineFailureService::class,
+            \App\Repositories\Contracts\MachineFailureRepositoryInterface::class => \App\Repositories\Eloquent\EloquentMachineFailureRepository::class,
             ];
 
         foreach ($bindings as $abstract => $concrete) {

@@ -141,7 +141,7 @@ export default function ModeratorSidebarMenu(): React.ReactElement {
 
               </Link>
             </div>
-            
+
           </div>
         </div>
 
@@ -301,21 +301,16 @@ export default function ModeratorSidebarMenu(): React.ReactElement {
               >
                 <FontAwesomeIcon icon={faList} className="mr-2" /> Lista awarii
               </Link>
+
               <Link
-                href="/moderator/incidents/create"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/incidents/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faPlus} className="mr-2" /> Zgłoś awarię
-              </Link>
-              <Link
-                href="/moderator/incidents/history"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/incidents/history') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href="/machines/failures/history"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/machines/failures/history') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faList} className="mr-2" /> Historia
               </Link>
               <Link
-                href="/moderator/incidents/reports"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/incidents/reports') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+                href="/machines/failures/reports"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/machines/failures/reports') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faChartLine} className="mr-2" /> Raporty
               </Link>

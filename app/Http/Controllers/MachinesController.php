@@ -124,4 +124,6 @@ class MachinesController extends Controller
             'machines' => $allMachines,
         ]);
     }
+
+   
 }

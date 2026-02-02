@@ -29,11 +29,17 @@ class MachineFailuresController extends Controller
          'userMachinesFailures' => $userMachinesFailures]);
      }
 
-    public function history()
+    public function history(Request $request)
     {
+        $perPage = (int) $request->get('per_page', 15);
+        $filters = $request->only(['barcode', 'machine_name', 'date_from', 'date_to']);
 
-       // dd('test');
-        return Inertia::render('machines/failures/history');
+        $history = $this->machineFailureService->getFailureHistory($filters, $perPage);
+
+        return Inertia::render('machines/failures/history', [
+            'history' => $history,
+            'filters' => $filters,
+        ]);
      }
 
     public function create($machine_id)

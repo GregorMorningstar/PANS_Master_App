@@ -82,4 +82,42 @@ class EloquentMachineFailureRepository implements MachineFailureRepositoryInterf
 
         return $deleted;
     }
+
+     public function getFailureHistory(array $filters = [], int $perPage = 15): array
+    {
+        // build base query with relations
+        $query = $this->machineFailure
+            ->with('machine.department', 'user')
+            ->whereNotNull('finished_repaired_at');
+
+        // filter by machine barcode
+        if (!empty($filters['barcode'])) {
+            $barcode = trim($filters['barcode']);
+            $query->whereHas('machine', function ($q) use ($barcode) {
+                $q->where('barcode', 'like', "%{$barcode}%");
+            });
+        }
+
+        // filter by machine name
+        if (!empty($filters['machine_name'])) {
+            $name = trim($filters['machine_name']);
+            $query->whereHas('machine', function ($q) use ($name) {
+                $q->where('name', 'like', "%{$name}%");
+            });
+        }
+
+        // filter by reported_at date range
+        if (!empty($filters['date_from'])) {
+            $query->whereDate('reported_at', '>=', $filters['date_from']);
+        }
+        if (!empty($filters['date_to'])) {
+            $query->whereDate('reported_at', '<=', $filters['date_to']);
+        }
+
+        $perPage = $perPage ?: 15;
+
+        return $query->orderBy('reported_at', 'desc')
+            ->paginate($perPage)
+            ->toArray();
+    }
 }

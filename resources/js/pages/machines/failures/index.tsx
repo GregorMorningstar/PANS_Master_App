@@ -15,13 +15,13 @@ export default function ReportFailurePageIndex() {
     const breadcrumbsModerator = [
         { label: 'Moderator', href: '/moderator'},
         { label: 'Maszyny', href: '/moderator/machines' },
-        { label: 'Lista Awarii', href: '/moderator/machines/report-failure' }
+        { label: 'Lista Awarii', href: '/machines/report-failure' }
     ];
 
     const breadcrumbsEmployee = [
         { label: 'Pracownik', href: '/employee'},
         { label: 'Maszyny', href: '/employee/machines' },
-        { label: 'Lista Awarii', href: '/employee/machines/report-failure' }
+        { label: 'Lista Awarii', href: '/machines/report-failure' }
     ];
 
     if (userRole === 'moderator') return (
