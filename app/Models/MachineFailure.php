@@ -49,5 +49,8 @@ protected static function booted()
     {
         return $this->belongsTo(Department::class);
     }
-
+    public function repairsMachineFailure()
+    {
+        return $this->hasMany(MachineFailureRepair::class);
+    }
 }
