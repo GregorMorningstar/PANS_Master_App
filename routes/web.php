@@ -17,6 +17,7 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\EmployeeDetailsController;
 use App\Http\Controller\UserProfileController;
 use App\Http\Controllers\Api\CompanyController;
+use App\Http\Controllers\MachineFailureRepairController;
 // Broadcasting authentication routes
 Broadcast::routes(['middleware' => ['web', 'auth']]);
 
@@ -100,6 +101,8 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
 
         Route::prefix('/failures')->name('failures.')->group(function () {
             Route::get('/add-new/{machine_id}', [MachineFailuresController::class, 'create'])->name('create');
+            Route::get('/fix', [MachineFailureRepairController::class, 'createRaportedFailure'])->name('repairs.create');
+            Route::post('/repairs', [MachineFailureRepairController::class, 'store'])->name('repairs.store');
             Route::post('/', [MachineFailuresController::class, 'store'])->name('store');
                 Route::prefix('/history')->name('history.')->group(function () {
                     Route::get('/', [MachineFailuresController::class, 'history'])->name('index');

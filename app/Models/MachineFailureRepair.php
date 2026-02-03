@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+class MachineFailureRepair extends Model
+{
+use HasFactory;
+    protected $fillable = [
+        'machine_failure_id',
+        'barcode',
+        'status',
+        'cost',
+        'description',
+        'started_at',
+        'finished_at',
+    ];
+
+
+    protected static function booted()
+    {
+        static::created(function ($machineFailureRaported) {
+            $prefix = '3300';
+            $id = $machineFailureRaported->id;
+            $barcode = $prefix . str_pad($id, 13 - strlen($prefix), '0', STR_PAD_LEFT);
+            if ($machineFailureRaported->barcode !== $barcode) {
+                $machineFailureRaported->barcode = $barcode;
+                $machineFailure->save();
+            }
+        });
+    }
+
+
+    public function machineFailure()
+    {
+        return $this->belongsTo(MachineFailure::class);
+    }
+}

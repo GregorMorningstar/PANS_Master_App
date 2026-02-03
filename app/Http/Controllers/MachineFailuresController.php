@@ -26,7 +26,7 @@ class MachineFailuresController extends Controller
 
         return Inertia::render('machines/failures/index',[
             'allmachineFailures' => $allmachineFailures,
-         'userMachinesFailures' => $userMachinesFailures]);
+            'userMachinesFailures' => $userMachinesFailures]);
      }
 
     public function history(Request $request)

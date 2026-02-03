@@ -284,12 +284,12 @@ export default function MachineFailuresList({ allmachineFailures = [], auth = {}
                                 <td className="p-3">
                                     <div className="flex items-center gap-2">
                                         <button
-                                            onClick={() => setSelected(item)}
+                                            onClick={() => router.get('/machines/failures/fix', { machine_id: item.id })}
                                             onMouseEnter={() => setHovered(item.id)}
                                             onMouseLeave={() => setHovered(null)}
                                             className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                            title="Szczegóły"
-                                            aria-label="Szczegóły"
+                                            title="Przejdź do naprawy"
+                                            aria-label="Przejdź do naprawy"
                                         >
                                             <GlassesIcon className="w-4 h-4" />
                                         </button>
