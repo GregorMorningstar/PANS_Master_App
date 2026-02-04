@@ -12,6 +12,7 @@ use HasFactory;
         'barcode',
         'status',
         'cost',
+        'repair_order_no',
         'description',
         'started_at',
         'finished_at',
@@ -26,7 +27,7 @@ use HasFactory;
             $barcode = $prefix . str_pad($id, 13 - strlen($prefix), '0', STR_PAD_LEFT);
             if ($machineFailureRaported->barcode !== $barcode) {
                 $machineFailureRaported->barcode = $barcode;
-                $machineFailure->save();
+                $machineFailureRaported->save();
             }
         });
     }

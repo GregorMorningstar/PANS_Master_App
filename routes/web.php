@@ -102,6 +102,9 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
         Route::prefix('/failures')->name('failures.')->group(function () {
             Route::get('/add-new/{machine_id}', [MachineFailuresController::class, 'create'])->name('create');
             Route::get('/fix', [MachineFailureRepairController::class, 'createRaportedFailure'])->name('repairs.create');
+            Route::get('fix/list', [MachineFailuresController::class, 'repariedList'])->name('repairs.reparied.list');
+            Route::get('/fix/{id}', [MachineFailureRepairController::class, 'createRaportedFailureNextStep'])->name('repairs.create.nextstep');
+            Route::delete('/fix/{id}', [MachineFailureRepairController::class, 'destroy'])->name('repairs.destroy');
             Route::post('/repairs', [MachineFailureRepairController::class, 'store'])->name('repairs.store');
             Route::post('/', [MachineFailuresController::class, 'store'])->name('store');
                 Route::prefix('/history')->name('history.')->group(function () {
