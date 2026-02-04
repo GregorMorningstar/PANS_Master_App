@@ -1,6 +1,6 @@
 import ModeratorLayout from "@/layouts/ModeratorLayout";
 import { usePage, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 type RepairFormData = {
     machine_failure_id: number | null;
@@ -20,7 +20,19 @@ export default function ReportFailurePageCreate() {
 
     const page = usePage();
     const props = page.props as any;
-    const { machineFailure, statuses = {} } = props;
+    const { machineFailure, statuses = {}, flash } = props;
+
+    const [showMessage, setShowMessage] = useState(false);
+
+    useEffect(() => {
+        if (flash?.success || flash?.error) {
+            setShowMessage(true);
+            const timer = setTimeout(() => {
+                setShowMessage(false);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [flash]);
 
     const toLocalDatetime = (s?: string) => {
         if (!s) return '';
@@ -52,6 +64,29 @@ export default function ReportFailurePageCreate() {
     return (
         <ModeratorLayout breadcrumbs={breadcrumbsModerator} title="Naprawa Awarii">
             <div className="p-6">
+                {/* Flash Messages */}
+                {showMessage && flash?.success && (
+                    <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg flex items-center justify-between">
+                        <span>{flash.success}</span>
+                        <button onClick={() => setShowMessage(false)} className="text-green-700 hover:text-green-900">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
+
+                {showMessage && flash?.error && (
+                    <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center justify-between">
+                        <span>{flash.error}</span>
+                        <button onClick={() => setShowMessage(false)} className="text-red-700 hover:text-red-900">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
+
                 <div className="flex justify-center">
                     <form onSubmit={handleSubmit} className="w-full max-w-2xl bg-white border border-gray-200 rounded-xl shadow-md p-6">
                         <div className="flex items-start justify-between mb-4">

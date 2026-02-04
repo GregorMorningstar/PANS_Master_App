@@ -60,6 +60,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             LeavesSeeder::class,
+            \Database\Seeders\MachineSeeder::class,
         ]);
     }
 }

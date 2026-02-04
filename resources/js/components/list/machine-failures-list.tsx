@@ -1,6 +1,6 @@
-import { GlassesIcon, Trash2Icon, PenIcon } from 'lucide-react';
+import { PlusCircleIcon, List as ListIcon } from 'lucide-react';
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useForm, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import Barcode from 'react-barcode';
 
 const PAGE_SIZE = 10;
@@ -45,9 +45,11 @@ export default function MachineFailuresList({ allmachineFailures = [], auth = {}
 
     const [hovered, setHovered] = useState<number | null>(null);
     const [selected, setSelected] = useState<MachineFailure | null>(null);
-    const [deletingId, setDeletingId] = useState<number | null>(null);
-    const form = useForm();
     const [localFailures, setLocalFailures] = useState<MachineFailure[]>(allmachineFailures);
+    const [repairsModalOpen, setRepairsModalOpen] = useState(false);
+    const [repairsLoading, setRepairsLoading] = useState(false);
+    const [repairsError, setRepairsError] = useState<string | null>(null);
+    const [repairsList, setRepairsList] = useState<any[]>([]);
 
     useEffect(() => {
         setLocalFailures(allmachineFailures);
@@ -66,26 +68,27 @@ export default function MachineFailuresList({ allmachineFailures = [], auth = {}
         }
     };
 
-    const handleEdit = useCallback((id: number, item?: MachineFailure) => {
-        router.visit(`/machines/failures/edit/${id}`, { data: item ?? {} });
+    const handleOpenRepairNextStep = useCallback((id: number) => {
+        // Navigate to GET /machines/failures/fix/{id}
+        router.get(`/machines/failures/fix/${id}`);
     }, []);
 
-    const handleDelete = useCallback(async (id: number) => {
-        if (!confirm('Czy na pewno chcesz usunąć to zgłoszenie awarii?')) return;
-        setDeletingId(id);
-        form.delete(`/machines/failures/${id}`, {
-            preserveState: true,
-            onSuccess: () => {
-                // remove from local list so UI updates immediately
-                setLocalFailures((prev) => prev.filter((f) => f.id !== id));
-                if (selected?.id === id) setSelected(null);
-            },
-            onFinish: () => setDeletingId(null),
-            onError: () => {
-                // optionally show error toast (not implemented here)
-            },
-        });
-    }, [form, selected]);
+    const openRepairsPreview = useCallback(async (machineFailureId: number) => {
+        setRepairsModalOpen(true);
+        setRepairsLoading(true);
+        setRepairsError(null);
+        setRepairsList([]);
+        try {
+            const res = await fetch(`/machines/failures/${machineFailureId}/repairs`, { headers: { 'Accept': 'application/json' } });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const json = await res.json();
+            setRepairsList(Array.isArray(json) ? json : json.data ?? []);
+        } catch (e: any) {
+            setRepairsError(e.message || 'Błąd pobierania');
+        } finally {
+            setRepairsLoading(false);
+        }
+    }, []);
 
     // filters & pagination
     const [filterName, setFilterName] = useState('');
@@ -283,40 +286,26 @@ export default function MachineFailuresList({ allmachineFailures = [], auth = {}
 
                                 <td className="p-3">
                                     <div className="flex items-center gap-2">
+                                        {/* Przyciski: kolejna naprawa oraz podgląd napraw */}
                                         <button
-                                            onClick={() => router.get('/machines/failures/fix', { machine_id: item.id })}
-                                            onMouseEnter={() => setHovered(item.id)}
-                                            onMouseLeave={() => setHovered(null)}
-                                            className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                            title="Przejdź do naprawy"
-                                            aria-label="Przejdź do naprawy"
+                                            onClick={() => handleOpenRepairNextStep(item.id)}
+                                            className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                            title="Dodaj kolejną naprawę"
+                                            aria-label="Dodaj kolejną naprawę"
                                         >
-                                            <GlassesIcon className="w-4 h-4" />
+                                            <PlusCircleIcon className="w-4 h-4" />
                                         </button>
 
-                                        {(userRole === 'moderator' || item.user_id === user?.id) && (
-                                            <>
-                                                <button
-                                                    onClick={() => handleEdit(item.id, item)}
-                                                    className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                                    title="Edytuj"
-                                                >
-                                                    <PenIcon className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(item.id)}
-                                                    disabled={deletingId === item.id}
-                                                    className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent rounded-lg transition-colors"
-                                                    title="Usuń"
-                                                >
-                                                    {deletingId === item.id ? (
-                                                        <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
-                                                    ) : (
-                                                        <Trash2Icon className="w-4 h-4" />
-                                                    )}
-                                                </button>
-                                            </>
-                                        )}
+                                        <button
+                                            onClick={() => router.get('/machines/failures/fix/list', { machine_id: item.id })}
+                                            className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                            title="Lista napraw"
+                                            aria-label="Lista napraw"
+                                        >
+                                            <ListIcon className="w-4 h-4" />
+                                        </button>
+
+                                                {/* only add-repair icons allowed per request - no edit/delete/preview */}
                                     </div>
                                 </td>
                             </tr>
@@ -440,29 +429,47 @@ export default function MachineFailuresList({ allmachineFailures = [], auth = {}
 
                         {/* Footer */}
                         <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
-                            {(userRole === 'moderator' || selected.user_id === user?.id) && (
-                                <>
-                                    <button
-                                        onClick={() => handleEdit(selected.id)}
-                                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
-                                    >
-                                        Edytuj
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(selected.id)}
-                                        disabled={deletingId === selected.id}
-                                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        {deletingId === selected.id ? 'Usuwanie...' : 'Usuń'}
-                                    </button>
-                                </>
-                            )}
                             <button
                                 onClick={() => setSelected(null)}
                                 className="px-6 py-2 text-sm font-medium text-blue-600 bg-transparent border border-blue-600 rounded-lg hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
                             >
                                 Zamknij
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Repairs Preview Modal */}
+            {repairsModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setRepairsModalOpen(false)}>
+                    <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="p-4 border-b flex items-center justify-between">
+                            <h3 className="text-lg font-semibold">Podgląd napraw</h3>
+                            <button className="text-gray-500" onClick={() => setRepairsModalOpen(false)}>Zamknij</button>
+                        </div>
+                        <div className="p-4">
+                            {repairsLoading && <div>Ładowanie...</div>}
+                            {repairsError && <div className="text-red-600">Błąd: {repairsError}</div>}
+                            {!repairsLoading && !repairsError && repairsList.length === 0 && (
+                                <div className="text-sm text-gray-600">Brak zarejestrowanych napraw dla tej awarii.</div>
+                            )}
+                            {!repairsLoading && repairsList.length > 0 && (
+                                <ul className="space-y-3">
+                                    {repairsList.map((r) => (
+                                        <li key={r.id} className="p-3 border rounded flex items-center justify-between">
+                                            <div>
+                                                <div className="font-medium">{r.repair_order_no ?? ('Zlecenie #' + r.id)}</div>
+                                                <div className="text-sm text-gray-600">{r.status ?? '-'} — Koszt: {r.cost ?? '-'}</div>
+                                                <div className="text-xs text-gray-400">Utworzono: {r.created_at ?? '-'}</div>
+                                            </div>
+                                            <div>
+                                                <button onClick={() => router.get(`/machines/failures/fix/${r.machine_failure_id}`)} className="px-3 py-1 text-sm bg-blue-600 text-white rounded">Otwórz</button>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </div>
                     </div>
                 </div>

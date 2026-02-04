@@ -94,6 +94,13 @@ class MachineFailuresController extends Controller
 
         return redirect()->back()->with('error', 'Nie udało się usunąć zgłoszenia awarii.');
     }
+    public function repariedList(Request $request)
+    {
+        $machineFailureId = $request->get('machine_id');
 
+        return Inertia::render('machines/failures/repairs/repairsList', [
+            'machine_failure_id' => $machineFailureId,
+        ]);
+    }
 
 }

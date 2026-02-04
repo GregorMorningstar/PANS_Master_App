@@ -21,6 +21,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->dateTime('started_at')->useCurrent();
             $table->dateTime('finished_at')->nullable();
+            $table->string('repair_order_no')->nullable();//dodany jaki pierwszy barcode z recordow dotyczacych naprawy
             $table->timestamps();
         });
     }
