@@ -1,4 +1,4 @@
-import { PlusCircleIcon, List as ListIcon } from 'lucide-react';
+import { PlusCircleIcon, List as ListIcon, ArrowRightIcon, X as XIcon } from 'lucide-react';
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { router } from '@inertiajs/react';
 import Barcode from 'react-barcode';
@@ -67,11 +67,6 @@ export default function MachineFailuresList({ allmachineFailures = [], auth = {}
             setSortDir('desc');
         }
     };
-
-    const handleOpenRepairNextStep = useCallback((id: number) => {
-        // Navigate to GET /machines/failures/fix/{id}
-        router.get(`/machines/failures/fix/${id}`);
-    }, []);
 
     const openRepairsPreview = useCallback(async (machineFailureId: number) => {
         setRepairsModalOpen(true);
@@ -164,6 +159,10 @@ export default function MachineFailuresList({ allmachineFailures = [], auth = {}
         if (days > 1) return '#fff4b0'; // pastel yellow
         return undefined;
     }, []);
+
+    function handleOpenRepairNextStep(id: number): void {
+        throw new Error('Function not implemented.');
+    }
 
     return (
         <div className="space-y-4">
@@ -297,7 +296,7 @@ export default function MachineFailuresList({ allmachineFailures = [], auth = {}
                                         </button>
 
                                         <button
-                                            onClick={() => router.get('/machines/failures/fix/list', { machine_id: item.id })}
+                                            onClick={() => router.get('/machines/failures/fix/list', { barcode: item.barcode })}
                                             className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                             title="Lista napraw"
                                             aria-label="Lista napraw"
@@ -446,7 +445,14 @@ export default function MachineFailuresList({ allmachineFailures = [], auth = {}
                     <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                         <div className="p-4 border-b flex items-center justify-between">
                             <h3 className="text-lg font-semibold">Podgląd napraw</h3>
-                            <button className="text-gray-500" onClick={() => setRepairsModalOpen(false)}>Zamknij</button>
+                            <button
+                                className="text-gray-500 p-2 rounded hover:bg-gray-100"
+                                onClick={() => setRepairsModalOpen(false)}
+                                title="Zamknij"
+                                aria-label="Zamknij"
+                            >
+                                <XIcon className="w-4 h-4" />
+                            </button>
                         </div>
                         <div className="p-4">
                             {repairsLoading && <div>Ładowanie...</div>}
@@ -464,7 +470,14 @@ export default function MachineFailuresList({ allmachineFailures = [], auth = {}
                                                 <div className="text-xs text-gray-400">Utworzono: {r.created_at ?? '-'}</div>
                                             </div>
                                             <div>
-                                                <button onClick={() => router.get(`/machines/failures/fix/${r.machine_failure_id}`)} className="px-3 py-1 text-sm bg-blue-600 text-white rounded">Otwórz</button>
+                                                <button
+                                                    onClick={() => router.get(`/machines/failures/fix/${r.machine_failure_id}`)}
+                                                    className="p-2 text-blue-600 bg-blue-50 rounded hover:bg-blue-100"
+                                                    title="Otwórz"
+                                                    aria-label="Otwórz"
+                                                >
+                                                    <ArrowRightIcon className="w-4 h-4" />
+                                                </button>
                                             </div>
                                         </li>
                                     ))}

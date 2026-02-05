@@ -1,9 +1,10 @@
 import ModeratorLayout from "@/layouts/ModeratorLayout";
 import { usePage } from '@inertiajs/react';
+import MachineFailuresRepariedList from '@/components/list/machine-failures-reparied-list';
 
-export default function MachineFailuresRepariedList() {
+export default function MachineFailuresRepariedListPage() {
 
-    const broadcrumbsModerator = [
+    const breadcrumbsModerator = [
         { label: 'Moderator', href: '/moderator'},
         { label: 'Maszyny', href: '/moderator/machines' },
         { label: 'Lista Naprawionych Awarii', href: '/machines/failures/repairs/list' }
@@ -11,17 +12,14 @@ export default function MachineFailuresRepariedList() {
 
     const page = usePage();
     const props = page.props as any;
-    const machineFailureId = props.machine_failure_id ?? null;
+    const repairs = props.repairs ?? [];
+    const barcode = props.barcode ?? null;
 
     return (
-        <ModeratorLayout breadcrumbs={broadcrumbsModerator} title="Lista Naprawionych Awarii">
+        <ModeratorLayout breadcrumbs={breadcrumbsModerator} title="Lista Naprawionych Awarii">
             <div className="p-6">
                 <h2 className="text-lg font-semibold mb-4">Lista Naprawionych Awarii</h2>
-                {machineFailureId ? (
-                    <div>Wyświetlamy naprawy dla zgłoszenia id: <strong>{machineFailureId}</strong></div>
-                ) : (
-                    <div>Brak filtrów — wyświetl wszystkie naprawy.</div>
-                )}
+                <MachineFailuresRepariedList repairs={repairs} />
             </div>
         </ModeratorLayout>
     );

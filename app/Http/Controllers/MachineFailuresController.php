@@ -6,21 +6,24 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Services\Contracts\MachinesServiceInterface;
 use App\Services\Contracts\MachineFailureServiceInterface;
+use App\Services\Contracts\MachineFailureRepairServiceInterface;
+use App\Models\MachineFailureRepair;
 class MachineFailuresController extends Controller
 {
     private MachinesServiceInterface $machineService;
     private MachineFailureServiceInterface $machineFailureService;
 
     public function __construct(MachinesServiceInterface $machineService,
-                                MachineFailureServiceInterface $machineFailureService)
+                                MachineFailureServiceInterface $machineFailureService,
+                                MachineFailureRepairServiceInterface $machineFailureRepairService)
     {
         $this->machineService = $machineService;
         $this->machineFailureService = $machineFailureService;
+        $this->machineFailureRepairService = $machineFailureRepairService;
     }
     public function index()
     {
         $userMachinesFailures =  $this->machineService->getUserMachines(auth()->id(), 15);
-
         $allmachineFailures = $this->machineFailureService->getAllFailuresWithMachines();
       //  dd($allmachineFailures);
 
@@ -96,10 +99,18 @@ class MachineFailuresController extends Controller
     }
     public function repariedList(Request $request)
     {
-        $machineFailureId = $request->get('machine_id');
+
+        $repairOrderNo = $request->get('repair_order_no');
+        $barcode = $request->get('barcode');
+
+        $list = $this->machineFailureRepairService->getFailuresByBarcode($barcode);
+        $repairs = $list->toArray();
+
 
         return Inertia::render('machines/failures/repairs/repairsList', [
-            'machine_failure_id' => $machineFailureId,
+            'repairs' => $repairs,
+            'barcode' => $barcode,
+            'repair_order_no' => $repairOrderNo,
         ]);
     }
 

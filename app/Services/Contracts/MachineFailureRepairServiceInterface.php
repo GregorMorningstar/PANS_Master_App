@@ -3,6 +3,7 @@
 namespace App\Services\Contracts;
 use App\Models\MachineFailureRepair;
 use App\Models\MachineFailure;
+use Illuminate\Support\Collection;
 
 interface MachineFailureRepairServiceInterface
 {
@@ -10,6 +11,6 @@ interface MachineFailureRepairServiceInterface
     public function create(array $data): MachineFailureRepair;
     public function update(int $id, array $data): bool;
     public function delete(int $id): bool;
-        public function getFailureMachineWithMachine(int $machineId): ?MachineFailure;
-
+    public function getFailureMachineWithMachine(int $machineId): ?MachineFailure;
+    public function getFailuresByBarcode(string $barcode): Collection;
 }
