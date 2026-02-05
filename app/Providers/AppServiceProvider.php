@@ -36,7 +36,8 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Contracts\MachineFailureRepositoryInterface::class => \App\Repositories\Eloquent\EloquentMachineFailureRepository::class,
             \App\Services\Contracts\MachineFailureRepairServiceInterface::class => \App\Services\MachineFailureRepairService::class,
             \App\Repositories\Contracts\MachineFailureRepairRepositoryInterface::class => \App\Repositories\Eloquent\EloquentMachineFailureRepair::class,
-        ];
+            
+            ];
 
         foreach ($bindings as $abstract => $concrete) {
             $this->app->bind($abstract, $concrete);

@@ -5,6 +5,7 @@ namespace App\Repositories\Eloquent;
 use App\Repositories\Contracts\MachineFailureRepairRepositoryInterface;
 use App\Models\MachineFailureRepair;
 use App\Models\MachineFailure;
+use Illuminate\Support\Collection;
 
 class EloquentMachineFailureRepair implements MachineFailureRepairRepositoryInterface
 {
@@ -32,6 +33,15 @@ public function getFailuresWithMachine(int $machineId): ?MachineFailure
         }
         return $repair->update($data);
     }
+            public function getFailuresByBarcode(string $barcode): Collection
+            {
+                $barcode = trim((string) $barcode);
+                if ($barcode === '') {
+                    return collect();
+                }
+
+                return $this->machineFailure->where('barcode', $barcode)->with('machine')->get();
+            }
 
     public function delete(int $id): bool
     {
@@ -46,4 +56,6 @@ public function getFailuresWithMachine(int $machineId): ?MachineFailure
     {
         return $this->machineFailure->where('id', $machineId)->with('machine')->first();
     }
+
+
 }

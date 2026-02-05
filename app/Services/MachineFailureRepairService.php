@@ -6,6 +6,7 @@ use App\Services\Contracts\MachineFailureRepairServiceInterface;
 use App\Repositories\Contracts\MachineFailureRepairRepositoryInterface;
 use App\Models\MachineFailure;
 use App\Models\MachineFailureRepair;
+use Illuminate\Support\Collection;
 
 class MachineFailureRepairService implements MachineFailureRepairServiceInterface
 {
@@ -33,4 +34,9 @@ class MachineFailureRepairService implements MachineFailureRepairServiceInterfac
     {
         return $this->repository->getFailureMachineWithMachine($machineId);
     }
+    public function getFailuresByBarcode(string $barcode): Collection
+    {
+        return $this->repository->getFailuresByBarcode($barcode);
+    }
+
 }
