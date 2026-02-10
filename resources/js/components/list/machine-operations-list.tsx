@@ -225,7 +225,14 @@ export default function MachineOperationsList({
                                     </td>
                                     <td className="px-2 py-1">
                                         <div className="inline-block">
-                                            <Barcode value={operationBarcode || ' '} height={40} displayValue={false} />
+                                            <Barcode
+                                                value={String(operationBarcode ?? ' ')}
+                                                format="CODE128"
+                                                renderer="svg"
+                                                height={40}
+                                                width={1}
+                                                displayValue={false}
+                                            />
                                             <div className="text-xs truncate max-w-[120px]">{operationBarcode}</div>
                                         </div>
                                     </td>
@@ -298,7 +305,14 @@ export default function MachineOperationsList({
                                                             <div className="text-xs text-gray-500">Przezbrojenie: {op.changeover_time ?? '—'}</div>
                                                             <div className="mt-2">
                                                                 <div className="inline-block p-1 bg-gray-50 rounded">
-                                                                    <Barcode value={operationBarcode || ' '} height={30} displayValue={false} />
+                                                                    <Barcode
+                                                                        value={String(operationBarcode ?? ' ')}
+                                                                        format="CODE128"
+                                                                        renderer="svg"
+                                                                        height={30}
+                                                                        width={0.9}
+                                                                        displayValue={false}
+                                                                    />
                                                                 </div>
                                                                 <div className="text-xs truncate mt-1">{operationBarcode || '—'}</div>
                                                             </div>
@@ -410,7 +424,14 @@ export default function MachineOperationsList({
                                     <div className="text-xs text-gray-500">ID: {selectedOp.operation?.id ?? selectedOp.operation_id ?? '—'}</div>
                                     <div className="mt-3">
                                         <div className="inline-block p-1 bg-gray-50 rounded">
-                                            <Barcode value={selectedOp.operation?.barcode ?? selectedOp.operation_barcode ?? selectedOp.barcode ?? ' '} height={50} displayValue />
+                                                                    <Barcode
+                                                                        value={String(selectedOp.operation?.barcode ?? selectedOp.operation_barcode ?? selectedOp.barcode ?? ' ')}
+                                                                        format="CODE128"
+                                                                        renderer="svg"
+                                                                        height={50}
+                                                                        width={1}
+                                                                        displayValue={false}
+                                                                    />
                                         </div>
                                         <div className="text-xs mt-2">Czas: {selectedOp.duration_minutes ? `${selectedOp.duration_minutes} sek` : '—'}</div>
                                         <div className="text-xs">Przezbrojenie: {selectedOp.changeover_time ?? '—'}</div>

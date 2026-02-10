@@ -47,7 +47,7 @@ class EloquentEducationRepository implements EducationRepositoryInterface
         try {
             $this->flagRepository->educationFlagsByUser();
         } catch (\Throwable $e) {
-            // ignore flag update errors
+throw new \Exception('Error updating education flags: ' . $e->getMessage(), 0, $e);
         }
 
         return $education;
@@ -112,21 +112,17 @@ class EloquentEducationRepository implements EducationRepositoryInterface
             ->where('status', StatusAplication::APPROVED)
             ->orderByDesc('created_at')
             ->get();
-
         if ($all_education->isEmpty()) {
             return null;
         }
-
         $levels = $all_education->pluck('education_level')
             ->filter()
             ->unique()
             ->values()
             ->toArray();
-
         if (empty($levels)) {
             return null;
         }
-
         $normalize = function (string $lvl): ?string {
             foreach (EducationsDegree::cases() as $case) {
                 if ($case->value === $lvl || $case->name === $lvl) {
@@ -143,16 +139,12 @@ class EloquentEducationRepository implements EducationRepositoryInterface
                 $valid[] = $v;
             }
         }
-
         if (empty($valid)) {
             return null;
         }
-
         $order = array_flip(EducationsDegree::getAll());
-
         $maxLevel = null;
         $maxYears = -1;
-
         foreach ($valid as $v) {
             $years = EducationsDegree::yearsFor($v);
             if ($years > $maxYears) {
@@ -186,5 +178,5 @@ class EloquentEducationRepository implements EducationRepositoryInterface
         return $certificate;
     }
 
-    
+
 }

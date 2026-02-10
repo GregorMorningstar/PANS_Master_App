@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 
 type RepairFormData = {
     machine_failure_id: number | null;
+    repair_order_no: string;
     status: string;
     cost: string;
     description: string;
@@ -20,7 +21,9 @@ export default function ReportFailurePageCreate() {
 
     const page = usePage();
     const props = page.props as any;
-    const { machineFailure, statuses = {}, flash } = props;
+    const { machineFailure, repairOrderNo, statuses = {}, flash } = props;
+
+    console.log('Props formularza:', { machineFailure, repairOrderNo, statuses });
 
     const [showMessage, setShowMessage] = useState(false);
 
@@ -42,8 +45,16 @@ export default function ReportFailurePageCreate() {
         return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     };
 
+    const formatDisplayDate = (s?: string) => {
+        if (!s) return '-';
+        const d = new Date(s);
+        if (isNaN(d.getTime())) return '-';
+        return d.toLocaleString('pl-PL', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    };
+
     const form = useForm<RepairFormData>({
         machine_failure_id: machineFailure?.id ?? null,
+        repair_order_no: repairOrderNo ?? '',
         status: Object.keys(statuses)[0] ?? 'reported',
         cost: '',
         description: '',
@@ -108,9 +119,20 @@ export default function ReportFailurePageCreate() {
                                 <div>
                                     <label className="block text-xs text-gray-500 mb-1">Barcode</label>
                                     <div className="px-3 py-2 border rounded bg-gray-50 text-sm font-mono">
-                                        {machineFailure?.barcode ?? '-'}
-                                    </div>
+                                            {machineFailure?.machine?.barcode ?? '-'}
+                                        </div>
                                 </div>
+                            </div>
+
+                            {/* Numer zlecenia naprawy */}
+                            <div>
+                                <label className="block text-xs text-gray-500 mb-1">Numer zlecenia naprawy</label>
+                                <input
+                                    type="text"
+                                    value={form.data.repair_order_no}
+                                    readOnly
+                                    className="w-full px-3 py-2 border rounded bg-gray-50 text-sm font-mono"
+                                />
                             </div>
 
                             {/* Opis awarii */}
@@ -191,24 +213,11 @@ export default function ReportFailurePageCreate() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs text-gray-500 mb-1">Data rozpoczęcia</label>
-                                    <input
-                                        type="datetime-local"
-                                        value={form.data.started_at ?? ''}
-                                        className="w-full px-3 py-2 border rounded bg-gray-50 cursor-not-allowed"
-                                        readOnly
-                                    />
+                                    <div className="px-3 py-2 border rounded bg-gray-50 text-sm">{formatDisplayDate(machineFailure?.reported_at ?? form.data.started_at)}</div>
+                                    <input type="hidden" value={form.data.started_at ?? ''} />
                                     {form.errors.started_at && <div className="text-red-600 text-sm mt-1">{form.errors.started_at}</div>}
                                 </div>
-                                <div>
-                                    <label className="block text-xs text-gray-500 mb-1">Data zakończenia</label>
-                                    <input
-                                        type="datetime-local"
-                                        value={form.data.finished_at ?? ''}
-                                        onChange={(e) => form.setData('finished_at', e.target.value)}
-                                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    />
-                                    {form.errors.finished_at && <div className="text-red-600 text-sm mt-1">{form.errors.finished_at}</div>}
-                                </div>
+                                {/* finished_at removed from form: server will set it automatically on final status */}
                             </div>
 
                             {/* Przyciski */}

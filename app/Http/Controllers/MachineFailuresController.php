@@ -99,18 +99,45 @@ class MachineFailuresController extends Controller
     }
     public function repariedList(Request $request)
     {
-
-        $repairOrderNo = $request->get('repair_order_no');
         $barcode = $request->get('barcode');
+        $perPage = 5;
+        $filters = $request->only(['status', 'q', 'date_from', 'date_to']);
 
-        $list = $this->machineFailureRepairService->getFailuresByBarcode($barcode);
-        $repairs = $list->toArray();
+        $paginator = $this->machineFailureRepairService->getFailuresByBarcodePaginated($barcode, $perPage, $filters);
 
+        $repairs = $paginator->items();
+        $pagination = [
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'per_page' => $paginator->perPage(),
+            'total' => $paginator->total(),
+        ];
 
         return Inertia::render('machines/failures/repairs/repairsList', [
             'repairs' => $repairs,
+            'pagination' => $pagination,
+            'filters' => $filters,
             'barcode' => $barcode,
-            'repair_order_no' => $repairOrderNo,
+        ]);
+    }
+
+    /**
+     * Show history of repaired failures (machine_failures.finished_repaired_at IS NOT NULL)
+     */
+    public function repairsHistory(Request $request)
+    {
+        $perPage = (int) $request->get('per_page', 15);
+        $filters = $request->only(['barcode', 'machine_name', 'date_from', 'date_to']);
+
+        $rawRole = auth()->user()->role ?? '';
+        $userRole = strtolower((string)$rawRole);
+        $userId = auth()->id();
+
+        $history = $this->machineFailureService->getRepairedHistory($filters, $perPage, $userRole, $userId);
+
+        return Inertia::render('machines/failures/repairs/history', [
+            'history' => $history,
+            'filters' => $filters,
         ]);
     }
 

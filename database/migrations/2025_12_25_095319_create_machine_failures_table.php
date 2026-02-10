@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('machine_id')->constrained('machines')->cascadeOnDelete();
             $table->string('barcode', 13)->nullable();
             $table->tinyInteger('failure_rank')->between(1, 10);
+            $table->decimal('total_cost', 10, 2)->default(0);
             $table->text('failure_description');
             $table->timestamp('reported_at');
             $table->timestamp('finished_repaired_at')->nullable();

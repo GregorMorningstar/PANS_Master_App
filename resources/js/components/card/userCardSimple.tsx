@@ -53,13 +53,13 @@ export default function UserCardSimple({ user, className = '' }: UserCardProps) 
             <div className="bg-white p-3 rounded-md text-center">
               <div className="flex justify-center">
                 <Barcode
-                  value={user.barcode || `USR${user.id}`.padStart(10, '0')}
+                  value={String(user.barcode ?? (`USR${user.id}`).padStart(10, '0'))}
                   format="CODE128"
+                  renderer="svg"
                   height={30}
                   width={0.8}
                   displayValue={false}
                   margin={0}
-                  renderer="svg"
                   lineColor="#111827"
                   background="white"
                 />

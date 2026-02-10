@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Machines;
+use App\Models\MachineFailureRepair; // dostosuj nazwę modelu jeśli inna
 
 class MachineFailure extends Model
 {
@@ -17,6 +19,7 @@ class MachineFailure extends Model
         'department_id',
         'barcode',
         'failure_rank',
+        'total_cost',
         'failure_description',
         'reported_at',
         'finished_repaired_at',
@@ -49,7 +52,7 @@ protected static function booted()
     {
         return $this->belongsTo(Department::class);
     }
-    public function repairsMachineFailure()
+    public function repairs(): HasMany
     {
         return $this->hasMany(MachineFailureRepair::class);
     }

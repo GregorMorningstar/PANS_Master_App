@@ -5,10 +5,28 @@ import Barcode from 'react-barcode';
 type Failure = any;
 
 export default function MachineFailureHistory({ history, filters }: { history?: Failure[] | any, filters?: any }) {
-    const rows = history ?? [];
+    // Normalize incoming `history` shapes to a consistent `dataRows` array and `paginated` metadata.
+    // Supported shapes:
+    // 1) Legacy Inertia paginator: { data: [...], current_page, last_page, per_page, total, path }
+    // 2) New API shape: { items: [...], pagination: { current_page, last_page, per_page, total, path } }
+    // 3) Plain array: [...]
+    const raw = history ?? [];
+    const isLegacyPaginator = raw && typeof raw === 'object' && Array.isArray((raw as any).data);
+    const isNewShape = raw && typeof raw === 'object' && Array.isArray((raw as any).items);
 
-    const paginated = history && (history as any).data ? (history as any) : null;
-    const dataRows: Failure[] = paginated ? paginated.data : (rows as Failure[]);
+    const dataRows: Failure[] = isLegacyPaginator ? (raw as any).data : (isNewShape ? (raw as any).items : (Array.isArray(raw) ? raw : []));
+
+    const paginated = isLegacyPaginator ? (raw as any) : (isNewShape ? {
+        // adapt new shape to legacy fields used by pagination rendering below
+        data: (raw as any).items,
+        current_page: (raw as any).pagination?.current_page ?? 1,
+        last_page: (raw as any).pagination?.last_page ?? 1,
+        per_page: (raw as any).pagination?.per_page ?? (raw as any).pagination?.perPage ?? 15,
+        total: (raw as any).pagination?.total ?? 0,
+        path: (raw as any).pagination?.path ?? window.location.pathname,
+        prev_page_url: null,
+        next_page_url: null,
+    } : null);
 
     const initialFilters = filters ?? {};
     const [barcode, setBarcode] = useState(initialFilters.barcode ?? '');
@@ -19,6 +37,29 @@ export default function MachineFailureHistory({ history, filters }: { history?: 
 
     const debounceRef = useRef<number | null>(null);
 
+    // Service list modal state
+    const [repairsModalOpen, setRepairsModalOpen] = useState(false);
+    const [repairsLoading, setRepairsLoading] = useState(false);
+    const [repairsError, setRepairsError] = useState<string | null>(null);
+    const [repairsList, setRepairsList] = useState<any[]>([]);
+
+    const openServiceList = async (machineFailureId: number) => {
+        setRepairsModalOpen(true);
+        setRepairsLoading(true);
+        setRepairsError(null);
+        setRepairsList([]);
+        try {
+            const res = await fetch(`/machines/failures/${machineFailureId}/repairs`, { headers: { 'Accept': 'application/json' } });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const json = await res.json();
+            setRepairsList(Array.isArray(json) ? json : (json.data ?? json.items ?? []));
+        } catch (e: any) {
+            setRepairsError(e?.message ?? 'Błąd pobierania listy');
+        } finally {
+            setRepairsLoading(false);
+        }
+    };
+
     const imgSrc = (path: string | null | undefined) => (path ? `/storage/${path}` : 'https://via.placeholder.com/120x90?text=Maszyna');
     const formatDateParts = (s: string | null | undefined) => {
         if (!s) return { date: '—', time: '' };
@@ -28,6 +69,19 @@ export default function MachineFailureHistory({ history, filters }: { history?: 
         } catch (e) {
             return { date: s, time: '' };
         }
+    };
+
+    const translateStatus = (s: string | null | undefined) => {
+        if (!s) return '-';
+        const map: Record<string, string> = {
+            reported: 'Zgłoszony',
+            repaired: 'Naprawiony',
+            diagnosis: 'Diagnoza',
+            waiting_for_parts: 'Oczekuje na części',
+            rejected: 'Odrzucony',
+            in_progress: 'W trakcie',
+        };
+        return map[String(s)] ?? String(s).charAt(0).toUpperCase() + String(s).slice(1);
     };
 
     const buildParams = (page?: number) => {
@@ -69,7 +123,7 @@ export default function MachineFailureHistory({ history, filters }: { history?: 
     };
 
     return (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto relative">
             <div className="mb-4 flex flex-col md:flex-row md:items-end md:justify-between gap-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 flex-1">
                     <div>
@@ -130,7 +184,14 @@ export default function MachineFailureHistory({ history, filters }: { history?: 
                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                                     <div className="flex items-center gap-3">
                                         <div className="flex-shrink-0 w-36 p-2 bg-white rounded border flex flex-col items-center justify-center">
-                                            <Barcode value={machine.barcode ?? r.id} height={52} width={1.2} displayValue={false} />
+                                            <Barcode
+                                                value={String(machine.barcode ?? r.id ?? '')}
+                                                format="CODE128"
+                                                renderer="svg"
+                                                height={52}
+                                                width={1.2}
+                                                displayValue={false}
+                                            />
                                             <div className="mt-1 text-sm md:text-base font-semibold text-gray-700 truncate">{machine.barcode ?? r.id}</div>
                                         </div>
                                         <div className="min-w-0">
@@ -169,8 +230,16 @@ export default function MachineFailureHistory({ history, filters }: { history?: 
                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">{user.name ?? '—'}</td>
                                 <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
                                     <div className="flex items-center gap-2">
-                                        <Link href={`/machines/failures/edit/${r.id}`} className="px-2 py-1 bg-white border rounded text-indigo-600 hover:bg-indigo-50 text-xs">Szczegóły</Link>
-                                        <Link href={`/machines/failures/edit/${r.id}`} className="px-2 py-1 bg-white border rounded text-green-600 hover:bg-green-50 text-xs">Edytuj</Link>
+                                        <button
+                                            onClick={() => {
+                                                // open service list modal for this failure
+                                                openServiceList(r.id);
+                                            }}
+                                            className="px-2 py-1 bg-white border rounded text-indigo-600 hover:bg-indigo-50 text-xs"
+                                        >
+                                            Lista serwisowa
+                                        </button>
+                                        <Link href={`/machines/failures/edit/${r.id}`} className="px-2 py-1 bg-white border rounded text-gray-600 hover:bg-gray-50 text-xs">Szczegóły</Link>
                                     </div>
                                 </td>
                             </tr>
@@ -178,6 +247,59 @@ export default function MachineFailureHistory({ history, filters }: { history?: 
                     })}
                 </tbody>
             </table>
+
+            {/* Service actions modal (centered overlay above table) */}
+            {repairsModalOpen && (
+                <div className="fixed inset-0 z-40 flex items-center justify-center">
+                    <div className="absolute inset-0" onClick={() => setRepairsModalOpen(false)} />
+
+                    <div className="relative bg-white rounded-lg shadow-lg max-w-3xl w-full mx-4 md:mx-0 overflow-y-auto border" style={{ maxHeight: '80vh' }}>
+                        <div className="p-4 border-b flex items-center justify-between">
+                            <h3 className="text-lg font-semibold">Lista serwisowa</h3>
+                            <button className="text-gray-600" onClick={() => setRepairsModalOpen(false)}>Zamknij</button>
+                        </div>
+                        <div className="p-4">
+                            {repairsLoading && <div>Ładowanie...</div>}
+                            {repairsError && <div className="text-red-600">Błąd: {repairsError}</div>}
+                            {!repairsLoading && !repairsError && repairsList.length === 0 && (
+                                <div className="text-sm text-gray-600">Brak zarejestrowanych czynności serwisowych dla tej awarii.</div>
+                            )}
+                            {!repairsLoading && repairsList.length > 0 && (
+                                <ul className="space-y-3">
+                                    {repairsList.map((rp: any) => (
+                                        <li key={rp.id} className="p-3 border rounded bg-white">
+                                            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                                                <div className="flex-1">
+                                                    <div className="font-medium text-base">{rp.repair_order_no ?? ('Zlecenie #' + rp.id)}</div>
+                                                    <div className="text-sm text-gray-600 mt-1">{translateStatus(rp.status)} — Koszt: {rp.cost ?? '-'}</div>
+                                                    <div className="text-xs text-gray-500 mt-1">Utworzono: {(() => {
+                                                        const p = formatDateParts(rp.created_at ?? rp.started_at ?? null);
+                                                        return `${p.date} ${p.time}`;
+                                                    })()}</div>
+                                                    {rp.description && (
+                                                        <div className="mt-2 text-sm text-gray-700">{rp.description}</div>
+                                                    )}
+
+                                                    {rp.actions && Array.isArray(rp.actions) && rp.actions.length > 0 && (
+                                                        <div className="mt-3">
+                                                            <div className="text-sm font-semibold">Wykonane czynności:</div>
+                                                            <ul className="text-sm list-disc list-inside mt-1 text-gray-700">
+                                                                {rp.actions.map((a: any, idx: number) => (
+                                                                    <li key={idx}>{a.description ?? a.name ?? JSON.stringify(a)}</li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {paginated && (
                 <div className="mt-4 flex items-center justify-between">

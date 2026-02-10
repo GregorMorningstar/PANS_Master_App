@@ -91,7 +91,7 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
 
 
     Route::middleware('auth')->group(function () {
-    Route::get('/chat', [ChatController::class, 'inedex'])->name('chat.index');
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
 
     // Machine Failures Reporting
@@ -100,13 +100,23 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
         Route::get('user/', [MachinesController::class, 'getUserMachines'])->name('user.machines');
 
         Route::prefix('/failures')->name('failures.')->group(function () {
+            // JSON endpoint: repairs for a specific machine_failure (used by modal)
+            Route::get('/{id}/repairs', [App\Http\Controllers\MachineFailureRepairController::class, 'listByFailure'])->name('repairs.by_failure');
             Route::get('/add-new/{machine_id}', [MachineFailuresController::class, 'create'])->name('create');
             Route::get('/fix', [MachineFailureRepairController::class, 'createRaportedFailure'])->name('repairs.create');
             Route::get('fix/list', [MachineFailuresController::class, 'repariedList'])->name('repairs.reparied.list');
             Route::get('/fix/{id}', [MachineFailureRepairController::class, 'createRaportedFailureNextStep'])->name('repairs.create.nextstep');
             Route::delete('/fix/{id}', [MachineFailureRepairController::class, 'destroy'])->name('repairs.destroy');
+            Route::put('/fix/{id}', [MachineFailureRepairController::class, 'update'])->name('repairs.update');
             Route::post('/repairs', [MachineFailureRepairController::class, 'store'])->name('repairs.store');
+            // Repair actions (add/edit/delete) - restricted to moderator for mutating operations
+            Route::get('/repairs/{id}/actions', [MachineFailureRepairController::class, 'listActions'])->name('repairs.actions.list');
+            Route::post('/repairs/{id}/actions', [MachineFailureRepairController::class, 'storeAction'])->name('repairs.actions.store')->middleware('role:moderator');
+            Route::put('/repairs/{id}/actions/{actionId}', [MachineFailureRepairController::class, 'updateAction'])->name('repairs.actions.update')->middleware('role:moderator');
+            Route::delete('/repairs/{id}/actions/{actionId}', [MachineFailureRepairController::class, 'destroyAction'])->name('repairs.actions.destroy')->middleware('role:moderator');
             Route::post('/', [MachineFailuresController::class, 'store'])->name('store');
+            // Repaired failures history (finished_repaired_at NOT NULL)
+            Route::get('/repairs/history', [MachineFailuresController::class, 'repairsHistory'])->name('repairs.history.index');
                 Route::prefix('/history')->name('history.')->group(function () {
                     Route::get('/', [MachineFailuresController::class, 'history'])->name('index');
             });

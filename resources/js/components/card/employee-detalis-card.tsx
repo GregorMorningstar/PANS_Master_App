@@ -23,8 +23,15 @@ export default function EmployeeDetailsCard({ employee }: { employee: any }) {
           <div className="flex gap-6 items-start flex-1">
             {/* Barcode */}
             <div className="bg-white px-6 py-4 rounded-2xl shadow-lg">
-              <div className="flex flex-col items-center gap-2">
-                <Barcode value={employee.barcode} />
+                <div className="flex flex-col items-center gap-2">
+                <Barcode
+                  value={String(employee.barcode ?? '')}
+                  format="CODE128"
+                  renderer="svg"
+                  height={60}
+                  width={1}
+                  displayValue={false}
+                />
               </div>
             </div>
 
