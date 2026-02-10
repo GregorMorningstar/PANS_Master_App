@@ -38,5 +38,13 @@ class MachineFailureRepairService implements MachineFailureRepairServiceInterfac
     {
         return $this->repository->getFailuresByBarcode($barcode);
     }
+    public function getFailuresByBarcodePaginated(string $barcode, int $perPage = 5, array $filters = [])
+    {
+        return $this->repository->getFailuresByBarcodePaginated($barcode, $perPage, $filters);
+    }
+   public function addAllRepairsCosts(int $machineFailureId, ?string $repairOrderNo = null): float
+    {
+        return $this->repository->addAllRepairsCosts($machineFailureId, $repairOrderNo);
+    }
 
 }

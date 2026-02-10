@@ -160,8 +160,26 @@ export default function MachineFailuresList({ allmachineFailures = [], auth = {}
         return undefined;
     }, []);
 
-    function handleOpenRepairNextStep(id: number): void {
-        throw new Error('Function not implemented.');
+    function handleOpenRepairNextStep(machineFailureId: number): void {
+        const failure = localFailures.find(f => f.id === machineFailureId);
+        console.log('Znaleziona awaria:', failure);
+        console.log('Machine data:', failure?.machine);
+        console.log('Machine barcode:', failure?.machine?.barcode);
+
+        if (!failure?.machine?.barcode) {
+            console.error('Nie znaleziono barcode maszyny dla awarii:', machineFailureId);
+            alert('Błąd: Brak kodu kreskowego maszyny. Sprawdź dane w konsoli.');
+            return;
+        }
+
+        const today = new Date();
+        const day = String(today.getDate()).padStart(2, '0');
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const year = today.getFullYear();
+        const repairOrderNo = `RO-${failure.machine.barcode}/${day}-${month}-${year}`;
+
+        console.log('Wygenerowany numer zlecenia:', repairOrderNo);
+        router.get(`/machines/failures/fix?repair_order_no=${repairOrderNo}&machine_failure_id=${machineFailureId}`);
     }
 
     return (
@@ -273,12 +291,19 @@ export default function MachineFailuresList({ allmachineFailures = [], auth = {}
 
                                 <td className="p-3">
                                     {item.barcode ? (
-                                        <div className="w-32 h-8 flex items-center justify-center">
-                                            <Barcode value={item.barcode} height={32} width={1.5} />
-                                        </div>
-                                    ) : (
-                                        <span className="text-gray-400 text-sm">-</span>
-                                    )}
+                                            <div className="w-32 h-8 flex items-center justify-center">
+                                                <Barcode
+                                                    value={String(item.barcode ?? '')}
+                                                    format="CODE128"
+                                                    renderer="svg"
+                                                    height={32}
+                                                    width={1.5}
+                                                    displayValue={false}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <span className="text-gray-400 text-sm">-</span>
+                                        )}
                                 </td>
 
                                 <td className="p-3 text-sm text-gray-900">{item.reported_at ?? '-'}</td>
@@ -381,7 +406,14 @@ export default function MachineFailuresList({ allmachineFailures = [], auth = {}
                                 <div className="flex-shrink-0 text-right min-w-[140px]">
                                     {selected.machine?.barcode ? (
                                         <div className="mb-2">
-                                            <Barcode value={selected.machine.barcode} height={60} />
+                                            <Barcode
+                                                value={String(selected.machine.barcode ?? '')}
+                                                format="CODE128"
+                                                renderer="svg"
+                                                height={60}
+                                                width={1}
+                                                displayValue={false}
+                                            />
                                         </div>
                                     ) : (
                                         <div className="text-gray-500 text-sm">Brak kodu</div>

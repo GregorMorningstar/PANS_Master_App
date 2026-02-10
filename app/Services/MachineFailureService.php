@@ -45,4 +45,17 @@ class MachineFailureService implements MachineFailureServiceInterface
         return $this->machineFailureRepository->getFailureHistory($filters, $perPage);
     }
 
+    /**
+     * Get paginated repaired failures history. Role and userId are optional for scoping.
+     */
+    public function getRepairedHistory(array $filters = [], int $perPage = 15, ?string $userRole = null, ?int $userId = null): array
+    {
+        return $this->machineFailureRepository->getRepairedHistory($filters, $perPage, $userRole, $userId);
+    }
+
+    public function getLatestFailureByMachineBarcode(string $barcode)
+    {
+        return $this->machineFailureRepository->getLatestFailureByMachineBarcode($barcode);
+    }
+
 }

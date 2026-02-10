@@ -13,5 +13,7 @@ interface MachineFailureRepairRepositoryInterface
     public function delete(int $id): bool;
     public function getFailureMachineWithMachine(int $machineId): ?MachineFailure;
     public function getFailuresByBarcode(string $barcode): Collection;
-  
+    public function getFailuresByBarcodePaginated(string $barcode, int $perPage = 5, array $filters = []);
+    public function addAllRepairsCosts(int $machine_failure_id, ?string $repairOrderNo = null): float;
+
 }

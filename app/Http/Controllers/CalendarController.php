@@ -29,8 +29,6 @@ class CalendarController extends Controller
        // dd($usedLeaves);
         return inertia('employee/calendar/history', ['usedLeaves' => $usedLeaves]);
     }
-
-
     public function store(Request $request)
     {
         // Get valid enum values for validation
@@ -44,12 +42,10 @@ class CalendarController extends Controller
             'description' => 'nullable|string|max:1000',
             'working_days_count' => 'nullable|integer|min:1',
         ]);
-
         // Check for overlapping leaves
         $existingLeaves = $this->leavesService->getAllLeavesByUserId($data['user_id']);
         $startDate = Carbon::parse($data['start_date']);
         $endDate = Carbon::parse($data['end_date']);
-
         foreach ($existingLeaves as $leave) {
             $existingStart = Carbon::parse($leave->start_date);
             $existingEnd = Carbon::parse($leave->end_date);
@@ -168,6 +164,7 @@ class CalendarController extends Controller
             'description' => 'nullable|string|max:1000',
             'working_days_count' => 'nullable|integer|min:1',
         ]);
+        Log::info('Updating leave with data: ', $data);
 
         // Sprawdź regułę 3 dni dla urlopów innych niż chorobowe i okolicznościowe
         if (!in_array($data['type'], ['sick', 'compassionate'])) {

@@ -37,4 +37,11 @@ use HasFactory;
     {
         return $this->belongsTo(MachineFailure::class);
     }
+
+    public function actions()
+    {
+        return $this->hasMany(\App\Models\MachineFailureRepairAction::class, 'machine_failure_repair_id');
+    }
+
+
 }

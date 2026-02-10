@@ -13,13 +13,15 @@ export default function MachineFailuresRepariedListPage() {
     const page = usePage();
     const props = page.props as any;
     const repairs = props.repairs ?? [];
+    const pagination = props.pagination ?? null;
+    const filters = props.filters ?? null;
     const barcode = props.barcode ?? null;
 
     return (
         <ModeratorLayout breadcrumbs={breadcrumbsModerator} title="Lista Naprawionych Awarii">
             <div className="p-6">
                 <h2 className="text-lg font-semibold mb-4">Lista Naprawionych Awarii</h2>
-                <MachineFailuresRepariedList repairs={repairs} />
+                <MachineFailuresRepariedList repairs={repairs} pagination={pagination} filters={filters} barcode={barcode} />
             </div>
         </ModeratorLayout>
     );

@@ -302,16 +302,18 @@ export default function LeavesDetailsCard({
                       <span className="text-white text-xs font-medium uppercase tracking-wide">ID Pracownika</span>
                     </div>
                     <div className="flex justify-center">
-                           <Barcode
-                  value={leave.user.barcode}
-                  width={2}
-                  height={40}
-                  fontSize={0}
-                  background="#f9fafb"
-                  lineColor="#374151"
-                  margin={0}
-                  displayValue={true}
-                />
+                          <Barcode
+                            value={String(leave.user.barcode ?? '')}
+                            format="CODE128"
+                            renderer="svg"
+                            width={2}
+                            height={40}
+                            fontSize={0}
+                            background="#f9fafb"
+                            lineColor="#374151"
+                            margin={0}
+                            displayValue={true}
+                          />
                     </div>
                     <span className="text-black text-xs font-mono font-semibold tracking-wider">
                       {leave.user.barcode}
@@ -340,7 +342,9 @@ export default function LeavesDetailsCard({
             <div className="flex flex-col items-center justify-center space-y-3">
               <div className="flex justify-center">
                 <Barcode
-                  value={leave.barcode}
+                  value={String(leave.barcode ?? '')}
+                  format="CODE128"
+                  renderer="svg"
                   width={2}
                   height={60}
                   fontSize={0}
