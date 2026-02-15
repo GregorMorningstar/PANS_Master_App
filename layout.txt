@@ -12,6 +12,7 @@ kody en13
 
 
 3000 - maszyny
+3050 - materialy do produkcji
 3100 - operacje maszyn
 3200 - awarie maszyn
 3300 - statusy awarii
