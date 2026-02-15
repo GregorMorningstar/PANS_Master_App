@@ -86,8 +86,13 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
             Route::delete('/{id}', [DepartamentsController::class, 'destroy'])->name('departments.destroy');
             Route::get('/{id}', [DepartamentsController::class, 'show'])->name('departments.show');
         });
-    });
 
+        // production materials: /moderator/production-materials
+        Route::prefix('production-materials')->name('production_materials.')->group(function () {
+            Route::get('/', [App\Http\Controllers\ProductionMaterialController::class, 'index'])->name('index');
+        });
+    });
+    
 
 
     Route::middleware('auth')->group(function () {
@@ -215,18 +220,6 @@ Route::prefix('api')->middleware(['web', 'auth'])->group(function () {
     Route::get('/schools/search', [App\Http\Controllers\Api\SchoolController::class, 'searchSchools']);
 });
 
-// Education routes
-Route::middleware(['auth', 'verified'])
-    ->prefix('education')
-    ->name('education.')
-    ->group(function () {
-        Route::get('/', [App\Http\Controllers\EducationController::class, 'index'])->name('index');
-        Route::get('/create', [App\Http\Controllers\EducationController::class, 'create'])->name('create');
-        Route::post('/', [App\Http\Controllers\EducationController::class, 'store'])->name('store');
-        Route::get('/{certificate}', [App\Http\Controllers\EducationController::class, 'show'])->name('show');
-        Route::get('/{certificate}/edit', [App\Http\Controllers\EducationController::class, 'edit'])->name('edit');
-        Route::put('/{certificate}', [App\Http\Controllers\EducationController::class, 'update'])->name('update');
-        Route::delete('/{certificate}', [App\Http\Controllers\EducationController::class, 'destroy'])->name('destroy');
-    });
+
 
 require __DIR__.'/settings.php';

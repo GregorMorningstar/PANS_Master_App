@@ -24,20 +24,20 @@ class Machines extends Model
         'status',
         'image_path',
         'last_failure_date',
-        'user_id',       // owner
+        'user_id',     
         'department_id',
     ];
 
 
 protected static function booted()
     {
-        static::created(function ($user) {
+        static::created(function ($machine) {
             $prefix = '3000';
-            $id = $user->id;
+            $id = $machine->id;
             $barcode = $prefix . str_pad($id, 13 - strlen($prefix), '0', STR_PAD_LEFT);
-            if ($user->barcode !== $barcode) {
-                $user->barcode = $barcode;
-                $user->save();
+            if ($machine->barcode !== $barcode) {
+                $machine->barcode = $barcode;
+                $machine->save();
             }
         });
     }
@@ -79,5 +79,5 @@ protected static function booted()
         return $this->hasMany(MachineFailure::class, 'machine_id');
     }
 
-   
+
 }

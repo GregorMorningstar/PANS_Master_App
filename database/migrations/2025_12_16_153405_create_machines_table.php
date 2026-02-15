@@ -40,6 +40,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // drop dependent tables first to avoid foreign key constraint errors
+        Schema::dropIfExists('machine_failures');
+        Schema::dropIfExists('operationmachines');
         Schema::dropIfExists('machines');
     }
 };

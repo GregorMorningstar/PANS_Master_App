@@ -20,11 +20,16 @@ class DepartmentFactory extends Factory
     public function definition(): array
     {
         $names = [
-            'Magazyn',
-            'Slyszadnia',
+            'Odlewnia',
+            'Ślusarnia',
+            'Lakiernia',
             'Spawalnia',
-            'Montaz',
-            'Magazyn_wyrobow_gotowych',
+            'Tapiceria',
+            'Montaż końcowy',
+            'Kontrola jakości',
+            'Pakowanie',
+            
+
         ];
 
         return [

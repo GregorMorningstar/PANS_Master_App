@@ -140,6 +140,7 @@ export default function MachineCardSimple({ machine, onEdit, onDelete, onView, o
             <div className="hidden sm:block">
               <div className="w-[110px]">
                 <Barcode value={barcodeValue} format="CODE128" height={28} width={0.7} displayValue={false} margin={0} renderer="svg" lineColor="#111827" background="transparent" />
+                <div className="text-xs text-center text-gray-600 mt-1 break-words">{barcodeValue}</div>
               </div>
             </div>
             <div className="text-xs text-gray-600 line-clamp-3">{machine.description ?? "Brak opisu"}</div>
@@ -199,7 +200,7 @@ export default function MachineCardSimple({ machine, onEdit, onDelete, onView, o
           </>
         )}
 
-        
+
       </div>
     </div>
   );

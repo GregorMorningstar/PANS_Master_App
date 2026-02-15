@@ -19,7 +19,8 @@ import {
   faWrench,
   faCalendar,
   faSchool,
-    faEnvelopeCircleCheck,
+  faEnvelopeCircleCheck,
+    faWarehouse,
 } from '@fortawesome/free-solid-svg-icons';
 
 export default function ModeratorSidebarMenu(): React.ReactElement {
@@ -43,8 +44,8 @@ export default function ModeratorSidebarMenu(): React.ReactElement {
     },
   ];
 
-  const [openKey, setOpenKey] = useState<'employees' | 'departaments' | 'performance' | 'machines' | 'incidents' | 'leaves' | null>(null);
-  const toggle = (key: 'employees' | 'departaments' | 'performance' | 'machines' | 'incidents' | 'leaves') =>
+  const [openKey, setOpenKey] = useState<'employees' | 'departaments' | 'performance' | 'machines' | 'incidents' | 'leaves' | 'production' | null>(null);
+  const toggle = (key: 'employees' | 'departaments' | 'performance' | 'machines' | 'incidents' | 'leaves' | 'production') =>
     setOpenKey(prev => (prev === key ? null : key));
 
   const currentUrl =
@@ -356,6 +357,56 @@ export default function ModeratorSidebarMenu(): React.ReactElement {
           </div>
         </div>
       </div>
+        {/* Planowanie produkcji */}
+        <div className="w-full mt-3">
+          <button
+            type="button"
+            onClick={() => toggle('production')}
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition
+              ${openKey === 'production' ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+            aria-expanded={openKey === 'production'}
+          >
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <FontAwesomeIcon icon={faSitemap} className="h-4 w-4" />
+              <span>Planowanie produkcji</span>
+            </div>
+            <ChevronDown
+              className={`h-4 w-4 transition-transform duration-200 ${openKey === 'production' ? 'rotate-180' : 'rotate-0'}`}
+            />
+          </button>
+
+          <div
+            className={`overflow-hidden transition-all duration-300 ${openKey === 'production' ? 'max-h-64 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}
+            aria-hidden={openKey !== 'production'}
+          >
+            <div className="flex flex-col space-y-1 pl-6">
+                  <Link
+                href="/moderator/production-materials"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/production-materials') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+              >
+                <FontAwesomeIcon icon={faWarehouse} className="mr-2" /> Magazyn Wyrobos Surowych
+              </Link>
+              <Link
+                href="/moderator/production/create"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/production/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+              >
+                <FontAwesomeIcon icon={faPlus} className="mr-2" /> Zaplanuj produkcję
+              </Link>
+              <Link
+                href="/moderator/production/departments"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/production/departments') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+              >
+                <FontAwesomeIcon icon={faSitemap} className="mr-2" /> Produkcja na wydziałach
+              </Link>
+              <Link
+                href="/moderator/production/history"
+                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/production/history') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+              >
+                <FontAwesomeIcon icon={faList} className="mr-2" /> Historia
+              </Link>
+            </div>
+          </div>
+        </div>
     </div>
   );
 }

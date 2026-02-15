@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('barcode', 13)->nullable();
             $table->foreignId('machine_id')->nullable()->constrained('machines')->cascadeOnDelete();
+            // create column now without foreign key to avoid ordering issues
+            $table->unsignedBigInteger('production_material_id')->nullable()->index();
             $table->string('operation_name');
             $table->text('description')->nullable();
             $table->integer('duration_minutes')->nullable();

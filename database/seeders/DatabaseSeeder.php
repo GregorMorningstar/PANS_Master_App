@@ -14,9 +14,21 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Sprawdź czy departamenty już istnieją, jeśli nie - utwórz
+        // Sprawdź czy departamenty już istnieją, jeśli nie - utwórz wszystkie z listy
         if (Department::count() === 0) {
-            Department::factory(5)->create();
+            $names = [
+                'Odlewnia',
+                'Ślusarnia',
+                'Lakiernia',
+                'Spawalnia',
+                'Tapiceria',
+                'Montaż końcowy',
+                'Kontrola jakości',
+                'Pakowanie',
+            ];
+            foreach ($names as $n) {
+                Department::create(['name' => $n, 'description' => $n]);
+            }
         }
 
         // Sprawdź czy użytkownicy testowi już istnieją
@@ -61,6 +73,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             LeavesSeeder::class,
             \Database\Seeders\MachineSeeder::class,
+            \Database\Seeders\OperationMachineSeeder::class,
+            \Database\Seeders\ProductionMaterialSeeder::class,
         ]);
     }
 }
