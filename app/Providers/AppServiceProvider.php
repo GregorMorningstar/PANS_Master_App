@@ -36,6 +36,8 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Contracts\MachineFailureRepositoryInterface::class => \App\Repositories\Eloquent\EloquentMachineFailureRepository::class,
            \App\Services\Contracts\ProductionMaterialServiceInterface::class => \App\Services\ProductionMaterialService::class,
            \App\Repositories\Contracts\ProductionMaterialRepositoryInterface::class => \App\Repositories\Eloquent\EloquentProductionMaterialRepository::class,
+            \App\Services\Contracts\ItemsFinishedGoodServiceInterface::class => \App\Services\ItemsFinishedGoodService::class,
+            \App\Repositories\Contracts\ItemsFinishedGoodRepositoryInterface::class => \App\Repositories\Eloquent\EloquentItemsFinishedGoodRepository::class,
             \App\Services\Contracts\MachineFailureRepairServiceInterface::class => \App\Services\MachineFailureRepairService::class,
             \App\Repositories\Contracts\MachineFailureRepairRepositoryInterface::class => \App\Repositories\Eloquent\EloquentMachineFailureRepair::class,
 
