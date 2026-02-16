@@ -90,9 +90,15 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
         // production materials: /moderator/production-materials
         Route::prefix('production-materials')->name('production_materials.')->group(function () {
             Route::get('/', [App\Http\Controllers\ProductionMaterialController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\ProductionMaterialController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\ProductionMaterialController::class, 'store'])->name('store');
+            Route::get('/all-history', [App\Http\Controllers\ProductionMaterialController::class, 'allHistory'])->name('all_history');
+            Route::post('/{id}/add', [App\Http\Controllers\ProductionMaterialController::class, 'addQuantity'])->name('add');
+            Route::post('/{id}/subtract', [App\Http\Controllers\ProductionMaterialController::class, 'subtractQuantity'])->name('subtract');
+            Route::get('/{id}/history', [App\Http\Controllers\ProductionMaterialController::class, 'history'])->name('history');
         });
     });
-    
+
 
 
     Route::middleware('auth')->group(function () {

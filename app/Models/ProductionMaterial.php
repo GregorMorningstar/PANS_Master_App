@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProductionMaterial extends Model
 {
@@ -18,6 +19,8 @@ class ProductionMaterial extends Model
         'material_form',
         'stock_empty_alarm',
         'available_quantity',
+        'delivery_number',
+        'delivery_scan',
     ];
 
     /**
@@ -28,6 +31,14 @@ class ProductionMaterial extends Model
         return $this->belongsToMany(Operationmachine::class, 'material_operation_machine', 'production_material_id', 'operationmachine_id')
             ->withPivot(['quantity', 'unit'])
             ->withTimestamps();
+    }
+
+    /**
+     * Transactions for this material.
+     */
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(ProductionMaterialTransaction::class);
     }
 
     protected static function booted()

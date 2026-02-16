@@ -23,6 +23,8 @@ return new class extends Migration
             $table->enum('material_form', MaterialForm::values())->nullable();
             $table->integer('stock_empty_alarm')->default(0);
             $table->decimal('available_quantity', 10, 2)->default(0);
+            $table->string('delivery_number')->nullable();
+            $table->string('delivery_scan')->nullable();
             $table->timestamps();
         });
     }
