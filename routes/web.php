@@ -18,6 +18,9 @@ use App\Http\Controllers\EmployeeDetailsController;
 use App\Http\Controller\UserProfileController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\MachineFailureRepairController;
+use App\Http\Controllers\ProductionMaterialController;
+use App\Http\Controllers\ProductionPlanController;
+use App\Http\Controllers\ItemsFinishedGoodController;
 // Broadcasting authentication routes
 Broadcast::routes(['middleware' => ['web', 'auth']]);
 
@@ -97,6 +100,23 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
             Route::post('/{id}/subtract', [App\Http\Controllers\ProductionMaterialController::class, 'subtractQuantity'])->name('subtract');
             Route::get('/{id}/history', [App\Http\Controllers\ProductionMaterialController::class, 'history'])->name('history');
         });
+
+        // production planning: /moderator/production/planning
+        Route::prefix('production')->name('production.')->group(function () {
+            Route::prefix('planning')->name('planning.')->group(function () {
+                Route::get('/', [ProductionPlanController::class, 'index'])->name('index');
+                Route::prefix('processes')->group(function () {
+                    Route::get('/', [ProductionPlanController::class, 'processes'])->name('processes');
+                });
+
+            });
+
+        });
+        //product details: /moderator/product-details
+        Route::prefix('items')->name('items.')->group(function () {
+            Route::get('/', [ItemsFinishedGoodController::class, 'index'])->name('index');
+            Route::get('/create', [ItemsFinishedGoodController::class, 'create'])->name('create');
+        });
     });
 
 
@@ -139,7 +159,7 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
         });
     });
 
-    Route::prefix('employee')->name('employee.')->group(function () {
+       Route::prefix('employee')->name('employee.')->group(function () {
 
         Route::prefix('dashboard')->name('dashboard.')->group(function () {
             Route::get('/', [EmployeeController::class, 'index'])->name('index');
@@ -185,8 +205,6 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
             Route::delete('/{id}', [EmployeeController::class, 'destroyEducation'])->name('destroy');
             Route::get('/all', [EmployeeController::class, 'showEducationDetails'])->name('show');
         });
-
-
 
     });
 

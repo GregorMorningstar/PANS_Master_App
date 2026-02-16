@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { usePage, Link } from '@inertiajs/react';
 import { NavMain } from '@/components/nav-main';
-import { LayoutGrid, ChevronDown } from 'lucide-react';
-import type { NavItem as NavItemType } from '@/types';
-import Barcode from 'react-barcode';
 
 // FontAwesome
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -20,393 +17,210 @@ import {
   faCalendar,
   faSchool,
   faEnvelopeCircleCheck,
-    faWarehouse,
+  faWarehouse,
 } from '@fortawesome/free-solid-svg-icons';
+
+// Lucide
+import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
+import { LayoutGrid, Folder, BookOpen } from 'lucide-react';
+import { dashboard } from '@/routes';
 
 export default function ModeratorSidebarMenu(): React.ReactElement {
   const page = usePage();
   const user = (page.props as any).auth?.user ?? {};
-  const barcodeValue =
-    user.barcode ??
-    user.barcode_value ??
-    user.barcode_number ??
-    (user.id ? String(user.id) : '—');
+  const barcodeValue = user.barcode ?? user.barcode_value ?? user.barcode_number ?? (user.id ? String(user.id) : '—');
 
-  const FaTachometerIcon = React.forwardRef<any, any>((props, ref) => (
-    <FontAwesomeIcon ref={ref as any} {...props} icon={faTachometerAlt} className="h-4 w-4" />
-  ));
-
-  const items: NavItemType[] = [
+  const items = [
     {
       title: 'Panel główny',
       href: '/moderator/dashboard',
-      icon: FaTachometerIcon,
+      icon: (props: any) => <FontAwesomeIcon {...props} icon={faTachometerAlt} className="h-4 w-4" />,
     },
   ];
 
-  const [openKey, setOpenKey] = useState<'employees' | 'departaments' | 'performance' | 'machines' | 'incidents' | 'leaves' | 'production' | null>(null);
-  const toggle = (key: 'employees' | 'departaments' | 'performance' | 'machines' | 'incidents' | 'leaves' | 'production') =>
-    setOpenKey(prev => (prev === key ? null : key));
+  const [openKey, setOpenKey] = useState<'employees' | 'departments' | 'machines' | 'incidents' | 'leaves' | 'performance' | 'production' | 'products' | null>(null);
+  const toggle = (key: typeof openKey) => setOpenKey(prev => (prev === key ? null : key));
 
-  const currentUrl =
-    (page as any).url ?? (typeof window !== 'undefined' ? window.location.pathname : '');
-
+  const currentUrl = (page as any).url ?? (typeof window !== 'undefined' ? window.location.pathname : '');
   const isActive = (href: string) => currentUrl?.startsWith(href);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+
   useEffect(() => {
     if (!containerRef.current) return;
     const el = containerRef.current;
-    const threshold = 80; // px - adjust as needed (sidebar icon width ~48-64)
-    const ro = new ResizeObserver(() => {
-      const w = el.clientWidth;
-      setIsCollapsed(w < threshold);
-    });
+    const threshold = 80;
+    const ro = new ResizeObserver(() => setIsCollapsed(el.clientWidth < threshold));
     ro.observe(el);
-    // initial check
     setIsCollapsed(el.clientWidth < threshold);
     return () => ro.disconnect();
   }, []);
 
   return (
     <div ref={containerRef} className="w-full flex flex-col items-center gap-3 px-3">
-      {/* show barcode only when sidebar is wide enough */}
-      {!isCollapsed && (
-        <>
-          <div className="w-full flex items-center justify-center">
-            <div className="w-full">
-              <Barcode
-                value={barcodeValue}
-                format="CODE128"
-                renderer="svg"
-                width={1.8}
-                height={100}
-                displayValue={false}
-                margin={0}
-                lineColor="#111827"
-              />
-            </div>
-          </div>
-
-          <div className="w-full text-center text-xs font-mono text-gray-700 break-words">
-            {barcodeValue}
-          </div>
-        </>
-      )}
 
       <div className="w-full mt-2">
-        <NavMain items={items} />
+        <NavMain items={items as any} />
       </div>
 
       <div className="w-full mt-2">
-        {/* Pracownicy */}
-        <div className="w-full">
-          <button
-            type="button"
-            onClick={() => toggle('employees')}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition
-              ${openKey === 'employees' ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-            aria-expanded={openKey === 'employees'}
-          >
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <FontAwesomeIcon icon={faUsers} className="h-4 w-4" />
-              <span>Pracownicy</span>
-            </div>
-            <ChevronDown
-              className={`h-4 w-4 transition-transform duration-200 ${openKey === 'employees' ? 'rotate-180' : 'rotate-0'}`}
-            />
-          </button>
+        {/* Employees */}
+        <SectionButton
+          title="Pracownicy"
+          icon={faUsers}
+          openKey={openKey}
+          name="employees"
+          toggle={toggle}
+          isActive={isActive}
+          links={[
+            { href: '/moderator/users', label: 'Lista pracowników' },
+            { href: '/moderator/users/confirmation-work-certificates', label: 'Potwierdz świadectwa pracowników' },
+            { href: '/moderator/users/confirmation-education', label: 'Potwierdz edukacje' },
+          ]}
+        />
 
-          <div
-            className={`overflow-hidden transition-all duration-300 ${openKey === 'employees' ? 'max-h-64 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}
-            aria-hidden={openKey !== 'employees'}
-          >
-            <div className="flex flex-col space-y-1 pl-6">
-              <Link
-                href="/moderator/users"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/users') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faList} className="mr-2" /> Lista pracowników
-              </Link>
-              <Link
-                href="/moderator/users/confirmation-work-certificates"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/users/confirmation-work-certificates') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-               <FontAwesomeIcon icon={faEnvelopeCircleCheck} className="mr-2" /> Potwierdz świadectwa pracowników
-              </Link>
-               <Link
-                href="/moderator/users/confirmation-education"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/users/confirmation-education') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >                <FontAwesomeIcon icon={faSchool} className="mr-2" /> Potwierdz edukacje
+        {/* Leaves */}
+        <SectionButton
+          title="Urlopy"
+          icon={faCalendar}
+          openKey={openKey}
+          name="leaves"
+          toggle={toggle}
+          isActive={isActive}
+          links={[{ href: '/moderator/leaves', label: 'Kalendarz urlopów' }, { href: '/moderator/leaves/pending', label: 'Oczekujące wnioski' }]}
+        />
 
-              </Link>
-            </div>
+        {/* Departments */}
+        <SectionButton
+          title="Wydziały"
+          icon={faSitemap}
+          openKey={openKey}
+          name="departments"
+          toggle={toggle}
+          isActive={isActive}
+          links={[
+            { href: '/moderator/departments', label: 'Lista Wydziały' },
+            { href: '/moderator/departments/active-employees', label: 'Lista pracowników na wydziałach' },
+            { href: '/moderator/departments/create', label: 'Dodaj wydział' },
+          ]}
+        />
 
-          </div>
+        {/* Machines */}
+        <SectionButton
+          title="Maszyny"
+          icon={faCogs}
+          openKey={openKey}
+          name="machines"
+          toggle={toggle}
+          isActive={isActive}
+          links={[
+            { href: '/moderator/machines', label: 'Lista maszyn' },
+            { href: '/moderator/machines/add-new', label: 'Dodaj maszynę' },
+            { href: '/moderator/machines/operations', label: 'Operacje' },
+          ]}
+        />
+
+        {/* Incidents */}
+        <SectionButton
+          title="Awarie"
+          icon={faExclamationTriangle}
+          openKey={openKey}
+          name="incidents"
+          toggle={toggle}
+          isActive={isActive}
+          links={[
+            { href: '/moderator/machines/report-failure', label: 'Lista awarii' },
+            { href: '/moderator/machines/failures/history', label: 'Historia' },
+            { href: '/moderator/machines/failures/reports', label: 'Raporty' },
+          ]}
+        />
+
+        {/* Performance */}
+        <SectionButton
+          title="Wydajność"
+          icon={faChartLine}
+          openKey={openKey}
+          name="performance"
+          toggle={toggle}
+          isActive={isActive}
+          links={[{ href: '/moderator/performance', label: 'Przegląd wydajności' }, { href: '/moderator/performance/reports', label: 'Raporty' }]}
+        />
+
+        {/* Production */}
+        <SectionButton
+          title="Planowanie produkcji"
+          icon={faSitemap}
+          openKey={openKey}
+          name="production"
+          toggle={toggle}
+          isActive={isActive}
+          links={[
+            { href: '/moderator/production-materials', label: 'Magazyn Wyrobos Surowych' },
+            { href: '/moderator/production/planning', label: 'Zaplanuj produkcję' },
+            { href: '/moderator/production/departments', label: 'Produkcja na wydziałach' },
+            { href: '/moderator/production/history', label: 'Historia' },
+          ]}
+        />
+
+        {/* Products */}
+        <SectionButton
+          title="Produkty"
+          icon={faWarehouse}
+          openKey={openKey}
+          name="products"
+          toggle={toggle}
+          isActive={isActive}
+          links={[
+            { href: '/moderator/items/', label: 'Produkty' },
+            { href: '/moderator/items/products/sold', label: 'Ilość sprzedanych' },
+            { href: '/moderator/items/products/orders', label: 'Zamówienia' },
+            { href: '/moderator/items/products/processes', label: 'Proces produkcji' },
+          ]}
+        />
+
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+
+
+        </SidebarMenu>
+      </div>
+    </div>
+  );
+}
+
+function SectionButton({ title, icon, openKey, name, toggle, isActive, links }: any) {
+  return (
+    <div className="w-full mt-3">
+      <button
+        type="button"
+        onClick={() => toggle(name)}
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition ${openKey === name ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+        aria-expanded={openKey === name}
+      >
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <FontAwesomeIcon icon={icon} className="h-4 w-4" />
+          <span>{title}</span>
         </div>
+        <svg className={`h-4 w-4 transition-transform ${openKey === name ? 'rotate-180' : 'rotate-0'}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+        </svg>
+      </button>
 
-        {/* Urlopy */}
-        <div className="w-full mt-3">
-          <button
-            type="button"
-            onClick={() => toggle('leaves')}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition
-              ${openKey === 'leaves' ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-            aria-expanded={openKey === 'leaves'}
-          >
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <FontAwesomeIcon icon={faCalendar} className="h-4 w-4" />
-              <span>Urlopy</span>
-            </div>
-            <ChevronDown
-              className={`h-4 w-4 transition-transform duration-200 ${openKey === 'leaves' ? 'rotate-180' : 'rotate-0'}`}
-            />
-          </button>
-
-          <div
-            className={`overflow-hidden transition-all duration-300 ${openKey === 'leaves' ? 'max-h-64 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}
-            aria-hidden={openKey !== 'leaves'}
-          >
-            <div className="flex flex-col space-y-1 pl-6">
-              <Link
-                href="/moderator/leaves"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/leaves') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faCalendar} className="mr-2" /> Kalendarz urlopów
-              </Link>
-              <Link
-                href="/moderator/leaves/pending"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/leaves/pending') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faExclamationTriangle} className="mr-2" /> Oczekujące wnioski
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Departaments */}
-        <div className="w-full mt-3">
-          <button
-            type="button"
-            onClick={() => toggle('departaments')}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition
-              ${openKey === 'departaments' ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-            aria-expanded={openKey === 'departaments'}
-          >
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <FontAwesomeIcon icon={faSitemap} className="h-4 w-4" />
-              <span>Wydziały</span>
-            </div>
-            <ChevronDown
-              className={`h-4 w-4 transition-transform duration-200 ${openKey === 'departaments' ? 'rotate-180' : 'rotate-0'}`}
-            />
-          </button>
-
-          <div
-            className={`overflow-hidden transition-all duration-300 ${openKey === 'departaments' ? 'max-h-64 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}
-            aria-hidden={openKey !== 'departaments'}
-          >
-            <div className="flex flex-col space-y-1 pl-6">
-              <Link
-                href="/moderator/departments"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/departaments') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faList} className="mr-2" /> Lista Wydziały
-              </Link>
-              <Link
-                href="/moderator/departaments/active-employees"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/departaments/active-employees') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faUsers} className="mr-2" /> Lista pracowników na wydziałach
-              </Link>
-              <Link
-                href="/moderator/machines/create"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/departaments/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faPlus} className="mr-2" /> Dodaj wydział
-              </Link>
-            </div>
-          </div>
-        </div>
-        {/* Maszyny */}
-        <div className="w-full mt-3">
-          <button
-            type="button"
-            onClick={() => toggle('machines')}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition
-              ${openKey === 'machines' ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-            aria-expanded={openKey === 'machines'}
-          >
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <FontAwesomeIcon icon={faCogs} className="h-4 w-4" />
-              <span>Maszyny</span>
-            </div>
-            <ChevronDown
-              className={`h-4 w-4 transition-transform duration-200 ${openKey === 'machines' ? 'rotate-180' : 'rotate-0'}`}
-            />
-          </button>
-
-          <div
-            className={`overflow-hidden transition-all duration-300 ${openKey === 'machines' ? 'max-h-64 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}
-            aria-hidden={openKey !== 'machines'}
-          >
-            <div className="flex flex-col space-y-1 pl-6">
-              <Link
-                href="/moderator/machines"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/machines') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faList} className="mr-2" /> Lista maszyn
-              </Link>
-              <Link
-                href="/moderator/machines/add-new"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/machines/add-new') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faPlus} className="mr-2" /> Dodaj maszynę
-              </Link>
-              <Link
-                href="/moderator/machines/operations"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/machines/operations') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faWrench} className="mr-2" /> Operacje
-              </Link>
-            </div>
-          </div>
-        </div>
-               {/* Awarie */}
-        <div className="w-full mt-3">
-          <button
-            type="button"
-            onClick={() => toggle('incidents')}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition
-              ${openKey === 'incidents' ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-            aria-expanded={openKey === 'incidents'}
-          >
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <FontAwesomeIcon icon={faExclamationTriangle} className="h-4 w-4" />
-              <span>Awarie</span>
-            </div>
-            <ChevronDown
-              className={`h-4 w-4 transition-transform duration-200 ${openKey === 'incidents' ? 'rotate-180' : 'rotate-0'}`}
-            />
-          </button>
-
-          <div
-            className={`overflow-hidden transition-all duration-300 ${openKey === 'incidents' ? 'max-h-64 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}
-            aria-hidden={openKey !== 'incidents'}
-          >
-            <div className="flex flex-col space-y-1 pl-6">
-              <Link
-                href="/machines/report-failure"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/incidents') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faList} className="mr-2" /> Lista awarii
-              </Link>
-
-              <Link
-                href="/machines/failures/history"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/machines/failures/history') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faList} className="mr-2" /> Historia
-              </Link>
-              <Link
-                href="/machines/failures/reports"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/machines/failures/reports') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faChartLine} className="mr-2" /> Raporty
-              </Link>
-            </div>
-          </div>
-        </div>
-        {/* Wydajność */}
-        <div className="w-full mt-3">
-          <button
-            type="button"
-            onClick={() => toggle('performance')}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition
-              ${openKey === 'performance' ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-            aria-expanded={openKey === 'performance'}
-          >
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <FontAwesomeIcon icon={faChartLine} className="h-4 w-4" />
-              <span>Wydajność</span>
-            </div>
-            <ChevronDown
-              className={`h-4 w-4 transition-transform duration-200 ${openKey === 'performance' ? 'rotate-180' : 'rotate-0'}`}
-            />
-          </button>
-
-          <div
-            className={`overflow-hidden transition-all duration-300 ${openKey === 'performance' ? 'max-h-64 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}
-            aria-hidden={openKey !== 'performance'}
-          >
-            <div className="flex flex-col space-y-1 pl-6">
-              <Link
-                href="/moderator/performance"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/performance') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faList} className="mr-2" /> Przegląd wydajności
-              </Link>
-              <Link
-                href="/moderator/performance/reports"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/performance/reports') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faPlus} className="mr-2" /> Raporty
-              </Link>
-            </div>
-          </div>
+      <div className={`overflow-hidden transition-all duration-300 ${openKey === name ? 'max-h-60 opacity-100 mt-2' : 'max-h-0 opacity-0'}`} aria-hidden={openKey !== name}>
+        <div className="flex flex-col space-y-1 pl-6">
+          {links.map((l: any) => (
+            <Link key={l.href} href={l.href} className={`text-sm px-2 py-1 rounded block ${isActive(l.href) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}>
+              {l.label}
+            </Link>
+          ))}
         </div>
       </div>
-        {/* Planowanie produkcji */}
-        <div className="w-full mt-3">
-          <button
-            type="button"
-            onClick={() => toggle('production')}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition
-              ${openKey === 'production' ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-            aria-expanded={openKey === 'production'}
-          >
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <FontAwesomeIcon icon={faSitemap} className="h-4 w-4" />
-              <span>Planowanie produkcji</span>
-            </div>
-            <ChevronDown
-              className={`h-4 w-4 transition-transform duration-200 ${openKey === 'production' ? 'rotate-180' : 'rotate-0'}`}
-            />
-          </button>
-
-          <div
-            className={`overflow-hidden transition-all duration-300 ${openKey === 'production' ? 'max-h-64 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}
-            aria-hidden={openKey !== 'production'}
-          >
-            <div className="flex flex-col space-y-1 pl-6">
-                  <Link
-                href="/moderator/production-materials"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/production-materials') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faWarehouse} className="mr-2" /> Magazyn Wyrobos Surowych
-              </Link>
-              <Link
-                href="/moderator/production/create"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/production/create') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faPlus} className="mr-2" /> Zaplanuj produkcję
-              </Link>
-              <Link
-                href="/moderator/production/departments"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/production/departments') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faSitemap} className="mr-2" /> Produkcja na wydziałach
-              </Link>
-              <Link
-                href="/moderator/production/history"
-                className={`text-sm px-2 py-1 rounded block ${isActive('/moderator/production/history') ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
-              >
-                <FontAwesomeIcon icon={faList} className="mr-2" /> Historia
-              </Link>
-            </div>
-          </div>
-        </div>
     </div>
   );
 }

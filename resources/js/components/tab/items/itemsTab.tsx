@@ -1,34 +1,32 @@
 import React, { useEffect, useRef, useState } from "react";
-import AvailableMaterials from "./element/AvailableMaterials";
-import InProductionMaterials from "./element/InProductionMaterials";
-import ToAddMaterials from "./element/ToAddMaterials";
-import MaterialsHistory from "./element/MaterialsHistory";
+import ProductPage from "./element/product";
+import ProductionCreate from "./element/create";
 
-type TabKey = "available" | "in_production" | "to_add" | "history";
+type TabKey = "Produkty" | "Dodaj Produkt" | "to_add" | "history";
 
 export default function MaterialTab() {
-    const [tab, setTab] = useState<TabKey>("available");
+    const [tab, setTab] = useState<TabKey>("Produkty");
     const containerRef = useRef<HTMLDivElement | null>(null);
     const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
     const [indicator, setIndicator] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
 
     const tabs: { key: TabKey; label: string }[] = [
-        { key: "available", label: "Materiały dostępne" },
-        { key: "in_production", label: "W produkcji" },
+        { key: "Produkty", label: "Produkty " },
+        { key: "Dodaj Produkt", label: "Dodaj produkt" },
         { key: "to_add", label: "Do dodania" },
         { key: "history", label: "Historia" },
     ];
 
     const renderContent = () => {
         switch (tab) {
-            case "available":
-                return <AvailableMaterials />;
-            case "in_production":
-                return <InProductionMaterials />;
+            case "Produkty":
+                return <ProductPage onAddClick={() => setTab("Dodaj Produkt")} />;
+            case "Dodaj Produkt":
+                return <ProductionCreate />;
             case "to_add":
-                return <ToAddMaterials />;
+                return 3;
             case "history":
-                return <MaterialsHistory />;
+                return 4;
             default:
                 return null;
         }
@@ -69,7 +67,7 @@ export default function MaterialTab() {
                     {tabs.map((t, i) => (
                         <button
                             key={t.key}
-                            ref={(el) => { tabRefs.current[i] = el }}
+                            ref={(el) => { tabRefs.current[i] = el; }}
                             onClick={() => setTab(t.key)}
                             className={`px-3 py-1 rounded-t ${tab === t.key ? 'text-slate-900' : 'text-slate-600'}`}
                         >
