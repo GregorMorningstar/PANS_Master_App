@@ -1,6 +1,6 @@
 import ModeratorLayout from "@/layouts/ModeratorLayout";
-import { useForm, Link } from "@inertiajs/react";
-import { useState, useEffect } from 'react';
+import { useForm, Link, usePage } from "@inertiajs/react";
+import React, { useState, useEffect } from 'react';
 
 export default function ProductionCreate() {
     const breadcrumbs = [
@@ -10,11 +10,16 @@ export default function ProductionCreate() {
     ];
 
 
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const page = usePage();
+    const props = page.props as any;
+    const editingItem = props.item ?? null;
+
+    const { data, setData, post, put, processing, errors, reset } = useForm({
         name: "",
         description: "",
         price: "",
         stock: 0,
+        time_of_production: 60,
         image: null,
     });
 
@@ -28,6 +33,16 @@ export default function ProductionCreate() {
     }
 
     useEffect(() => {
+        if (editingItem) {
+            setData('name', editingItem.name ?? '');
+            setData('description', editingItem.description ?? '');
+            setData('price', editingItem.price ?? '');
+            setData('stock', editingItem.stock ?? 0);
+            setData('time_of_production', editingItem.time_of_production ?? 60);
+            // do not set image file; preview can use existing image_path
+            if (editingItem.image_path) setPreview(editingItem.image_path);
+        }
+
         return () => {
             if (preview) URL.revokeObjectURL(preview);
         };
@@ -35,6 +50,13 @@ export default function ProductionCreate() {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
+        if (editingItem) {
+            put(`/moderator/items/${editingItem.id}`, {
+                onSuccess: () => { window.location.href = '/moderator/items'; },
+            });
+            return;
+        }
+
         post('/moderator/items', {
             onSuccess: () => {
                 reset();
@@ -82,6 +104,12 @@ export default function ProductionCreate() {
                     </div>
 
                     <div>
+                        <label className="block text-xs text-gray-600 mb-1">Czas produkcji (minuty)</label>
+                        <input type="number" value={data.time_of_production as any} onChange={(e) => setData('time_of_production', Number(e.target.value))} className="w-32 border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                        {errors.time_of_production && <div className="text-red-600 text-sm mt-1">{errors.time_of_production}</div>}
+                    </div>
+
+                    <div>
                         <label className="block text-xs text-gray-600 mb-1">Zdjęcie</label>
                         <div className="flex items-center gap-4">
                             <div>
@@ -104,7 +132,7 @@ export default function ProductionCreate() {
 
                     <div className="flex items-center gap-3 justify-end">
                         <Link href="/moderator/items" className="px-4 py-2 border rounded-md text-sm text-gray-700">Anuluj</Link>
-                        <button type="submit" disabled={processing} className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm">{processing ? 'Wysyłanie...' : 'Utwórz'}</button>
+                        <button type="submit" disabled={processing} className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm">{processing ? 'Wysyłanie...' : (editingItem ? 'Zapisz' : 'Utwórz')}</button>
                     </div>
                 </form>
             </div>

@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('barcode')->unique()->nullable();
             $table->decimal('price', 10, 2)->nullable();
             $table->integer('stock')->default(0);
+            // time_of_production stored as minutes required to produce the item
+            $table->integer('time_of_production')->nullable();
             $table->timestamps();
         });
     }

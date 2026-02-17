@@ -23,7 +23,29 @@ class ItemsFinishedGoodService implements ItemsFinishedGoodServiceInterface
 
     public function create(array $data)
     {
-        return $this->repository->create($data);
+        $item = $this->repository->create($data);
+
+        if ($item) {
+            // create a default production schema split into three steps
+            $total = (int) ($item->time_of_production ?? 60);
+            $part = intdiv(max($total, 3), 3);
+            $steps = [
+                ['name' => 'Przygotowanie', 'duration' => $part],
+                ['name' => 'Obróbka', 'duration' => $part],
+                ['name' => 'Montaż i kontrola', 'duration' => max(1, $total - 2 * $part)],
+            ];
+
+            try {
+                \App\Models\ProductionSchema::create([
+                    'items_finished_good_id' => $item->id,
+                    'name' => 'Domyślny schemat',
+                ]);
+            } catch (\Throwable $e) {
+                // swallow - schema creation is best-effort
+            }
+        }
+
+        return $item;
     }
 
     public function update(int $id, array $data)

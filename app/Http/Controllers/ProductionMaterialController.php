@@ -100,6 +100,47 @@ class ProductionMaterialController extends Controller
         }
     }
 
+    /**
+     * Lightweight API to create a material with minimal fields for quick usage in forms.
+     * Accepts: name, material_form, group_material (optional), description (optional)
+     * Returns JSON { success: true, material }
+     */
+    public function quickStore(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'material_form' => 'required|string|in:' . implode(',', MaterialForm::values()),
+            'group_material' => 'nullable|string',
+            'description' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $data = array_merge($validated, [
+                // minimal defaults required by service
+                'delivery_number' => '-',
+                'delivery_scan' => null,
+                'stock_empty_alarm' => 0,
+                'available_quantity' => 0,
+            ]);
+
+            $material = $this->productionMaterialService->create($data);
+
+            if (!empty($material->delivery_scan)) {
+                $material->delivery_scan = Storage::url($material->delivery_scan);
+            }
+
+            return response()->json([
+                'success' => true,
+                'material' => $material,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Błąd: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function addQuantity(Request $request, int $id)
     {
         $request->validate([

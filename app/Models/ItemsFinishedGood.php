@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ItemsFinishedGood extends Model
 {
@@ -15,9 +16,15 @@ class ItemsFinishedGood extends Model
         'description',
         'image_path',
         'barcode',
+        'time_of_production',
         'price',
         'stock',
     ];
+
+    public function productionSchema()
+    {
+        return $this->hasOne(ProductionSchema::class, 'items_finished_good_id');
+    }
 
 	/**
 	 * Boot model and attach creating listener to generate barcode starting with 8000.
