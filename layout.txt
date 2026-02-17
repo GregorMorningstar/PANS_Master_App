@@ -28,3 +28,5 @@ kody en13
 7000 - swiadectwa pracy
 
 8000 - produkty
+8800 - schematy produkcji
+8900 - etapy schamatu produkcji

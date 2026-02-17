@@ -71,6 +71,7 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->call([
+            \Database\Seeders\ItemsFinishedGoodSeeder::class,
             LeavesSeeder::class,
             \Database\Seeders\MachineSeeder::class,
             \Database\Seeders\OperationMachineSeeder::class,

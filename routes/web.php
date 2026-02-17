@@ -21,6 +21,8 @@ use App\Http\Controllers\MachineFailureRepairController;
 use App\Http\Controllers\ProductionMaterialController;
 use App\Http\Controllers\ProductionPlanController;
 use App\Http\Controllers\ItemsFinishedGoodController;
+use App\Http\Controllers\ProductionSchemaController;
+
 // Broadcasting authentication routes
 Broadcast::routes(['middleware' => ['web', 'auth']]);
 
@@ -49,6 +51,7 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
             // Machine Operations routes z prefiksem
            Route::prefix('operations')->name('operations.')->group(function () {
                 Route::get('/', [MachineOperationController::class, 'getAllOperations'])->name('index');
+                Route::post('/quick-store', [MachineOperationController::class, 'quickStore'])->name('quick_store');
                 Route::get('/{machine_id}/add', [MachineOperationController::class, 'createOperation'])->name('create');
                 Route::post('/{machine_id}', [MachineOperationController::class, 'storeOperation'])->name('store');
                 Route::get('/{operation_id}/show', [MachineOperationController::class, 'showOperation'])->name('show');
@@ -95,11 +98,15 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
             Route::get('/', [App\Http\Controllers\ProductionMaterialController::class, 'index'])->name('index');
             Route::get('/create', [App\Http\Controllers\ProductionMaterialController::class, 'create'])->name('create');
             Route::post('/', [App\Http\Controllers\ProductionMaterialController::class, 'store'])->name('store');
+            Route::post('/quick-store', [App\Http\Controllers\ProductionMaterialController::class, 'quickStore'])->name('quick_store');
             Route::get('/all-history', [App\Http\Controllers\ProductionMaterialController::class, 'allHistory'])->name('all_history');
             Route::post('/{id}/add', [App\Http\Controllers\ProductionMaterialController::class, 'addQuantity'])->name('add');
             Route::post('/{id}/subtract', [App\Http\Controllers\ProductionMaterialController::class, 'subtractQuantity'])->name('subtract');
             Route::get('/{id}/history', [App\Http\Controllers\ProductionMaterialController::class, 'history'])->name('history');
         });
+
+        // all production schemas list
+        Route::get('/production-schemas', [ProductionSchemaController::class, 'index'])->name('production_schemas.index');
 
         // production planning: /moderator/production/planning
         Route::prefix('production')->name('production.')->group(function () {
@@ -116,6 +123,19 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
         Route::prefix('items')->name('items.')->group(function () {
             Route::get('/', [ItemsFinishedGoodController::class, 'index'])->name('index');
             Route::get('/create', [ItemsFinishedGoodController::class, 'create'])->name('create');
+            Route::post('/', [ItemsFinishedGoodController::class, 'store'])->name('store');
+            Route::get('/{id}', [ItemsFinishedGoodController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [ItemsFinishedGoodController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [ItemsFinishedGoodController::class, 'update'])->name('update');
+            Route::delete('/{id}', [ItemsFinishedGoodController::class, 'destroy'])->name('destroy');
+              Route::prefix('/production-schema')->name('production_schema.')->group(function () {
+                  Route::get('/{item_id}', [ProductionSchemaController::class, 'showByItem'])->name('show');
+                  Route::get('/{item_id}/create-step', [ProductionSchemaController::class, 'createStep'])->name('create_step');
+                  Route::post('/{item_id}/create-step', [ProductionSchemaController::class, 'storeStep'])->name('store_step');
+                  Route::get('/step/{step_id}/edit', [ProductionSchemaController::class, 'editStep'])->name('edit_step');
+                  Route::put('/step/{step_id}', [ProductionSchemaController::class, 'updateStep'])->name('update_step');
+                  Route::delete('/step/{step_id}', [ProductionSchemaController::class, 'destroyStep'])->name('destroy_step');
+            });
         });
     });
 
@@ -247,3 +267,5 @@ Route::prefix('api')->middleware(['web', 'auth'])->group(function () {
 
 
 require __DIR__.'/settings.php';
+
+

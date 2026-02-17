@@ -2,14 +2,15 @@
 
 namespace App\Repositories\Contracts;
 
-use App\Models\ItemsFinishedGood;
+use App\Models\ProductionSchema;
 
-interface ItemsFinishedGoodRepositoryInterface
+interface ProductionSchemaRepositoryInterface
 {
-    public function __construct(ItemsFinishedGood $model);
-    public function paginate(int $perPage = 15, array $filters = []);
+    public function __construct(ProductionSchema $model);
 
     public function find(int $id);
+
+    public function findByItem(int $itemId);
 
     public function create(array $data);
 

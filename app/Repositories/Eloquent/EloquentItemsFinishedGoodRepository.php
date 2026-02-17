@@ -25,7 +25,7 @@ class EloquentItemsFinishedGoodRepository implements ItemsFinishedGoodRepository
 
     public function find(int $id)
     {
-        return $this->model->find($id);
+            return $this->model->with('productionSchema')->find($id);
     }
 
     public function create(array $data)

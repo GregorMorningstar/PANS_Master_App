@@ -180,4 +180,39 @@ class MachineOperationController extends Controller
             return redirect()->back()->with('error', 'Błąd usuwania: ' . $e->getMessage());
         }
     }
+
+    public function quickStore(Request $request)
+    {
+        $validated = $request->validate([
+            'operation_name' => 'required|string|max:255',
+            'machine_id' => 'required|exists:machines,id',
+            'duration_minutes' => 'nullable|numeric|min:0',
+        ]);
+
+        try {
+            $operation = $this->operationMachineService->createOperation(
+                $validated['machine_id'],
+                0,
+                [
+                    'operation_name' => $validated['operation_name'],
+                    'duration_minutes' => $validated['duration_minutes'] ?? null,
+                ]
+            );
+
+            return response()->json([
+                'success' => true,
+                'operation' => [
+                    'id' => $operation->id,
+                    'operation_name' => $operation->operation_name,
+                    'machine_id' => $operation->machine_id,
+                    'duration_minutes' => $operation->duration_minutes,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Błąd podczas tworzenia operacji: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }
