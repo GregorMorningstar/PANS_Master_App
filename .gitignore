@@ -1,3 +1,54 @@
+# Laravel
+/vendor/
+/node_modules/
+/.env
+/.env.*
+/Homestead.yaml
+/Homestead.json
+/public/storage
+/storage/*.key
+/storage/debugbar
+/.idea/
+.vscode/
+/.sass-cache/
+/.phpunit.result.cache
+/.php_cs.cache
+
+# Laravel mix / Vite / Node
+/public/hot
+/public/build
+/build/
+/dist/
+/npm-debug.log
+/yarn-error.log
+/pnpm-debug.log
+
+# OS files
+*.DS_Store
+Thumbs.db
+
+# Logs
+/storage/logs/
+
+# Composer
+/composer.phar
+
+# Ignore images and large uploads stored locally
+/storage/image/
+
+# IDE
+/.idea/
+.vscode/
+
+# Optional: lock files
+package-lock.json
+yarn.lock
+
+# dotenv environment files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 # Laravel & PHP
 /.idea
 /.vscode
