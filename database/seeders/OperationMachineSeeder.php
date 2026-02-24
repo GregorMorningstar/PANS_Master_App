@@ -64,7 +64,6 @@ class OperationMachineSeeder extends Seeder
                 'machine_id' => $machine ? $machine->id : null,
                 'operation_name' => $r['operation_name'],
                 'description' => $r['description'] ?? null,
-                'duration_minutes' => $r['duration'],
                 'changeover_time' => $r['changeover'],
                 'created_at' => now(),
                 'updated_at' => now(),

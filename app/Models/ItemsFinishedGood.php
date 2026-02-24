@@ -26,6 +26,11 @@ class ItemsFinishedGood extends Model
         return $this->hasOne(ProductionSchema::class, 'items_finished_good_id');
     }
 
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'items_finished_good_id');
+    }
+
 	/**
 	 * Boot model and attach creating listener to generate barcode starting with 8000.
 	 */

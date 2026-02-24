@@ -212,14 +212,14 @@ export default function MachineOperationsList({
                             const operationBarcode = op.operation?.barcode ?? op.operation_barcode ?? op.barcode ?? '';
                             const machineName = op.machine?.name ?? op.machine_name ?? '';
                             const machineStatus = op.machine?.status ?? op.machine?.status_name ?? (op.machine?.status?.name ?? '') ?? '';
-                            const duration = op.duration_minutes ?? null;
+                            const duration = op.changeover_time ?? op.operation?.changeover_time ?? null;
                             const machineStatusClasses = getStatusClasses(machineStatus);
                             const rowBg = getRowBgClass(machineStatus);
 
                             return (
                                 <tr key={idKey} className={`border-t relative ${rowBg}`}>
                                     <td className="px-2 py-1">
-                                        <span title={duration ? `Czas trwania: ${duration} sek` : undefined} className="cursor-help">
+                                        <span title={duration ? `Czas przezbrojenia: ${duration}` : undefined} className="cursor-help">
                                             {operationName}
                                         </span>
                                     </td>
@@ -301,8 +301,7 @@ export default function MachineOperationsList({
                                                         <h5 className="font-medium mb-1">Operacja</h5>
                                                         <div className="text-sm">
                                                             <div className="font-semibold">{operationName || '—'}</div>
-                                                            <div className="text-xs text-gray-500">Czas: {duration ? `${duration} sek` : '—'}</div>
-                                                            <div className="text-xs text-gray-500">Przezbrojenie: {op.changeover_time ?? '—'}</div>
+                                                            <div className="text-xs text-gray-500">Przezbrojenie: {duration ?? '—'}</div>
                                                             <div className="mt-2">
                                                                 <div className="inline-block p-1 bg-gray-50 rounded">
                                                                     <Barcode
@@ -433,8 +432,7 @@ export default function MachineOperationsList({
                                                                         displayValue={false}
                                                                     />
                                         </div>
-                                        <div className="text-xs mt-2">Czas: {selectedOp.duration_minutes ? `${selectedOp.duration_minutes} sek` : '—'}</div>
-                                        <div className="text-xs">Przezbrojenie: {selectedOp.changeover_time ?? '—'}</div>
+                                        <div className="text-xs mt-2">Przezbrojenie: {selectedOp.changeover_time ?? '—'}</div>
                                     </div>
                                 </div>
                             </div>

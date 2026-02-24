@@ -24,7 +24,7 @@ class EloquentProductionSchemaRepository implements ProductionSchemaRepositoryIn
                     $query->orderBy('step_number');
                 },
                 'steps.machine:id,name,serial_number,model,status',
-                'steps.operation:id,operation_name,duration_minutes',
+                'steps.operation:id,operation_name,changeover_time',
                 'steps.material:id,name,material_form',
                 'item'
             ])

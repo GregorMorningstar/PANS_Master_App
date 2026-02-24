@@ -38,6 +38,7 @@ interface Step {
     unit?: string;
     output_product_name?: string;
     output_quantity?: number;
+    production_time_seconds?: number;
     notes?: string;
     production_schema_id: number;
 }
@@ -72,6 +73,7 @@ export default function EditStep() {
         production_material_id: step.production_material_id?.toString() || '',
         required_quantity: step.required_quantity?.toString() || '',
         unit: step.unit || '',
+        production_time_seconds: step.production_time_seconds?.toString() || '',
         output_product_name: step.output_product_name || '',
         output_quantity: step.output_quantity?.toString() || '',
         notes: step.notes || '',
@@ -219,7 +221,7 @@ export default function EditStep() {
                                                         'Accept': 'application/json',
                                                     },
                                                     credentials: 'same-origin',
-                                                    body: JSON.stringify({ operation_name: newOperationName, machine_id: selectedMachineId, duration_minutes: newOperationTime || null }),
+                                                    body: JSON.stringify({ operation_name: newOperationName, machine_id: selectedMachineId, changeover_time: newOperationTime || null }),
                                                 });
                                                 const json = await res.json();
                                                 if (json.success && json.operation) {
@@ -414,6 +416,23 @@ export default function EditStep() {
                                 />
                                 {errors.output_quantity && (
                                     <p className="text-red-500 text-sm mt-1">{errors.output_quantity}</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Czas wytwarzania (sekundy)
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={data.production_time_seconds}
+                                    onChange={(e) => setData('production_time_seconds', e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                                    placeholder="np. 12.50"
+                                    required
+                                />
+                                {errors.production_time_seconds && (
+                                    <p className="text-red-500 text-sm mt-1">{errors.production_time_seconds}</p>
                                 )}
                             </div>
                         </div>

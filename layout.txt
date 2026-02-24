@@ -30,3 +30,7 @@ kody en13
 8000 - produkty
 8800 - schematy produkcji
 8900 - etapy schamatu produkcji
+
+
+9000 - zamowienia
+9100 - produkty w zamowieniu

@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import ModeratorLayout from '@/layouts/ModeratorLayout';
 import EmployeeLayout from '@/layouts/EmployeeLayout';
 import { usePage, Link, router } from '@inertiajs/react';
@@ -6,7 +7,7 @@ interface Step {
     id: number;
     step_number: number;
     machine?: { id: number; name: string; serial_number?: string; model?: string; status?: string };
-    operation?: { id: number; operation_name: string; duration_minutes?: number };
+    operation?: { id: number; operation_name: string; changeover_time?: number };
     material?: { id: number; name: string };
     required_quantity?: number;
     unit?: string;
@@ -44,11 +45,17 @@ const breadcrumbsEmployee = [
     const page = usePage();
     const props = page.props as any;
     const schema = props.schema as Schema | null;
+    const [stepsState, setStepsState] = useState<Step[]>(schema?.steps ?? []);
+
+    useEffect(() => {
+        setStepsState(schema?.steps ?? []);
+    }, [schema]);
     const itemId = props.itemId ?? null;
     const machineStatusMap = (props.machineStatusMap || []) as MachineStatusInfo[];
 
     const rawRole = props?.auth?.user?.role ?? '';
     const userRole = String(rawRole).toLowerCase();
+    const [hideFinalTriangle, setHideFinalTriangle] = useState(false);
 
     const handleDelete = (stepId: number) => {
         if (confirm('Czy na pewno chcesz usunąć ten krok?')) {
@@ -124,9 +131,9 @@ const breadcrumbsEmployee = [
                     {step.operation && (
                         <div className="text-sm text-blue-700 font-medium mb-2">
                             {step.operation.operation_name}
-                            {step.operation.duration_minutes && (
+                            {step.operation.changeover_time && (
                                 <div className="text-xs text-gray-600 mt-1">
-                                    ⏱ {step.operation.duration_minutes} min
+                                    ⏱ {step.operation.changeover_time} sek
                                 </div>
                             )}
                         </div>
@@ -210,12 +217,33 @@ const breadcrumbsEmployee = [
                         {schema.name}
                     </h2>
                     {userRole === 'moderator' && (
-                        <Link
-                            href={`/moderator/items/production-schema/${itemId}/create-step`}
-                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                        >
-                            + Dodaj kolejny krok
-                        </Link>
+                        <div className="flex items-center gap-3">
+                            <label className="inline-flex items-center text-sm mr-2">
+                                <input
+                                    type="checkbox"
+                                    className="mr-2"
+                                    checked={hideFinalTriangle}
+                                    onChange={(e) => setHideFinalTriangle(e.target.checked)}
+                                />
+                                Na koniec procesu
+                            </label>
+                            {hideFinalTriangle ? (
+                                <button
+                                    type="button"
+                                    disabled
+                                    className="px-4 py-2 bg-green-600 text-white rounded opacity-50 cursor-not-allowed"
+                                >
+                                    + Dodaj kolejny krok
+                                </button>
+                            ) : (
+                                <Link
+                                    href={`/moderator/items/production-schema/${itemId}/create-step`}
+                                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                >
+                                    + Dodaj kolejny krok
+                                </Link>
+                            )}
+                        </div>
                     )}
                 </div>
 
@@ -227,24 +255,69 @@ const breadcrumbsEmployee = [
                     </div>
 
                     <div className="flex items-center justify-start overflow-x-auto pb-4">
-                        {schema.steps.map((step, index) => (
-                            <StepCard
-                                key={step.id}
-                                step={step}
-                                isLast={index === schema.steps!.length - 1}
-                                showActions={userRole === 'moderator'}
-                            />
-                        ))}
+                            {stepsState.map((step, index) => (
+                                <div
+                                    key={step.id}
+                                    draggable={userRole === 'moderator'}
+                                    onDragStart={(e) => { e.dataTransfer.setData('text/plain', String(index)); }}
+                                    onDragOver={(e) => { e.preventDefault(); }}
+                                    onDrop={async (e) => {
+                                        e.preventDefault();
+                                        const dragIndex = Number(e.dataTransfer.getData('text/plain'));
+                                        const dropIndex = index;
+                                        if (Number.isNaN(dragIndex)) return;
+                                        if (dragIndex === dropIndex) return;
+                                        const newSteps = [...stepsState];
+                                        const [moved] = newSteps.splice(dragIndex, 1);
+                                        newSteps.splice(dropIndex, 0, moved);
+                                        // update local numbers
+                                        const renumbered = newSteps.map((s, i) => ({ ...s, step_number: i + 1 }));
+                                        setStepsState(renumbered);
 
-                        {/* Finished Goods Store */}
-                        <div className="flex items-center ml-2">
-                            <div className="w-0 h-0 border-l-[60px] border-l-red-500 border-t-[40px] border-t-transparent border-b-[40px] border-b-transparent flex items-center justify-center relative">
-                                <span className="absolute left-2 text-xs text-white font-semibold whitespace-nowrap">
-                                    Gotowy
-                                </span>
-                            </div>
+                                        // persist to server
+                                        try {
+                                            const tokenMeta = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null;
+                                            const token = tokenMeta?.getAttribute('content') || '';
+                                            const res = await fetch(`/moderator/items/production-schema/${itemId}/reorder-steps`, {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'X-CSRF-TOKEN': token,
+                                                    'Accept': 'application/json',
+                                                },
+                                                credentials: 'same-origin',
+                                                body: JSON.stringify({ ordered_ids: renumbered.map(s => s.id) }),
+                                            });
+                                            if (!res.ok) {
+                                                // reload original schema on failure
+                                                setStepsState(schema?.steps ?? []);
+                                                console.error('Failed to save new order');
+                                            }
+                                        } catch (err) {
+                                            setStepsState(schema?.steps ?? []);
+                                            console.error(err);
+                                        }
+                                    }}
+                                >
+                                    <StepCard
+                                        step={step}
+                                        isLast={index === stepsState.length - 1}
+                                        showActions={userRole === 'moderator'}
+                                    />
+                                </div>
+                            ))}
+
+                            {/* Finished Goods Store - can be hidden by moderator */}
+                            {!hideFinalTriangle && (
+                                <div className="flex items-center ml-2">
+                                    <div className="w-0 h-0 border-l-[60px] border-l-red-500 border-t-[40px] border-t-transparent border-b-[40px] border-b-transparent flex items-center justify-center relative">
+                                        <span className="absolute left-2 text-xs text-white font-semibold whitespace-nowrap">
+                                            Gotowy
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    </div>
 
                     <div className="mt-6 text-sm text-gray-600 space-y-1">
                         <div className="flex items-center">

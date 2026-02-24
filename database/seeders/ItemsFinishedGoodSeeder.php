@@ -44,8 +44,8 @@ class ItemsFinishedGoodSeeder extends Seeder
                 $item->image_path = 'storage/image/' . basename($path);
             }
 
-            // production time in minutes (1..1440)
-            $item->time_of_production = rand(1, 1440);
+            // Do not randomize production time in seeders — start at 0 (will be recalculated when schema steps exist)
+            $item->time_of_production = 0;
 
             $item->save();
         }

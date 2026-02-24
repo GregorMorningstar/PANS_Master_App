@@ -36,7 +36,7 @@ export default function ItemShow() {
                             <div><strong>Cena:</strong> {item.price != null ? `${item.price} zł` : '-'}</div>
                             <div><strong>Ilość (stock):</strong> {item.stock ?? '-'}</div>
                             <div><strong>Barcode:</strong> {item.barcode ?? '-'}</div>
-                            <div><strong>Czas produkcji (min):</strong> {item.time_of_production ?? '-'}</div>
+                            <div><strong>Czas produkcji:</strong> {item.time_of_production != null ? `${Number(item.time_of_production)} s (${(Number(item.time_of_production)/60).toFixed(2)} min)` : '-'}</div>
                         </div>
 
                         <div className="mt-6 flex gap-2">
@@ -86,7 +86,7 @@ export default function ItemShow() {
                                 <line x1="350" y1="60" x2="390" y2="60" stroke="#333" strokeWidth="2" markerEnd="url(#arrow)" />
                                 <line x1="540" y1="60" x2="580" y2="60" stroke="#333" strokeWidth="2" markerEnd="url(#arrow)" />
 
-                                <text x="450" y="110" textAnchor="middle" fontSize="13" fill="#444">Czas produkcji: {item.time_of_production ?? '-'} min</text>
+                                <text x="450" y="110" textAnchor="middle" fontSize="13" fill="#444">Czas produkcji: {item.time_of_production != null ? `${Number(item.time_of_production)} s (${(Number(item.time_of_production)/60).toFixed(2)} min)` : '-'}</text>
                             </svg>
                         </div>
                     </div>

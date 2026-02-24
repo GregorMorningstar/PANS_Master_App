@@ -22,6 +22,7 @@ use App\Http\Controllers\ProductionMaterialController;
 use App\Http\Controllers\ProductionPlanController;
 use App\Http\Controllers\ItemsFinishedGoodController;
 use App\Http\Controllers\ProductionSchemaController;
+use App\Http\Controllers\OrderController;
 
 // Broadcasting authentication routes
 Broadcast::routes(['middleware' => ['web', 'auth']]);
@@ -129,13 +130,21 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
             Route::put('/{id}', [ItemsFinishedGoodController::class, 'update'])->name('update');
             Route::delete('/{id}', [ItemsFinishedGoodController::class, 'destroy'])->name('destroy');
               Route::prefix('/production-schema')->name('production_schema.')->group(function () {
+                // Specific route to get all production schemas and show them in planning view
+                Route::get('/get-all', [ProductionSchemaController::class, 'getAll'])->name('get_all');
                   Route::get('/{item_id}', [ProductionSchemaController::class, 'showByItem'])->name('show');
                   Route::get('/{item_id}/create-step', [ProductionSchemaController::class, 'createStep'])->name('create_step');
                   Route::post('/{item_id}/create-step', [ProductionSchemaController::class, 'storeStep'])->name('store_step');
                   Route::get('/step/{step_id}/edit', [ProductionSchemaController::class, 'editStep'])->name('edit_step');
                   Route::put('/step/{step_id}', [ProductionSchemaController::class, 'updateStep'])->name('update_step');
                   Route::delete('/step/{step_id}', [ProductionSchemaController::class, 'destroyStep'])->name('destroy_step');
+                // reorder steps: accepts ordered array of step ids and updates step_number
+                Route::post('/{item_id}/reorder-steps', [ProductionSchemaController::class, 'reorderSteps'])->name('reorder_steps');
             });
+        });
+
+        Route::prefix('orders')->name('orders.')->group(function () {
+            Route::get('/', [OrderController::class, 'index'])->name('index');
         });
     });
 
@@ -144,6 +153,7 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
     Route::middleware('auth')->group(function () {
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
+        Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
 
     // Machine Failures Reporting
     Route::prefix('machines')->name('machines.')->group(function () {

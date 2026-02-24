@@ -19,7 +19,6 @@ return new class extends Migration
             $table->unsignedBigInteger('production_material_id')->nullable()->index();
             $table->string('operation_name');
             $table->text('description')->nullable();
-            $table->integer('duration_minutes')->nullable();
             $table->float('changeover_time')->nullable();
             $table->timestamps();
         });

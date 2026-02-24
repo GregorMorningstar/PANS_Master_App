@@ -4,7 +4,7 @@ namespace App\Services\Contracts;
 
 interface ProductionSchemaStepServiceInterface
 {
-    public function __construct(\App\Repositories\Contracts\ProductionSchemaStepRepositoryInterface $repository);
+    public function __construct(\App\Repositories\Contracts\ProductionSchemaStepRepositoryInterface $repository, \App\Repositories\Contracts\ItemsFinishedGoodRepositoryInterface $itemsRepository);
 
     public function find(int $id);
 

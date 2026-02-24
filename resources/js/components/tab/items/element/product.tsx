@@ -218,7 +218,7 @@ export default function ProductPage({ onAddClick }: ProductPageProps) {
                                 </th>
                                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">
                                     <button type="button" onClick={() => { if (sortKey === 'time_of_production') { setSortAsc(!sortAsc); } else { setSortKey('time_of_production'); setSortAsc(true); } }} className="flex items-center gap-2">
-                                        Czas produkcji (min) {sortKey === 'time_of_production' ? (sortAsc ? '▲' : '▼') : ''}
+                                        Czas produkcji (s) {sortKey === 'time_of_production' ? (sortAsc ? '▲' : '▼') : ''}
                                     </button>
                                 </th>
                                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Akcje</th>
@@ -240,7 +240,7 @@ export default function ProductPage({ onAddClick }: ProductPageProps) {
                                     </td>
                                     <td className="px-4 py-3 text-sm text-gray-700">{it.stock ?? '-'}</td>
                                     <td className="px-4 py-3 text-sm text-gray-700">{it.price != null ? `${it.price} zł` : '-'}</td>
-                                    <td className="px-4 py-3 text-sm text-gray-700">{it.time_of_production ?? '-'}</td>
+                                    <td className="px-4 py-3 text-sm text-gray-700">{it.time_of_production != null ? `${Number(it.time_of_production)} s (${(Number(it.time_of_production)/60).toFixed(2)} min)` : '-'}</td>
                                     <td className="px-4 py-3 text-sm text-gray-700">
                                         <div className="flex items-center gap-2">
                                             <button type="button" onClick={() => setEditing(it)} className="px-2 py-1 bg-green-500 text-white rounded text-sm flex items-center justify-center" title="Edytuj">
@@ -289,8 +289,9 @@ export default function ProductPage({ onAddClick }: ProductPageProps) {
                             </div>
 
                             <div>
-                                <label className="block text-xs text-gray-600">Czas produkcji (min)</label>
+                                <label className="block text-xs text-gray-600">Czas produkcji (sekundy)</label>
                                 <input type="number" value={editing.time_of_production ?? 0} onChange={(e) => setEditing({ ...editing, time_of_production: Number(e.target.value) })} className="w-full border px-2 py-1 rounded" />
+                                <div className="text-xs text-gray-500 mt-1">Wartość zapisywana w sekundach; w tabeli wyświetlane też w minutach.</div>
                             </div>
 
                             <div className="flex justify-end gap-2">

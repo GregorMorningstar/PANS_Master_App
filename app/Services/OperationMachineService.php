@@ -24,7 +24,6 @@ class OperationMachineService implements OperationMachineServiceInterface
                 'machine_id'        => $machineId,
                 'operation_name'    => $data['operation_name'],
                 'description'       => $data['description'] ?? null,
-                'duration_minutes'  => $data['duration_minutes'] ?? null,
                 'changeover_time'   => $data['changeover_time'] ?? null,
                 // barcode generowany automatycznie w modelu
             ];
@@ -57,7 +56,6 @@ class OperationMachineService implements OperationMachineServiceInterface
             $updateData = [
                 'operation_name'    => $data['operation_name'],
                 'description'       => $data['description'] ?? null,
-                'duration_minutes'  => $data['duration_minutes'] ?? null,
                 'changeover_time'   => $data['changeover_time'] ?? null,
             ];
 

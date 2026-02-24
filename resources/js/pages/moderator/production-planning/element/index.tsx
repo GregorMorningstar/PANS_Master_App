@@ -17,7 +17,7 @@ export default function ProductionPlanning() {
         ];
 
         const tabs: TabItem[] = [
-            { id: 'create-canban-card', label: 'Tworzenie Karty Canban', content: <PlaningCanbanCard /> },
+            { id: 'create-canban-card', label: 'Tworzenie Karty Produkcji', content: <PlaningCanbanCard /> },
             { id: 'planing-proces-items', label: 'Planowanie Procesu', content: <PlaningProcesItems /> },
             { id: 'tab-3', label: 'Element 3', content: <div>Treść elementu 3</div> },
             { id: 'tab-4', label: 'Element 4', content: <div>Treść elementu 4</div> },

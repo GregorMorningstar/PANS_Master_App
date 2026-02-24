@@ -71,6 +71,7 @@ export default function CreateStep() {
         production_material_id: '',
         required_quantity: '',
         unit: '',
+        production_time_seconds: '',
         output_product_name: '',
         output_quantity: '',
         notes: '',
@@ -217,7 +218,7 @@ export default function CreateStep() {
                                                         'Accept': 'application/json',
                                                     },
                                                     credentials: 'same-origin',
-                                                    body: JSON.stringify({ operation_name: newOperationName, machine_id: selectedMachineId, duration_minutes: newOperationTime || null }),
+                                                    body: JSON.stringify({ operation_name: newOperationName, machine_id: selectedMachineId, changeover_time: newOperationTime || null }),
                                                 });
                                                 const json = await res.json();
                                                 if (json.success && json.operation) {
@@ -412,6 +413,23 @@ export default function CreateStep() {
                                 />
                                 {errors.output_quantity && (
                                     <p className="text-red-500 text-sm mt-1">{errors.output_quantity}</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Czas wytwarzania (sekundy)
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={data.production_time_seconds}
+                                    onChange={(e) => setData('production_time_seconds', e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                                    placeholder="np. 12.50"
+                                    required
+                                />
+                                {errors.production_time_seconds && (
+                                    <p className="text-red-500 text-sm mt-1">{errors.production_time_seconds}</p>
                                 )}
                             </div>
                         </div>

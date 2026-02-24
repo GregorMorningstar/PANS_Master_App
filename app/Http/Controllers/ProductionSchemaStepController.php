@@ -22,6 +22,7 @@ class ProductionSchemaStepController extends Controller
             'production_material_id' => 'nullable|integer|exists:production_materials,id',
             'required_quantity' => 'nullable|numeric',
             'unit' => 'nullable|string',
+            'production_time_seconds' => 'nullable|numeric',
             'notes' => 'nullable|string',
         ]);
 
@@ -38,6 +39,7 @@ class ProductionSchemaStepController extends Controller
             'production_material_id' => 'nullable|integer|exists:production_materials,id',
             'required_quantity' => 'nullable|numeric',
             'unit' => 'nullable|string',
+            'production_time_seconds' => 'nullable|numeric',
             'notes' => 'nullable|string',
         ]);
 

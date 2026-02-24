@@ -104,7 +104,7 @@ export default function ProductionCreate() {
                     </div>
 
                     <div>
-                        <label className="block text-xs text-gray-600 mb-1">Czas produkcji (minuty)</label>
+                        <label className="block text-xs text-gray-600 mb-1">Czas produkcji (sekundy)</label>
                         <input type="number" value={data.time_of_production as any} onChange={(e) => setData('time_of_production', Number(e.target.value))} className="w-32 border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                         {errors.time_of_production && <div className="text-red-600 text-sm mt-1">{errors.time_of_production}</div>}
                     </div>

@@ -20,7 +20,6 @@ class Operationmachine extends Model
         'production_material_id',
         'operation_name',
         'description',
-        'duration_minutes',
         'changeover_time',
     ];
 

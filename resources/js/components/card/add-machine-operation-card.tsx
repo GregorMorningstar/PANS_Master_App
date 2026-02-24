@@ -15,7 +15,6 @@ export default function AddMachineOperationCard({ initialMachineId, machine }: P
     const form = useForm({
         operation_name: "",
         description: "",
-        duration_minutes: "",
         changeover_time: "",
     });
 
@@ -24,9 +23,7 @@ export default function AddMachineOperationCard({ initialMachineId, machine }: P
         if (!form.data.operation_name || !form.data.operation_name.trim()) {
             e.operation_name = "Nazwa operacji jest wymagana.";
         }
-        if (form.data.duration_minutes && (Number.isNaN(Number(form.data.duration_minutes)) || Number(form.data.duration_minutes) < 0)) {
-            e.duration_minutes = "Czas trwania musi być liczbą >= 0.";
-        }
+        // duration_minutes removed; only validate changeover_time
         if (form.data.changeover_time && (Number.isNaN(Number(form.data.changeover_time)) || Number(form.data.changeover_time) < 0)) {
             e.changeover_time = "Czas przezbrojenia musi być liczbą >= 0.";
         }
@@ -119,28 +116,6 @@ export default function AddMachineOperationCard({ initialMachineId, machine }: P
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label htmlFor="duration_minutes" className="block font-medium text-gray-700 mb-2">
-                            Czas trwania (minuty)
-                        </label>
-                        <input
-                            id="duration_minutes"
-                            name="duration_minutes"
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            value={form.data.duration_minutes}
-                            onChange={e => form.setData("duration_minutes", e.target.value)}
-                            className={`mt-1 block w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200 ${
-                                errorFor("duration_minutes") ? 'border-red-500' : 'border-gray-300'
-                            }`}
-                            placeholder="0.00"
-                        />
-                        {errorFor("duration_minutes") && (
-                            <div className="text-red-600 text-sm mt-1">{errorFor("duration_minutes")}</div>
-                        )}
-                    </div>
-
                     <div>
                         <label htmlFor="changeover_time" className="block font-medium text-gray-700 mb-2">
                             Czas przezbrojenia (min)

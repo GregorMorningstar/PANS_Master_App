@@ -7,7 +7,6 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog';
 type Payload = {
     operation_name?: string;
     description?: string;
-    duration_minutes?: number | null;
     changeover_time?: number | null;
 };
 
@@ -41,7 +40,6 @@ export default function MachineOperationEdit() {
     const { data, setData, put, processing, errors } = useForm<Payload>({
         operation_name: findOperation?.operation_name ?? findOperation?.operation?.name ?? '',
         description: findOperation?.description ?? findOperation?.operation?.description ?? '',
-        duration_minutes: (findOperation?.duration_minutes ?? findOperation?.operation?.duration_minutes) ?? null,
         changeover_time: (findOperation?.changeover_time ?? findOperation?.operation?.changeover_time) ?? null,
     });
 
@@ -52,7 +50,6 @@ export default function MachineOperationEdit() {
         setData({
             operation_name: findOperation.operation_name ?? findOperation.operation?.name ?? '',
             description: findOperation.description ?? findOperation.operation?.description ?? '',
-            duration_minutes: (findOperation.duration_minutes ?? findOperation.operation?.duration_minutes) ?? null,
             changeover_time: (findOperation.changeover_time ?? findOperation.operation?.changeover_time) ?? null,
         });
     }, [findOperation, setData]);
@@ -173,20 +170,6 @@ export default function MachineOperationEdit() {
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1">Czas trwania (sekund)</label>
-                                        <input
-                                            type="number"
-                                            min={0}
-                                            className="w-full border px-3 py-2 rounded"
-                                            value={data.duration_minutes ?? ""}
-                                            onChange={(e) =>
-                                                setData('duration_minutes', e.target.value === "" ? null : Number(e.target.value))
-                                            }
-                                        />
-                                        {errors.duration_minutes && <div className="text-xs text-red-600 mt-1">{String(errors.duration_minutes)}</div>}
-                                    </div>
-
                                     <div>
                                         <label className="block text-sm font-medium mb-1">Czas przezbrojenia (sekund)</label>
                                         <input

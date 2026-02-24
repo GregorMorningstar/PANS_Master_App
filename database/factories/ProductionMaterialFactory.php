@@ -14,19 +14,36 @@ class ProductionMaterialFactory extends Factory
 
     public function definition()
     {
-        $shortNames = [
-            'Profil', 'Krzyżak', 'Rama', 'Pianka', 'Siedzisko', 'Kolumna', 'Tilt', 'Siatka', 'Nici', 'Zestaw', 'Belka', 'Granulat'
+        $materialNames = [
+            'Noga dębowa',
+            'Noga bukowa',
+            'Rama stalowa',
+            'Profil aluminiowy',
+            'Pianka HR',
+            'Tkanina obiciowa',
+            'Skóra ekologiczna',
+            'Śruba M6',
+            'Śruba M8',
+            'Nakładka antypoślizgowa',
+            'Stopka gumowa',
+            'Płyta MDF',
+            'Taśma tapicerska',
+            'Nici tapicerskie',
+            'Siatka mesh',
+            'Poduszka siedziska',
+            'Zawias łącznik',
+            'Element łączenia'
         ];
 
         return [
-            // minimalne krótkie nazwy pasujące do operacji produkcyjnych
-            'name' => $this->faker->randomElement($shortNames) . ' ' . $this->faker->numberBetween(1, 99),
-            'description' => $this->faker->optional()->word(),
+            // names more specific to chair production
+            'name' => $this->faker->randomElement($materialNames) . ' ' . $this->faker->numberBetween(1, 99),
+            'description' => $this->faker->optional()->sentence(),
             'barcode' => null,
             'group_material' => $this->faker->randomElement(MaterialGroup::values()),
             'material_form' => $this->faker->randomElement(MaterialForm::values()),
             'stock_empty_alarm' => $this->faker->numberBetween(0, 20),
-            'available_quantity' => $this->faker->randomFloat(2, 0, 200),
+            'available_quantity' => $this->faker->randomFloat(2, 0, 500),
         ];
     }
 

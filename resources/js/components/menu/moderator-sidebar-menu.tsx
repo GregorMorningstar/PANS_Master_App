@@ -174,7 +174,7 @@ export default function ModeratorSidebarMenu(): React.ReactElement {
           links={[
             { href: '/moderator/items/', label: 'Produkty' },
             { href: '/moderator/items/products/sold', label: 'Ilość sprzedanych' },
-            { href: '/moderator/items/products/orders', label: 'Zamówienia' },
+            { href: '/moderator/orders', label: 'Zamówienia' },
             { href: '/moderator/items/products/processes', label: 'Proces produkcji' },
           ]}
         />

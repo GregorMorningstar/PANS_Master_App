@@ -17,7 +17,6 @@ class OperationmachineFactory extends Factory
             'production_material_id' => null,
             'operation_name' => $this->faker->words(3, true),
             'description' => $this->faker->sentence(),
-            'duration_minutes' => $this->faker->numberBetween(1, 60),
             'changeover_time' => $this->faker->numberBetween(0, 30),
         ];
     }

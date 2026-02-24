@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Services\Contracts\ProductionSchemaServiceInterface;
+use App\Services\Contracts\ProductionSchemaStepServiceInterface;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Machines;
@@ -13,11 +14,14 @@ use App\Models\ItemsFinishedGood;
 use App\Models\ProductionSchemaStep;
 use App\Enums\MaterialForm;
 use App\Enums\MachineStatus;
+use Illuminate\Support\Facades\DB;
 
 class ProductionSchemaController extends Controller
 {
-    public function __construct(private readonly ProductionSchemaServiceInterface $service)
-    {
+    public function __construct(
+        private readonly ProductionSchemaServiceInterface $service,
+        private readonly ProductionSchemaStepServiceInterface $stepService
+    ) {
     }
 
     public function showByItem(int $id)
@@ -51,6 +55,15 @@ class ProductionSchemaController extends Controller
             'schemas' => $schemas,
             'filters' => ['q' => $q],
         ]);
+    }
+
+    /**
+     * Lightweight endpoint to open the production planning page with all schemas.
+     * The planning page will load and display all schemas.
+     */
+    public function getAll(Request $request)
+    {
+        return redirect()->route('moderator.production.index');
     }
 
     public function createStep(int $itemId)
@@ -102,6 +115,7 @@ class ProductionSchemaController extends Controller
             'unit' => 'nullable|string|max:50',
             'output_product_name' => 'nullable|string|max:255',
             'output_quantity' => 'nullable|numeric|min:0',
+            'production_time_seconds' => 'required|numeric|min:0',
             'notes' => 'nullable|string',
         ]);
 
@@ -112,7 +126,7 @@ class ProductionSchemaController extends Controller
             ProductionMaterial::where('id', $data['production_material_id'])->update(['stock_empty_alarm' => 0]);
         }
 
-        ProductionSchemaStep::create($data);
+        $this->stepService->create($data);
 
         return redirect()->route('moderator.items.production_schema.show', $itemId)
             ->with('success', 'Krok został dodany pomyślnie');
@@ -162,10 +176,11 @@ class ProductionSchemaController extends Controller
             'unit' => 'nullable|string|max:50',
             'output_product_name' => 'nullable|string|max:255',
             'output_quantity' => 'nullable|numeric|min:0',
+            'production_time_seconds' => 'required|numeric|min:0',
             'notes' => 'nullable|string',
         ]);
 
-        $step->update($data);
+        $this->stepService->update($stepId, $data);
 
         $itemId = $step->schema->items_finished_good_id;
 
@@ -178,10 +193,48 @@ class ProductionSchemaController extends Controller
         $step = ProductionSchemaStep::findOrFail($stepId);
         $itemId = $step->schema->items_finished_good_id;
 
-        $step->delete();
+        $this->stepService->delete($stepId);
 
         return redirect()->route('moderator.items.production_schema.show', $itemId)
             ->with('success', 'Krok został usunięty pomyślnie');
+    }
+
+    /**
+     * Reorder steps for a given item's production schema.
+     * Expects JSON: { ordered_ids: [stepId1, stepId2, ...] }
+     */
+    public function reorderSteps(int $itemId, Request $request)
+    {
+        $data = $request->validate([
+            'ordered_ids' => 'required|array',
+            'ordered_ids.*' => 'integer',
+        ]);
+
+        $schema = $this->service->findByItem($itemId);
+        if (!$schema) {
+            return response()->json(['success' => false, 'message' => 'Schemat nie znaleziony'], 404);
+        }
+
+        $ordered = $data['ordered_ids'];
+
+        // Validate that all provided ids belong to this schema
+        $count = ProductionSchemaStep::where('production_schema_id', $schema->id)
+            ->whereIn('id', $ordered)
+            ->count();
+
+        if ($count !== count($ordered)) {
+            return response()->json(['success' => false, 'message' => 'Nieprawidłowe id kroków'], 422);
+        }
+
+        DB::transaction(function () use ($ordered, $schema) {
+            foreach ($ordered as $index => $stepId) {
+                ProductionSchemaStep::where('production_schema_id', $schema->id)
+                    ->where('id', $stepId)
+                    ->update(['step_number' => $index + 1]);
+            }
+        });
+
+        return response()->json(['success' => true]);
     }
 
     public function destroy(int $id)

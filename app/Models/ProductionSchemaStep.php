@@ -20,6 +20,7 @@ class ProductionSchemaStep extends Model
         'production_material_id',
         'required_quantity',
         'unit',
+        'production_time_seconds',
         'stock_empty_alarm',
         'notes',
     ];

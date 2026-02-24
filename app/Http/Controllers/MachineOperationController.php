@@ -59,14 +59,11 @@ class MachineOperationController extends Controller
         $validated = $request->validate([
             'operation_name'   => 'required|string|max:255',
             'description'      => 'nullable|string|max:1000',
-            'duration_minutes' => 'nullable|numeric|min:0',
             'changeover_time'  => 'nullable|numeric|min:0',
         ], [
             'operation_name.required' => 'Nazwa operacji jest wymagana.',
             'operation_name.max' => 'Nazwa operacji nie może być dłuższa niż 255 znaków.',
             'description.max' => 'Opis nie może być dłuższy niż 1000 znaków.',
-            'duration_minutes.numeric' => 'Czas trwania musi być liczbą.',
-            'duration_minutes.min' => 'Czas trwania nie może być ujemny.',
             'changeover_time.numeric' => 'Czas przezbrojenia musi być liczbą.',
             'changeover_time.min' => 'Czas przezbrojenia nie może być ujemny.',
         ]);
@@ -89,7 +86,6 @@ class MachineOperationController extends Controller
                 'machine_id' => $machine_id,
                 'operation_name' => $validated['operation_name'],
                 'description' => $validated['description'] ?? null,
-                'duration_minutes' => $validated['duration_minutes'] ?? null,
                 'changeover_time' => $validated['changeover_time'] ?? null,
             ]);
 
@@ -140,14 +136,11 @@ class MachineOperationController extends Controller
         $validated = $request->validate([
             'operation_name'   => 'required|string|max:255',
             'description'      => 'nullable|string|max:1000',
-            'duration_minutes' => 'nullable|numeric|min:0',
             'changeover_time'  => 'nullable|numeric|min:0',
         ], [
             'operation_name.required' => 'Nazwa operacji jest wymagana.',
             'operation_name.max' => 'Nazwa operacji nie może być dłuższa niż 255 znaków.',
             'description.max' => 'Opis nie może być dłuższy niż 1000 znaków.',
-            'duration_minutes.numeric' => 'Czas trwania musi być liczbą.',
-            'duration_minutes.min' => 'Czas trwania nie może być ujemny.',
             'changeover_time.numeric' => 'Czas przezbrojenia musi być liczbą.',
             'changeover_time.min' => 'Czas przezbrojenia nie może być ujemny.',
         ]);
@@ -186,7 +179,7 @@ class MachineOperationController extends Controller
         $validated = $request->validate([
             'operation_name' => 'required|string|max:255',
             'machine_id' => 'required|exists:machines,id',
-            'duration_minutes' => 'nullable|numeric|min:0',
+            'changeover_time' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -195,17 +188,17 @@ class MachineOperationController extends Controller
                 0,
                 [
                     'operation_name' => $validated['operation_name'],
-                    'duration_minutes' => $validated['duration_minutes'] ?? null,
+                    'changeover_time' => $validated['changeover_time'] ?? null,
                 ]
             );
 
             return response()->json([
                 'success' => true,
-                'operation' => [
+                    'operation' => [
                     'id' => $operation->id,
                     'operation_name' => $operation->operation_name,
                     'machine_id' => $operation->machine_id,
-                    'duration_minutes' => $operation->duration_minutes,
+                    'changeover_time' => $operation->changeover_time,
                 ],
             ]);
         } catch (\Exception $e) {
