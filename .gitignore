@@ -1,3 +1,47 @@
+# Laravel & PHP
+/.idea
+/.vscode
+.env
+.env.*.local
+/vendor/
+/storage/*.key
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+/bootstrap/cache/*.php
+
+# Node / React
+/node_modules/
+/npm-debug.log*
+/yarn-debug.log*
+/yarn-error.log*
+/package-lock.json
+/pnpm-lock.yaml
+
+# Build outputs
+/public/hot
+/public/storage
+/build/
+/dist/
+/resources/js/dist/
+/public/build/
+
+# Ignore user/system files
+.DS_Store
+Thumbs.db
+
+# Images and uploaded files (keep them out of git — use storage or Git LFS)
+/storage/image/
+/storage/image/**
+
+# IDE and OS files
+/.phpstorm.meta.php
+.idea/
+.vscode/
+
+# Log and debug files
+*.log
 /.phpunit.cache
 /bootstrap/ssr
 /node_modules
