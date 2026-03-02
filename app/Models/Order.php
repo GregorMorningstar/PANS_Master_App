@@ -16,6 +16,7 @@ class Order extends Model
         'received_at',
         'planned_production_at',
         'finished_at',
+        'real_finished_at',
         'description',
     ];
 

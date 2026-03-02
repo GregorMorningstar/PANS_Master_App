@@ -130,10 +130,10 @@ export default function ModeratorSidebarMenu(): React.ReactElement {
           toggle={toggle}
           isActive={isActive}
           links={[
-            { href: '/moderator/machines/report-failure', label: 'Lista awarii' },
-            { href: '/moderator/machines/failures/history', label: 'Historia' },
-            { href: '/moderator/machines/failures/reports', label: 'Raporty' },
-          ]}
+              { href: '/machines/report-failure', label: 'Lista Awarii' },
+              { href: '/machines/failures/history', label: 'Historia' },
+              { href: '/machines/failures/reports', label: 'Raporty' },
+            ]}
         />
 
         {/* Performance */}
@@ -174,8 +174,21 @@ export default function ModeratorSidebarMenu(): React.ReactElement {
           links={[
             { href: '/moderator/items/', label: 'Produkty' },
             { href: '/moderator/items/products/sold', label: 'Ilość sprzedanych' },
-            { href: '/moderator/orders', label: 'Zamówienia' },
             { href: '/moderator/items/products/processes', label: 'Proces produkcji' },
+          ]}
+        />
+
+        {/* Orders */}
+        <SectionButton
+          title="Zamówienia"
+          icon={faList}
+          openKey={openKey}
+          name="orders"
+          toggle={toggle}
+          isActive={isActive}
+          links={[
+            { href: '/moderator/orders', label: 'Produkty zamówienia' },
+            { href: '/moderator/orders/sold', label: 'Ilość sprzedanych' },
           ]}
         />
 

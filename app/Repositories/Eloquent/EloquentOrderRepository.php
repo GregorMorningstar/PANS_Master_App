@@ -5,6 +5,7 @@ namespace App\Repositories\Eloquent;
 use App\Models\Order;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Validation\ValidationException;
 
 class EloquentOrderRepository implements OrderRepositoryInterface
 {
@@ -31,7 +32,22 @@ class EloquentOrderRepository implements OrderRepositoryInterface
 
     public function create(array $data): Order
     {
-        return $this->model->create($data);
+        $data['real_finished_at'] = $data['real_finished_at'] ?? null;
+
+        if (
+            isset($data['planned_production_at'], $data['finished_at']) &&
+            $data['planned_production_at'] > $data['finished_at']
+        ) {
+            throw ValidationException::withMessages([
+                'planned_production_at' => 'Planowany czas produkcji nie może być późniejszy niż planowany czas zakończenia.'
+            ]);
+        }
+
+        $create = $this->model->create($data);
+        if (!$create) {
+            throw new ModelNotFoundException('Nie można utworzyć zamówienia');
+        }
+        return $create;
     }
 
     public function update(int $id, array $data): ?Order

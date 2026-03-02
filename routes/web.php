@@ -145,6 +145,10 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
 
         Route::prefix('orders')->name('orders.')->group(function () {
             Route::get('/', [OrderController::class, 'index'])->name('index');
+            Route::get('/create', [OrderController::class, 'create'])->name('create');
+            Route::post('/', [OrderController::class, 'store'])->name('store');
+             Route::get('/{id}', [OrderController::class, 'show'])->name('show');
+             Route::get('/{id}/add-item', [OrderController::class, 'addItem'])->name('add_item');
         });
     });
 

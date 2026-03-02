@@ -141,4 +141,27 @@ class MachineFailuresController extends Controller
         ]);
     }
 
+
+    public function listByFailure(Request $request, $failureId)
+    {
+        $perPage = (int) $request->get('per_page', 15);
+        $filters = $request->only(['status', 'q', 'date_from', 'date_to']);
+
+        $paginator = $this->machineFailureRepairService->getRepairsByFailureIdPaginated($failureId, $perPage, $filters);
+
+        $repairs = $paginator->items();
+        $pagination = [
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'per_page' => $paginator->perPage(),
+            'total' => $paginator->total(),
+        ];
+
+        return Inertia::render('machines/failures/repairs/repairsList', [
+            'repairs' => $repairs,
+            'pagination' => $pagination,
+            'filters' => $filters,
+            'failureId' => $failureId,
+        ]);
+    }
 }

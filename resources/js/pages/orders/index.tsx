@@ -2,6 +2,7 @@ import EmployeeLayout from '@/layouts/EmployeeLayout';
 import ModeratorLayout from '@/layouts/ModeratorLayout';
 import { usePage } from '@inertiajs/react';
 import OrderList from '@/pages/orders/components/order_list';
+import NavTopOrdermenu from './components/nav_top_menu';
 
 export default function OrdersIndex() {
 
@@ -27,7 +28,7 @@ const breadcrumbsModerator = [
 
 if (userRole === 'moderator') return (
                 <ModeratorLayout breadcrumbs={breadcrumbsModerator} title="Lista zamówień">
-                    
+                        <NavTopOrdermenu />
                         <OrderList orders={order} />
                 </ModeratorLayout>
         );
