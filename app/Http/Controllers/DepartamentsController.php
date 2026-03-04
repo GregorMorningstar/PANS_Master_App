@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use App\Services\DepartmentsService;
 class DepartamentsController extends Controller
@@ -102,7 +103,6 @@ class DepartamentsController extends Controller
     public function show(int $id)
     {
         $department = $this->departmentsService->getByIdWithUsersAndMachines($id);
-        dd($department);
         if (!$department) {
             abort(404, 'Dział nie istnieje.');
         }
@@ -110,5 +110,62 @@ class DepartamentsController extends Controller
         return Inertia::render('moderator/departments/show', [
             'department' => $department,
         ]);
+    }
+
+    public function hallPreview(int $id)
+    {
+        $department = $this->departmentsService->getByIdWithUsersAndMachines($id);
+        if (!$department) {
+            abort(404, 'Dział nie istnieje.');
+        }
+
+        return Inertia::render('moderator/departments/hall-preview', [
+            'department' => $department,
+        ]);
+    }
+
+    public function saveHallLayout(Request $request, int $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'nodes' => 'required|array',
+            'nodes.*.id' => 'required|string',
+            'nodes.*.type' => 'nullable|string',
+            'nodes.*.position' => 'required|array',
+            'nodes.*.position.x' => 'required|numeric',
+            'nodes.*.position.y' => 'required|numeric',
+            'nodes.*.data' => 'nullable|array',
+            'nodes.*.style' => 'nullable|array',
+            'edges' => 'nullable|array',
+            'edges.*.id' => 'required|string',
+            'edges.*.source' => 'required|string',
+            'edges.*.target' => 'required|string',
+            'edges.*.type' => 'nullable|string',
+            'edges.*.label' => 'nullable|string',
+            'edges.*.animated' => 'nullable|boolean',
+            'edges.*.style' => 'nullable|array',
+            'hall_lines' => 'nullable|array',
+            'hall_lines.*.start' => 'required|array',
+            'hall_lines.*.start.x' => 'required|numeric',
+            'hall_lines.*.start.y' => 'required|numeric',
+            'hall_lines.*.end' => 'required|array',
+            'hall_lines.*.end.x' => 'required|numeric',
+            'hall_lines.*.end.y' => 'required|numeric',
+            'hall_area_label_pos' => 'nullable|array',
+            'hall_area_label_pos.x' => 'required_with:hall_area_label_pos|numeric',
+            'hall_area_label_pos.y' => 'required_with:hall_area_label_pos|numeric',
+        ]);
+
+        $saved = $this->departmentsService->saveHallLayout($id, [
+            'nodes' => $validated['nodes'],
+            'edges' => $validated['edges'] ?? [],
+            'hall_lines' => $validated['hall_lines'] ?? [],
+            'hall_area_label_pos' => $validated['hall_area_label_pos'] ?? null,
+        ]);
+
+        if (!$saved) {
+            return response()->json(['message' => 'Nie udało się zapisać układu hali.'], 422);
+        }
+
+        return response()->json(['message' => 'Układ hali zapisany.']);
     }
 }

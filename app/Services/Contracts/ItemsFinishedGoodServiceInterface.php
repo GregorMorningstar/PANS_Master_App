@@ -8,6 +8,7 @@ interface ItemsFinishedGoodServiceInterface
 {
     public function __construct(ItemsFinishedGoodRepositoryInterface $repository);
     public function paginate(int $perPage = 15, array $filters = []);
+    public function getWithProcessSummaryPaginated(int $perPage = 15, array $filters = []);
 
     public function find(int $id);
 

@@ -1,10 +1,9 @@
 import { FactoryIcon, Users, Wrench, AlertTriangle, BarChart2, Settings, Eye, Edit3, Plus, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import Barcode from "react-barcode";
-import { Link } from "@inertiajs/react";
-type Props = { departament?: any; user?: any; onAdd?: () => void; onEdit?: () => void; onDelete?: () => void };
+type Props = { departament?: any; user?: any; onAdd?: () => void; onEdit?: () => void; onDelete?: () => void; onHallPreview?: () => void };
 
-export default function DepartamentCardSimple({ departament, user, onAdd, onEdit, onDelete }: Props) {
+export default function DepartamentCardSimple({ departament, user, onAdd, onEdit, onDelete, onHallPreview }: Props) {
   const barcodeValue = String(departament?.barcode ?? departament?.id ?? departament?.name ?? "Nazwa");
 
   // status może być: 'green' | 'yellow' | 'red' (fallback 'green')
@@ -49,6 +48,15 @@ export default function DepartamentCardSimple({ departament, user, onAdd, onEdit
       if (!ok) return;
       if (typeof onDelete === 'function') onDelete();
       else console.log('Delete confirmed', departament);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleHallPreview = () => {
+    try {
+      if (typeof onHallPreview === 'function') onHallPreview();
+      else console.log('Hall preview clicked', departament);
     } catch (e) {
       console.error(e);
     }
@@ -267,6 +275,9 @@ export default function DepartamentCardSimple({ departament, user, onAdd, onEdit
         </button>
         <button onClick={handleEdit} className="p-1.5 sm:p-2 rounded-md bg-blue-100 hover:bg-blue-200 text-blue-700" title="Edycja">
           <Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
+        </button>
+        <button onClick={handleHallPreview} className="p-1.5 sm:p-2 rounded-md bg-indigo-100 hover:bg-indigo-200 text-indigo-700" title="Podgląd hali">
+          <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
         </button>
         <button onClick={handleDelete} className="p-1.5 sm:p-2 rounded-md bg-red-100 hover:bg-red-200 text-red-700" title="Usuń">
           <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />

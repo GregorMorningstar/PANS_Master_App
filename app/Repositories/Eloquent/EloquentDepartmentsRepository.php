@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Repositories\Contracts\DepartmentsRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use App\Models\Department;
 
 class EloquentDepartmentsRepository implements DepartmentsRepositoryInterface
@@ -17,7 +18,19 @@ class EloquentDepartmentsRepository implements DepartmentsRepositoryInterface
 
     public function getAllWithUsersPaginated(int $perPage): LengthAwarePaginator
     {
-        return $this->model->with('users')->paginate($perPage);
+        return $this->model
+            ->with('users')
+            ->withCount([
+                'machines as count_of_machine',
+                'machines as count_of_employee' => function ($query) {
+                    $query->select(DB::raw('COUNT(DISTINCT user_id)'))
+                        ->whereNotNull('user_id');
+                },
+                'machineFailures as count_of_failure_machine' => function ($query) {
+                    $query->whereNull('finished_repaired_at');
+                },
+            ])
+            ->paginate($perPage);
     }
 
     public function create(array $data): Department
@@ -52,6 +65,29 @@ class EloquentDepartmentsRepository implements DepartmentsRepositoryInterface
 
     public function findByIdWithUsersAndMachines(int $id): ?Department
     {
-        return $this->model->with(['users', 'machines'])->find($id);
+        return $this->model
+            ->with(['users', 'machines.owner'])
+            ->withCount([
+                'machines as count_of_machine',
+                'machines as count_of_employee' => function ($query) {
+                    $query->select(DB::raw('COUNT(DISTINCT user_id)'))
+                        ->whereNotNull('user_id');
+                },
+                'machineFailures as count_of_failure_machine' => function ($query) {
+                    $query->whereNull('finished_repaired_at');
+                },
+            ])
+            ->find($id);
+    }
+
+    public function updateHallLayout(int $id, array $layout): bool
+    {
+        $department = $this->model->find($id);
+        if (!$department) {
+            return false;
+        }
+
+        $department->hall_layout = $layout;
+        return (bool) $department->save();
     }
 }

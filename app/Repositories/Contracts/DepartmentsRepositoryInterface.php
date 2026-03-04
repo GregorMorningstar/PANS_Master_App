@@ -13,6 +13,8 @@ interface DepartmentsRepositoryInterface
     public function create(array $data): Department;
     public function existsByName(string $name): bool;
     public function findById(int $id): ?Department;
+    public function findByIdWithUsersAndMachines(int $id): ?Department;
+    public function updateHallLayout(int $id, array $layout): bool;
     public function update(int $id, array $data): Department;
     public function delete(int $id): bool;
 }

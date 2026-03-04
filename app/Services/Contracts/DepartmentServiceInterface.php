@@ -16,4 +16,5 @@ interface DepartmentServiceInterface
     public function updateDepartment(int $id, array $data): Department;
     public function deleteDepartment(int $id): bool;
     public function getByIdWithUsersAndMachines(int $id): ?Department;
+    public function saveHallLayout(int $id, array $layout): bool;
 }

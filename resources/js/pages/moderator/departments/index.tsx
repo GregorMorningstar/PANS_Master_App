@@ -106,6 +106,7 @@ export default function DepartmentsIndex() {
                     departament={d}
                     key={d.id}
                     onEdit={() => router.visit(`/moderator/departments/${d.id}/edit`)}
+                    onHallPreview={() => router.visit(`/moderator/departments/${d.id}/hall-preview`)}
                     onDelete={() => router.delete(`/moderator/departments/${d.id}`)}
                   />
                 ))}

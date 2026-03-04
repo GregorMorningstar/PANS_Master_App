@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use App\Models\OrderItem;
 use App\Services\Contracts\OrderServiceInterface;
 use App\Services\Contracts\ItemsFinishedGoodServiceInterface;
 
@@ -45,9 +46,28 @@ $order = $this->orderService->getActiveOrdersPaginated(15, $request->all());
         }
         // Pobierz produkty zamówienia
         $items = $order->items()->with('product')->get();
+
+        // also provide available products and already added products so the drag & drop panel can render inline
+        $products = $this->itemsFinishedGoodService->paginate(100, []);
+
+        $addedProducts = $order->items()
+            ->with('product')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'items_finished_good_id' => $item->items_finished_good_id,
+                    'name' => $item->product?->name,
+                    'quantity' => $item->quantity,
+                ];
+            })
+            ->values();
+
         return Inertia::render('orderItems/show', [
             'order' => $order,
             'items' => $items,
+            'addedProducts' => $addedProducts,
+            'availableProducts' => $products->items(),
         ]);
     }
     public function store(Request $request)
@@ -74,8 +94,57 @@ $order = $this->orderService->getActiveOrdersPaginated(15, $request->all());
         if (!$order) {
             abort(404, 'Zamówienie nie znalezione');
         }
+
+        $addedProducts = $order->items()
+            ->with('product')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'items_finished_good_id' => $item->items_finished_good_id,
+                    'name' => $item->product?->name,
+                    'quantity' => $item->quantity,
+                ];
+            })
+            ->values();
+
         return Inertia::render('orderItems/item/create-one-items', [
             'order' => $order,
-            'availableProducts' => $products->items(), ]);
+            'addedProducts' => $addedProducts,
+            'availableProducts' => $products->items(),
+        ]);
+    }
+
+    public function storeItems(Request $request, $id)
+    {
+        $order = $this->orderService->find($id);
+        if (!$order) {
+            abort(404, 'Zamówienie nie znalezione');
+        }
+
+        $validated = $request->validate([
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.items_finished_good_id' => ['required', 'integer', 'exists:items_finished_goods,id'],
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
+        ]);
+
+        foreach ($validated['items'] as $itemData) {
+            $orderItem = OrderItem::firstOrNew([
+                'order_id' => $order->id,
+                'items_finished_good_id' => $itemData['items_finished_good_id'],
+            ]);
+
+            $orderItem->quantity = (int) $itemData['quantity'];
+            $orderItem->save();
+        }
+
+        return redirect()
+            ->route('moderator.orders.add_item', ['id' => $order->id])
+            ->with('success', 'Zamówienie zostało uzupełnione.');
+    }
+//sold items ready ordered
+    public function soldItems(Request $request)
+    {
+        return Inertia::render('orders/sell-items-history', []);
     }
 }

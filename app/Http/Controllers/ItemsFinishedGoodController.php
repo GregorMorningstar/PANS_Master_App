@@ -105,4 +105,22 @@ class ItemsFinishedGoodController extends Controller
                'item' => $item,
           ]);
      }
+
+     public function processes(Request $request)
+     {
+          $perPage = (int) ($request->get('perPage', 15));
+          $filters = [
+               'name' => $request->get('name'),
+               'barcode' => $request->get('barcode'),
+          ];
+
+          $paginator = $this->service
+               ->getWithProcessSummaryPaginated($perPage, array_filter($filters, fn($v) => $v !== null && $v !== ''))
+               ->withQueryString();
+
+          return Inertia::render('items/processes', [
+               'itemsFinishedGoods' => $paginator,
+               'filters' => $filters,
+          ]);
+     }
 }

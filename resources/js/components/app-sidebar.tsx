@@ -16,6 +16,7 @@ import { BookOpen, Folder, LayoutGrid, MessageCircle } from 'lucide-react';
 import AppLogo from './app-logo';
 import ModeratorSidebarMenu from './menu/moderator-sidebar-menu';
 import EmployeeSidebarMenu from './menu/employee-sidebar-menu';
+import AdminSidebarMenu from './menu/admin-sidebar-menu';
 
 const footerNavItems: NavItem[] = [
     {
@@ -32,7 +33,7 @@ export function AppSidebar() {
     const renderMenu = () => {
         switch (role) {
             case 'admin':
-                return 1;
+                return <AdminSidebarMenu />;
             case 'moderator':
                 return <ModeratorSidebarMenu />;
             case 'employee':

@@ -99,7 +99,7 @@ class MachineFailuresController extends Controller
     }
     public function repariedList(Request $request)
     {
-        $barcode = $request->get('barcode');
+        $barcode = (string) $request->get('barcode', '');
         $perPage = 5;
         $filters = $request->only(['status', 'q', 'date_from', 'date_to']);
 

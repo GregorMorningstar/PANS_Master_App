@@ -12,9 +12,10 @@ interface OrderDetailsProps {
     finished_at?: string;
     id?: number;
   };
+  showModeratorActions?: boolean;
 }
 
-export default function OrderDetails({ order }: OrderDetailsProps) {
+export default function OrderDetails({ order, showModeratorActions = true }: OrderDetailsProps) {
   const page = usePage();
   const props = page.props as any;
   const userRole = String(props?.auth?.user?.role ?? '').toLowerCase();
@@ -54,7 +55,7 @@ export default function OrderDetails({ order }: OrderDetailsProps) {
           </div>
         </div>
       </div>
-      {userRole === 'moderator' && (
+      {userRole === 'moderator' && showModeratorActions && (
         <div className="mt-4 p-4 bg-blue-100 rounded-lg">
           <span className="font-semibold mb-2 block">Panel akcji moderatora:</span>
           <Link

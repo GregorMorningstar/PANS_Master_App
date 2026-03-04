@@ -16,6 +16,11 @@ class ItemsFinishedGoodService implements ItemsFinishedGoodServiceInterface
         return $this->repository->paginate($perPage, $filters);
     }
 
+    public function getWithProcessSummaryPaginated(int $perPage = 15, array $filters = [])
+    {
+        return $this->repository->getWithProcessSummaryPaginated($perPage, $filters);
+    }
+
     public function find(int $id)
     {
         return $this->repository->find($id);

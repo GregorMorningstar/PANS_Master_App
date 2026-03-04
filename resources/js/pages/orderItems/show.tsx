@@ -1,9 +1,8 @@
 import { usePage } from '@inertiajs/react';
 import EmployeeLayout from '@/layouts/EmployeeLayout';
 import ModeratorLayout from '@/layouts/ModeratorLayout';
-import ModeratorNavMenuOrderItemsAdd from './component/moderator_nav_menu._order_items_add';
-import OrderDetails from './component/order-detalis';
 import OrderHeaderItem from './component/order-header-item';
+import CreateOneItems from './item/create-one-items';
 
 type Order = {
     customer_name?: string;
@@ -16,7 +15,7 @@ type Order = {
 };
 
 export default function OrderShow() {
-    const { props } = usePage<{ order: Order, auth: { user: { role: string } } }>();
+    const { props } = usePage<any>();
     const order = props.order;
     const userRole = String(props.auth?.user?.role || '').toLowerCase();
 
@@ -32,21 +31,32 @@ export default function OrderShow() {
         { label: 'Zamówienia', href: '/employee/orders' },
         { label: 'Szczegóły zamówienia', href: `/employee/orders/${order?.id}` },
     ];
-              <OrderDetails order={order} />
-
-
     if (userRole === 'moderator') return (
         <ModeratorLayout breadcrumbs={breadcrumbsModerator} title="Szczegóły zamówienia">
-            <ModeratorNavMenuOrderItemsAdd />
-            <OrderHeaderItem order={order} />
-            <OrderDetails order={order} />
+            <OrderHeaderItem order={order} showModeratorActions={false} />
+            <CreateOneItems
+                order={order}
+                addedProducts={props.addedProducts ?? []}
+                availableProducts={props.availableProducts ?? []}
+                embedded
+                showAvailableProducts
+                readOnly={false}
+            />
         </ModeratorLayout>
     );
     if (userRole === 'employee') return (
         <EmployeeLayout breadcrumbs={breadcrumbsEmployee} title="Szczegóły zamówienia">
-            <OrderHeaderItem order={order} />
+            <OrderHeaderItem order={order} showModeratorActions={false} />
+            <CreateOneItems
+                order={order}
+                addedProducts={props.addedProducts ?? []}
+                availableProducts={[]}
+                embedded
+                showAvailableProducts={false}
+                readOnly
+            />
         </EmployeeLayout>
     );
     // fallback
-    return <OrderDetails order={order} />;
+    return <OrderHeaderItem order={order} showModeratorActions={false} />;
 }

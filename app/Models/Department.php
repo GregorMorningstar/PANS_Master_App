@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use App\Models\Machines;
 use App\Models\User;
 
@@ -21,7 +22,12 @@ class Department extends Model
         'count_of_employee',
         'count_of_failure_machine',
         'oee_coefficient',
+        'hall_layout',
         'created_by',
+    ];
+
+    protected $casts = [
+        'hall_layout' => 'array',
     ];
 
     /**
@@ -80,9 +86,16 @@ class Department extends Model
     {
         return $this->hasMany(User::class, 'department_id');
     }
-    public function machineFailures(): HasMany
+    public function machineFailures(): HasManyThrough
     {
-        return $this->hasMany(MachineFailure::class, 'department_id');
+        return $this->hasManyThrough(
+            MachineFailure::class,
+            Machines::class,
+            'department_id',
+            'machine_id',
+            'id',
+            'id'
+        );
     }
 
 }

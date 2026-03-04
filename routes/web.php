@@ -33,7 +33,7 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::middleware(['auth', 'verified', 'role:moderator'])
+Route::middleware(['web', 'auth', 'verified', 'role:moderator'])
     ->prefix('moderator')
     ->name('moderator.')
     ->group(function () {
@@ -88,10 +88,12 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
             Route::get('/', [DepartamentsController::class, 'moderatorIndex'])->name('departments.index');
             Route::get('/add-new', [DepartamentsController::class, 'create'])->name('departments.create');
             Route::post('/add-new', [DepartamentsController::class, 'store'])->name('departments.store');
-            Route::get('/{id}/edit', [DepartamentsController::class, 'edit'])->name('departments.edit');
-            Route::put('/{id}', [DepartamentsController::class, 'update'])->name('departments.update');
-            Route::delete('/{id}', [DepartamentsController::class, 'destroy'])->name('departments.destroy');
-            Route::get('/{id}', [DepartamentsController::class, 'show'])->name('departments.show');
+            Route::get('/{id}/edit', [DepartamentsController::class, 'edit'])->whereNumber('id')->name('departments.edit');
+            Route::get('/{id}/hall-preview', [DepartamentsController::class, 'hallPreview'])->whereNumber('id')->name('departments.hall_preview');
+            Route::post('/{id}/hall-layout', [DepartamentsController::class, 'saveHallLayout'])->whereNumber('id')->name('departments.hall_layout.save');
+            Route::put('/{id}', [DepartamentsController::class, 'update'])->whereNumber('id')->name('departments.update');
+            Route::delete('/{id}', [DepartamentsController::class, 'destroy'])->whereNumber('id')->name('departments.destroy');
+            Route::get('/{id}', [DepartamentsController::class, 'show'])->whereNumber('id')->name('departments.show');
         });
 
         // production materials: /moderator/production-materials
@@ -124,11 +126,12 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
         Route::prefix('items')->name('items.')->group(function () {
             Route::get('/', [ItemsFinishedGoodController::class, 'index'])->name('index');
             Route::get('/create', [ItemsFinishedGoodController::class, 'create'])->name('create');
+            Route::get('/processes', [ItemsFinishedGoodController::class, 'processes'])->name('processes');
             Route::post('/', [ItemsFinishedGoodController::class, 'store'])->name('store');
-            Route::get('/{id}', [ItemsFinishedGoodController::class, 'show'])->name('show');
-            Route::get('/{id}/edit', [ItemsFinishedGoodController::class, 'edit'])->name('edit');
-            Route::put('/{id}', [ItemsFinishedGoodController::class, 'update'])->name('update');
-            Route::delete('/{id}', [ItemsFinishedGoodController::class, 'destroy'])->name('destroy');
+            Route::get('/{id}', [ItemsFinishedGoodController::class, 'show'])->whereNumber('id')->name('show');
+            Route::get('/{id}/edit', [ItemsFinishedGoodController::class, 'edit'])->whereNumber('id')->name('edit');
+            Route::put('/{id}', [ItemsFinishedGoodController::class, 'update'])->whereNumber('id')->name('update');
+            Route::delete('/{id}', [ItemsFinishedGoodController::class, 'destroy'])->whereNumber('id')->name('destroy');
               Route::prefix('/production-schema')->name('production_schema.')->group(function () {
                 // Specific route to get all production schemas and show them in planning view
                 Route::get('/get-all', [ProductionSchemaController::class, 'getAll'])->name('get_all');
@@ -142,13 +145,25 @@ Route::middleware(['auth', 'verified', 'role:moderator'])
                 Route::post('/{item_id}/reorder-steps', [ProductionSchemaController::class, 'reorderSteps'])->name('reorder_steps');
             });
         });
-
+        // Machine Failures routes: /moderator/orders/
         Route::prefix('orders')->name('orders.')->group(function () {
             Route::get('/', [OrderController::class, 'index'])->name('index');
             Route::get('/create', [OrderController::class, 'create'])->name('create');
             Route::post('/', [OrderController::class, 'store'])->name('store');
              Route::get('/{id}', [OrderController::class, 'show'])->name('show');
              Route::get('/{id}/add-item', [OrderController::class, 'addItem'])->name('add_item');
+             Route::post('/{id}/add-item', [OrderController::class, 'storeItems'])->name('store_items');
+                //sold items ready ordered history route: /moderator/orders/sold-items
+             Route::get('/sold-items', [OrderController::class, 'soldItems'])->name('sold_items');
+        });
+    });
+
+Route::middleware(['auth', 'verified', 'role:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::prefix('items')->name('items.')->group(function () {
+            Route::get('/processes', [ItemsFinishedGoodController::class, 'processes'])->name('processes');
         });
     });
 

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { router } from '@inertiajs/react';
+import { router, Link } from '@inertiajs/react';
 import Barcode from 'react-barcode';
 import EditFailuresRepairedCard from '@/components/card/edit-failures-repaired-card';
 
@@ -12,7 +12,7 @@ type Repair = {
     started_at?: string | null;
     finished_at?: string | null;
     repair_order_no?: string | null;
-    machineFailure?: { machine?: { barcode?: string | null } } | null;
+    machineFailure?: { id?: number; machine?: { barcode?: string | null } } | null;
 };
 
 type Props = {
@@ -185,7 +185,14 @@ export default function MachineFailuresRepariedList({ repairs = [], pagination =
         <>
         <div className="p-4">
             <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">Lista Napraw</h2>
+                <div className="flex items-center gap-3">
+                    <Link href="/machines/report-failure" className="text-sm text-blue-600 hover:underline">
+                        <span className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+                        >Powrót do listy awarii
+                        </span>
+                    </Link>
+                    <h2 className="text-lg font-semibold">Lista Napraw</h2>
+                </div>
             </div>
                 <div className="mb-3 flex gap-2 items-center">
                 <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Szukaj opis / zlecenie lub barcode" className="border px-2 py-1 rounded w-64" />
@@ -268,14 +275,7 @@ export default function MachineFailuresRepariedList({ repairs = [], pagination =
                                     {r.description ? (
                                         <>
                                             <DescriptionPreview text={r.description} />
-                                            <div className="mt-2">
-                                                <a
-                                                    className="text-xs text-blue-600 hover:underline"
-                                                    href={`/machines/failures/fix/list?machine_failure_id=${r.machineFailure?.id ?? r.id}&status=repaired`}
-                                                >
-                                                    Lista napraw
-                                                </a>
-                                            </div>
+
                                         </>
                                     ) : (
                                         <div>

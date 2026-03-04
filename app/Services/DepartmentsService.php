@@ -47,4 +47,9 @@ class DepartmentsService implements DepartmentServiceInterface
             {
                 return $this->departmentsRepository->findByIdWithUsersAndMachines($id);
             }
+
+               public function saveHallLayout(int $id, array $layout): bool
+               {
+                    return $this->departmentsRepository->updateHallLayout($id, $layout);
+               }
 }
