@@ -9,7 +9,36 @@ type TabItem = {
     content: React.ReactNode;
 };
 
-export default function ProductionPlanning() {
+type OrderForPlanning = {
+    id: number;
+    barcode?: string | null;
+    customer_name: string;
+    status: string;
+    planned_production_at?: string | null;
+    finished_at?: string | null;
+    items_count?: number;
+};
+
+type PlanningPageProps = {
+    ordersForPlanning?: {
+        data?: OrderForPlanning[];
+        current_page?: number;
+        last_page?: number;
+        per_page?: number;
+        total?: number;
+        links?: Array<{ url: string | null; label: string; active: boolean }>;
+    };
+    ordersInProgress?: {
+        data?: OrderForPlanning[];
+        current_page?: number;
+        last_page?: number;
+        per_page?: number;
+        total?: number;
+        links?: Array<{ url: string | null; label: string; active: boolean }>;
+    };
+};
+
+export default function ProductionPlanning({ ordersForPlanning, ordersInProgress }: PlanningPageProps) {
         const breadcrumbs = [
                 { label: "Home", href: "/moderator" },
                 { label: "Planowanie produkcji", href: "/moderator/production-planning" },
@@ -17,9 +46,9 @@ export default function ProductionPlanning() {
         ];
 
         const tabs: TabItem[] = [
-            { id: 'create-canban-card', label: 'Tworzenie Karty Produkcji', content: <PlaningCanbanCard /> },
+            { id: 'create-canban-card', label: 'Tworzenie Karty Produkcji', content: <PlaningCanbanCard orders={ordersForPlanning} /> },
             { id: 'planing-proces-items', label: 'Planowanie Procesu', content: <PlaningProcesItems /> },
-            { id: 'tab-3', label: 'Element 3', content: <div>Treść elementu 3</div> },
+            { id: 'tab-3', label: 'W trakcie', content: <PlaningCanbanCard orders={ordersInProgress} title="W trakcie" /> },
             { id: 'tab-4', label: 'Element 4', content: <div>Treść elementu 4</div> },
             { id: 'tab-5', label: 'Element 5', content: <div>Treść elementu 5</div> },
         ];

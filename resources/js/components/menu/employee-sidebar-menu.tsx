@@ -17,6 +17,7 @@ import {
   faWrench,
   faUser,
   faNetworkWired,
+  faIndustry,
 } from '@fortawesome/free-solid-svg-icons';
 import { machine } from 'os';
 
@@ -41,8 +42,8 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
     },
   ];
 
-  const [openKey, setOpenKey] = useState<'education' | 'company' | 'calendar' | 'machines' | 'profile' | null>(null);
-  const toggle = (key: 'education' | 'company' | 'calendar' | 'machines' | 'profile') =>
+  const [openKey, setOpenKey] = useState<'education' | 'company' | 'calendar' | 'machines' | 'profile' | 'production' | null>(null);
+  const toggle = (key: 'education' | 'company' | 'calendar' | 'machines' | 'profile' | 'production') =>
     setOpenKey(prev => (prev === key ? null : key));
 
   const currentUrl =
@@ -95,6 +96,8 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
     machinesReport: '/machines/report-failure',
     machinesHistory: '/machines/failures/history',
     machinesUser: '/machines/user',
+    productionMy: '/employee/production/my',
+    productionHistory: '/employee/production/history',
   };
 
   return (
@@ -329,6 +332,45 @@ export default function EmployeeSidebarMenu(): React.ReactElement {
                 className={`text-sm px-2 py-1 rounded block ${isActive(routes.machinesHistory) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
               >
                 <FontAwesomeIcon icon={faList} className="mr-2" /> Historia uster
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Production */}
+        <div className="w-full mt-3">
+          <button
+            type="button"
+            onClick={() => toggle('production')}
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition
+              ${openKey === 'production' ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+            aria-expanded={openKey === 'production'}
+          >
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <FontAwesomeIcon icon={faIndustry} className="h-4 w-4" />
+              <span>Produkcja</span>
+            </div>
+            <ChevronDown
+              className={`h-4 w-4 transition-transform duration-200 ${openKey === 'production' ? 'rotate-180' : 'rotate-0'}`}
+            />
+          </button>
+
+          <div
+            className={`overflow-hidden transition-all duration-300 ${openKey === 'production' ? 'max-h-64 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}
+            aria-hidden={openKey !== 'production'}
+          >
+            <div className="flex flex-col space-y-1 pl-6">
+              <Link
+                href={routes.productionMy}
+                className={`text-sm px-2 py-1 rounded block ${isActive(routes.productionMy) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+              >
+                <FontAwesomeIcon icon={faList} className="mr-2" /> Moja produkcja
+              </Link>
+              <Link
+                href={routes.productionHistory}
+                className={`text-sm px-2 py-1 rounded block ${isActive(routes.productionHistory) ? 'bg-gray-200 font-semibold' : 'hover:bg-gray-100'}`}
+              >
+                <FontAwesomeIcon icon={faList} className="mr-2" /> Historia
               </Link>
             </div>
           </div>

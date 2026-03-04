@@ -34,3 +34,4 @@ kody en13
 
 9000 - zamowienia
 9100 - produkty w zamowieniu
+9200 - tworzenie produktu przez pracownika

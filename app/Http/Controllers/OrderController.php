@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\OrderItem;
+use App\Enums\OrderStatus;
 use App\Services\Contracts\OrderServiceInterface;
 use App\Services\Contracts\ItemsFinishedGoodServiceInterface;
 
@@ -141,6 +142,31 @@ $order = $this->orderService->getActiveOrdersPaginated(15, $request->all());
         return redirect()
             ->route('moderator.orders.add_item', ['id' => $order->id])
             ->with('success', 'Zamówienie zostało uzupełnione.');
+    }
+
+    public function destroy(int $id)
+    {
+        $order = $this->orderService->find($id);
+        if (!$order) {
+            abort(404, 'Zamówienie nie znalezione');
+        }
+
+        $order->items()->delete();
+        $this->orderService->delete($id);
+
+        return redirect()->back()->with('success', 'Zamówienie zostało usunięte.');
+    }
+
+    public function reject(int $id)
+    {
+        $order = $this->orderService->find($id);
+        if (!$order) {
+            abort(404, 'Zamówienie nie znalezione');
+        }
+
+        $this->orderService->update($id, ['status' => OrderStatus::REJECTED->value]);
+
+        return redirect()->back()->with('success', 'Zamówienie zostało odrzucone.');
     }
 //sold items ready ordered
     public function soldItems(Request $request)

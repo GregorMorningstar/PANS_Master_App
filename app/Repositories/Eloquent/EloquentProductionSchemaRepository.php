@@ -25,6 +25,8 @@ class EloquentProductionSchemaRepository implements ProductionSchemaRepositoryIn
                 },
                 'steps.machine:id,name,serial_number,model,status',
                 'steps.operation:id,operation_name,changeover_time',
+                'steps.operation.productionMaterial:id,name,material_form',
+                'steps.operation.materials:id,name,material_form',
                 'steps.material:id,name,material_form',
                 'item'
             ])
@@ -55,5 +57,18 @@ class EloquentProductionSchemaRepository implements ProductionSchemaRepositoryIn
             return false;
         }
         return (bool) $schema->delete();
+    }
+
+    public function paginate(int $perPage = 10, array $with = [])
+    {
+        $query = $this->model->with(array_merge([
+            'item',
+            'steps',
+            'steps.machine',
+            'steps.operation',
+            'steps.material'
+        ], $with))->orderBy('id', 'desc');
+
+        return $query->paginate($perPage);
     }
 }

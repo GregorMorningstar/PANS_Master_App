@@ -24,8 +24,10 @@ class Machines extends Model
         'status',
         'image_path',
         'last_failure_date',
-        'user_id',     
+        'user_id',
         'department_id',
+        'last_operationmachine_id',
+        'last_items_finished_good_id',
     ];
 
 
@@ -71,6 +73,16 @@ protected static function booted()
     public function operations(): HasMany
     {
         return $this->hasMany(Operationmachine::class, 'machine_id');
+    }
+
+    public function lastOperation(): BelongsTo
+    {
+        return $this->belongsTo(Operationmachine::class, 'last_operationmachine_id');
+    }
+
+    public function lastProduct(): BelongsTo
+    {
+        return $this->belongsTo(ItemsFinishedGood::class, 'last_items_finished_good_id');
     }
 
     //relacja z MachineFailure (1:N)

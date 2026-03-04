@@ -12,6 +12,8 @@ interface ProductionSchemaRepositoryInterface
 
     public function findByItem(int $itemId);
 
+    public function paginate(int $perPage = 10, array $with = []);
+
     public function create(array $data);
 
     public function update(int $id, array $data);

@@ -3,6 +3,7 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Order;
+use App\Enums\OrderStatus;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
@@ -80,16 +81,18 @@ class EloquentOrderRepository implements OrderRepositoryInterface
     public function getActiveOrdersPaginated(int $perPage = 15, array $filters = [])
     {
         $activeStatuses = [
-            'accepted',
-            'in_progress'
+            OrderStatus::ACCEPTED->value,
+            OrderStatus::IN_PROGRESS->value,
         ];
 
-        $query = $this->model->newQuery()->whereIn('status', $activeStatuses);
+        $query = $this->model->newQuery()
+            ->withCount('items')
+            ->whereIn('status', $activeStatuses);
 
         if (!empty($filters['customer_name'])) {
             $query->where('customer_name', 'like', '%'.$filters['customer_name'].'%');
         }
 
-        return $query->paginate($perPage);
+        return $query->paginate($perPage, ['*'], 'orders_page');
     }
 }
